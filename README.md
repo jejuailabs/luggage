@@ -19,3 +19,5 @@ pnpm dev                              # http://localhost:3000 → /zh-CN
 | `pnpm test:db` | embedded Postgres에 마이그레이션·시드 적용 후 DB/RLS 테스트. 원격 DB 주소가 설정되면 실행 거부 |
 | `pnpm test:e2e` | 운영 빌드 + Playwright (360px 모바일 기본). 최초 1회 `pnpm exec playwright install chromium` |
 | `pnpm build` | 웹앱 운영 빌드 |
+
+배포: [docs/deploy-vercel.md](docs/deploy-vercel.md)
