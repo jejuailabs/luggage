@@ -117,6 +117,22 @@ test.describe("auth API", () => {
     expect((await response.json()).error.code).toBe("FORBIDDEN");
   });
 
+  test("preferences require a session, same origin and a valid body", async ({ request, baseURL }) => {
+    const origin = new URL(baseURL!).origin;
+    const crossOrigin = await request.patch("/api/v1/me/preferences", {
+      headers: { Origin: "https://evil.example" },
+      data: { theme: "dark" },
+    });
+    expect(crossOrigin.status()).toBe(403);
+
+    const invalid = await request.patch("/api/v1/me/preferences", { headers: { Origin: origin }, data: { locale: "fr" } });
+    expect(invalid.status()).toBe(400);
+    expect((await invalid.json()).error.code).toBe("VALIDATION_FAILED");
+
+    const noSession = await request.patch("/api/v1/me/preferences", { headers: { Origin: origin }, data: { theme: "dark" } });
+    expect(noSession.status()).toBe(401);
+  });
+
   test("sign-out refuses requests without an origin", async ({ request }) => {
     const response = await request.delete("/api/v1/sessions");
     expect(response.status()).toBe(403);

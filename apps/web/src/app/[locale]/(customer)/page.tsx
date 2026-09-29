@@ -1,6 +1,7 @@
 import { ROUTE_TYPES, type RouteType } from "@luggage/domain";
 import { ThemePreferencePicker } from "@/components/theme-controls";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
+import { getViewer } from "@/server/auth";
 
 /** A단계 임시값. A05에서 운영 설정(노선 판매 여부)으로 교체한다. */
 const OPEN_ROUTES: ReadonlySet<RouteType> = new Set(["hotel_to_airport"]);
@@ -8,6 +9,7 @@ const OPEN_ROUTES: ReadonlySet<RouteType> = new Set(["hotel_to_airport"]);
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const locale = await resolveLocale(params);
   const { t, themePreference } = await getRequestContext(locale);
+  const signedIn = Boolean((await getViewer()).user);
 
   return (
     <div className="flex flex-col gap-4">
@@ -101,6 +103,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <section className="rounded-[var(--radius-card)] border border-line bg-card p-4">
         <ThemePreferencePicker
           initial={themePreference}
+          syncToAccount={signedIn}
           labels={{
             label: t("theme.label"),
             light: t("theme.light"),

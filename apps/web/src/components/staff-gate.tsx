@@ -1,7 +1,7 @@
 import { canEnterStaffArea, type StaffArea } from "@luggage/domain";
 import type { Locale, MessageKey } from "@luggage/i18n";
 import { getRequestContext } from "@/lib/request-context";
-import { getAuthContext } from "@/server/auth";
+import { getViewer } from "@/server/auth";
 import { StaffLogin } from "./staff-login";
 
 const AREA_TITLE: Record<StaffArea, MessageKey> = {
@@ -24,7 +24,7 @@ export async function StaffGate({
   children: React.ReactNode;
 }) {
   const { t } = await getRequestContext(locale);
-  const auth = await getAuthContext();
+  const auth = await getViewer();
   const title = t(AREA_TITLE[area]);
 
   if (!auth.user || auth.user.isAnonymous) {
@@ -33,6 +33,7 @@ export async function StaffGate({
         <h1 className="text-xl font-bold">{title}</h1>
         <p className="text-muted">{t("staff.loginRequired")}</p>
         <StaffLogin
+          locale={locale}
           labels={{
             title: t("staff.login.title"),
             email: t("staff.login.email"),

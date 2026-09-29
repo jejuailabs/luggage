@@ -3,6 +3,7 @@ import { LocaleSwitcher } from "@/components/locale-switcher";
 import { ThemeQuickToggle } from "@/components/theme-controls";
 import { BottomNav } from "@/components/bottom-nav";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
+import { getViewer } from "@/server/auth";
 
 export default async function CustomerLayout({
   children,
@@ -13,6 +14,7 @@ export default async function CustomerLayout({
 }) {
   const locale = await resolveLocale(params);
   const { t, themePreference } = await getRequestContext(locale);
+  const signedIn = Boolean((await getViewer()).user);
   const themeLabels = {
     label: t("theme.label"),
     light: t("theme.light"),
@@ -27,8 +29,8 @@ export default async function CustomerLayout({
           {t("brand.name")}
         </Link>
         <div className="flex items-center gap-2">
-          <ThemeQuickToggle initial={themePreference} labels={themeLabels} />
-          <LocaleSwitcher locale={locale} label={t("locale.label")} />
+          <ThemeQuickToggle initial={themePreference} labels={themeLabels} syncToAccount={signedIn} />
+          <LocaleSwitcher locale={locale} label={t("locale.label")} syncToAccount={signedIn} />
         </div>
       </header>
       <main className="flex-1 px-4 pb-[calc(88px+env(safe-area-inset-bottom))] pt-4">{children}</main>

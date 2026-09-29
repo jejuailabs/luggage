@@ -3,6 +3,7 @@
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { syncPreferenceToAccount } from "@/lib/preferences-client";
 
 interface Labels {
   title: string;
@@ -14,7 +15,7 @@ interface Labels {
 }
 
 /** 업무 계정 로그인. 계정은 운영자가 발급하며 회원가입 화면은 제공하지 않는다. */
-export function StaffLogin({ labels }: { labels: Labels }) {
+export function StaffLogin({ locale, labels }: { locale: string; labels: Labels }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -44,6 +45,8 @@ export function StaffLogin({ labels }: { labels: Labels }) {
           setError(labels.failed);
           return;
         }
+        // 로그인 시 현재 기기의 선택을 우선해 계정 기본값으로 저장한다.
+        syncPreferenceToAccount({ locale, theme: document.documentElement.dataset.themePreference ?? "system" });
         router.refresh();
       }}
     >

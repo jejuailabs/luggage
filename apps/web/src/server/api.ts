@@ -26,8 +26,12 @@ export function fail(code: ErrorCode, requestId: string, options?: Parameters<ty
 export function isSameOrigin(request: Request): boolean {
   const origin = request.headers.get("origin");
   if (!origin) return false;
+  // request.url은 서버가 정규화한 주소(예: localhost)일 수 있으므로 실제 요청 호스트 헤더와 비교한다.
+  // Vercel은 x-forwarded-host를 플랫폼에서 설정한다.
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  if (!host) return false;
   try {
-    return new URL(origin).host === new URL(request.url).host;
+    return new URL(origin).host === host;
   } catch {
     return false;
   }

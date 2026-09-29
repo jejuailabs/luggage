@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
+import { syncPreferenceToAccount } from "@/lib/preferences-client";
 import { THEME_COOKIE, THEME_PREFERENCES, parseThemePreference, type ThemePreference } from "@/lib/theme";
 
 type Rendered = "light" | "dark";
@@ -32,7 +33,7 @@ function readSnapshot(): string {
   return `${themePreference ?? "system"}:${theme === "dark" ? "dark" : "light"}`;
 }
 
-function useThemePreference(initial: ThemePreference) {
+function useThemePreference(initial: ThemePreference, syncToAccount: boolean) {
   const snapshot = useSyncExternalStore(subscribe, readSnapshot, () => null);
   const [preferenceValue, renderedValue] = snapshot ? snapshot.split(":") : [initial, null];
   const preference = parseThemePreference(preferenceValue);
@@ -49,7 +50,12 @@ function useThemePreference(initial: ThemePreference) {
     return () => media.removeEventListener("change", onChange);
   }, [preference]);
 
-  return { preference, rendered, choose: applyPreference };
+  const choose = (next: ThemePreference) => {
+    applyPreference(next);
+    if (syncToAccount) syncPreferenceToAccount({ theme: next });
+  };
+
+  return { preference, rendered, choose };
 }
 
 interface Labels {
@@ -60,8 +66,16 @@ interface Labels {
 }
 
 /** 헤더용 라이트/다크 빠른 전환. 접근 가능한 이름에 현재 상태를 포함한다. */
-export function ThemeQuickToggle({ initial, labels }: { initial: ThemePreference; labels: Labels }) {
-  const { rendered, choose } = useThemePreference(initial);
+export function ThemeQuickToggle({
+  initial,
+  labels,
+  syncToAccount = false,
+}: {
+  initial: ThemePreference;
+  labels: Labels;
+  syncToAccount?: boolean;
+}) {
+  const { rendered, choose } = useThemePreference(initial, syncToAccount);
   const isDark = rendered === "dark";
   const current = rendered ? labels[rendered] : labels.system;
   return (
@@ -79,8 +93,16 @@ export function ThemeQuickToggle({ initial, labels }: { initial: ThemePreference
 }
 
 /** 설정용 3단 선택 (라이트 / 다크 / 기기 설정 따르기). */
-export function ThemePreferencePicker({ initial, labels }: { initial: ThemePreference; labels: Labels }) {
-  const { preference, choose } = useThemePreference(initial);
+export function ThemePreferencePicker({
+  initial,
+  labels,
+  syncToAccount = false,
+}: {
+  initial: ThemePreference;
+  labels: Labels;
+  syncToAccount?: boolean;
+}) {
+  const { preference, choose } = useThemePreference(initial, syncToAccount);
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="mb-2 text-sm font-semibold text-muted">{labels.label}</legend>

@@ -4,6 +4,7 @@ import { en } from "./messages/en";
 import { ko } from "./messages/ko";
 import { zhCN, type MessageKey, type Messages } from "./messages/zh-CN";
 
+export * from "./content";
 export * from "./locales";
 export type { MessageKey, Messages };
 

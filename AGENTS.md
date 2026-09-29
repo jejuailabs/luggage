@@ -114,7 +114,7 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 | 단계 | 상태 | 다음 작업 |
 |---|---|---|
 | 문서 | 중국인 대상 수하물 플랫폼으로 재정리·검증 완료 | 메인 1개 + 상세 9개, 상대 링크 40개와 범위·코드 블록·문자 인코딩 검사 통과 |
-| A | A01·A02 완료 (2026-09-29) | A03 i18n·테마 저장 확장, A04 수하물 공개 페이지, A05 호텔·노선 관리 |
+| A | A01–A03 완료 (2026-09-29) | A04 수하물 공개 페이지, A05 호텔·노선 관리 |
 | B | 미착수 | A의 공통 데이터·인증 필요 |
 | C | 미착수 | B의 주문·짐 모델 필요 |
 | D | 미착수 | B·C 업무 기록 재사용. 미니프로그램 계정·위챗페이 가맹은 A부터 병행 준비 |
@@ -137,6 +137,14 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 - 연동 모드: 인증은 Supabase(원격 개발 프로젝트) 연결 코드 준비, 실제 로그인·guest 생성은 마이그레이션 적용과 anonymous sign-in 활성화 후 확인 필요. 결제·알림 mock.
 - 미해결: 운영자 MFA, 업무 계정 발급 화면, guest 생성 남용 방지(CAPTCHA/rate limit), 다른 기기 주문 복구(B단계 연락 채널과 함께), 연락 채널 암호화 저장.
 - 다음 ID: A03.
+
+**A03 다국어 콘텐츠·설정 동기화**
+- 변경 파일: `supabase/migrations/20260929000300_content_translations.sql`, `packages/i18n/src/content.ts`(대체 언어 규칙), `/api/v1/me/preferences`, `lib/preferences-client.ts`, 테마·언어 선택기·업무 로그인의 계정 동기화, `lib/request-context.ts`(테마 우선순위), `server/api.ts`(동일 출처 검사를 Host 헤더 기준으로 수정 — A02 guest 생성에도 적용).
+- 마이그레이션: `content_items`·`content_translations`(언어별 게시 상태 draft/review/published/archived, 원문 수정 시 원문 버전 증가·타 언어 needs_review 및 게시 중단, 최신 원문 기준 없이 검토 해제 금지, 게시는 admin만, 공개는 게시본만). zh-TW·ja 행 저장 가능(라우팅 미개방).
+- 검사와 결과: lint·typecheck 통과, `pnpm test` 31개(critical 문구 대체 금지 포함), `pnpm test:db` 33개, `pnpm test:e2e` 25개(선호 API 403/400/401), build 통과.
+- 연동 모드: mock. 계정 선호 저장은 원격 마이그레이션 적용 후 실사용 확인 필요.
+- 미해결: 콘텐츠 편집 화면(운영자용), 예약 당시 약관 스냅샷(B단계), 고객 문의·기사 메모 원문/번역 구분(C단계).
+- 다음 ID: A04.
 
 문서 수정은 제품 코드·결제 연동·배포가 완료됐다는 뜻이 아니다. 구현 기록 형식: `작업 ID / 변경 파일 / 마이그레이션 / 검사와 결과 / 연동 모드 / 미해결 사항 / 다음 ID`.
 

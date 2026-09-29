@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { STAFF_ROLES, type RoleGrant, type StaffRole } from "@luggage/domain";
 import { createSupabaseServerClient, createSupabaseTokenClient } from "./supabase";
@@ -40,3 +41,6 @@ export async function getAuthContext(options: { authorization?: string | null } 
     .map((row) => ({ role: row.role, scopeType: row.scope_type, scopeId: row.scope_id }));
   return { available: true, user, roles, client };
 }
+
+/** 한 요청 안에서 쿠키 세션 사용자를 한 번만 확인한다 (레이아웃·페이지 공용). */
+export const getViewer = cache(() => getAuthContext());
