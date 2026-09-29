@@ -71,3 +71,18 @@ test.describe("customer support", () => {
     await expect(page.getByTestId("request-not-found")).toBeVisible();
   });
 });
+
+test.describe("settlements", () => {
+  test("settlement APIs require a session and same origin", async ({ request, baseURL }) => {
+    const origin = new URL(baseURL!).origin;
+    const body = { partnerId: JOB, periodStart: "2026-09-01", periodEnd: "2026-09-30" };
+    expect((await request.post("/api/v1/settlements", { headers: { Origin: origin }, data: body })).status()).toBe(401);
+    expect((await request.post("/api/v1/settlements", { headers: { Origin: "https://evil.example" }, data: body })).status()).toBe(403);
+    expect((await request.post(`/api/v1/settlements/${JOB}/confirm`, { headers: { Origin: origin } })).status()).toBe(401);
+  });
+
+  test("settlement screen requires staff sign-in", async ({ page }) => {
+    await page.goto("/ko/admin/settlements");
+    await expect(page.getByTestId("staff-login")).toBeVisible();
+  });
+});

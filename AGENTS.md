@@ -117,7 +117,7 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 | A | A01–A05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실로그인 검증 대기 | B01 서버 견적 |
 | B | B01–B05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실결제 흐름 검증 대기 | C01 호텔 보관 |
 | C | C01–C05 코드·로컬 검증 완료 (2026-09-29). 실기기(카메라·사진 업로드·오프라인) 검증 대기 | D01 노선 확장 설정 |
-| D | D01 완료 (2026-09-29) | D02 호텔 제휴·정산 → D03 유입·호텔 QR → D04 운영 지표 → D05 미니프로그램 (계정·위챗페이 가맹은 병행 준비) |
+| D | D01·D02 완료 (2026-09-29) | D03 유입·호텔 QR → D04 운영 지표 → D05 미니프로그램 (계정·위챗페이 가맹은 병행 준비) |
 | E | 미착수 | C의 현장 운영 데이터 필요 |
 
 ### 구현 기록
@@ -209,6 +209,14 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 - 연동 모드: 변경 없음 (결제 mock).
 - 미해결: 노선별 요금·슬롯 관리 화면, 도착 호텔 보관 후 고객 수령 확인(호텔 운영 영역), 공항 수거 장소 안내(인계 장소 버전 표시).
 - 다음 ID: D02.
+
+**D02 호텔 제휴·정산**
+- 변경 파일: `supabase/migrations/20260929001400_partner_settlement.sql`, `supabase/seed.sql`(예시 제휴사·코드 SAMPLE01·10% 예시 규칙), `server/attribution.ts`(유입 쿠키 검증), 주문 API가 `create_order_with_attribution` 사용, `/api/v1/settlements`(초안)·`/api/v1/settlements/[id]/(confirm|paid)`, `/admin/settlements`(재무), API 오류 코드 보강(누락됐던 `FLIGHT_TOO_LATE`·`HANDOFF_NOT_APPLICABLE` 포함).
+- 마이그레이션: `partner_codes`(공개 코드→호텔, 유효기간·적용 노선), `commission_rules`(정액/비율, 기간 겹침 금지, 재무 전용), `order_attributions`(주문 생성 트랜잭션에서 1회 확정·추가 전용), `hotel_commissions`(확정 시 규칙 스냅샷 계산·비율은 원 단위 내림, 배송 완료 시 적격, 미지급 취소는 reversed, 지급 후 취소는 환수 항목), `settlement_batches/items`(항목 이중 정산 방지, 지급은 증빙 참조 필수), `resolve_partner_code()`(공개), `create_settlement_draft()`/`confirm_settlement()`/`mark_settlement_paid()`(재무), 규칙이 없으면 0원+`missing_rule` 표시(임의 금액 금지).
+- 검사와 결과: lint·typecheck 통과, `pnpm test` 61개(유입 쿠키 변조·개인정보 필드 거부), `pnpm test:db` 148개(귀속 1회 확정·재요청에도 유지·수정 불가, 알 수 없는 코드 무시, 확정→적격→정산→확정→지급 흐름, 이중 정산 방지, 지급 후 취소 환수, 미지급 취소 reversed, 규칙 없음 처리, 호텔 직원 자기 지점만·규칙 비공개), `pnpm test:e2e` 정산 API·화면 권한, build 통과.
+- 연동 모드: 지급은 수동 기록(증빙 참조). 자동 송금 없음.
+- 미해결: 부분 환불 시 수수료 재계산 규칙(현재 전액 취소만 반영), 제휴 코드·계약 규칙 관리 화면, 호텔용 정산 내역서 PDF.
+- 다음 ID: D03.
 
 문서 수정은 제품 코드·결제 연동·배포가 완료됐다는 뜻이 아니다. 구현 기록 형식: `작업 ID / 변경 파일 / 마이그레이션 / 검사와 결과 / 연동 모드 / 미해결 사항 / 다음 ID`.
 

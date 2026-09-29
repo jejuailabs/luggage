@@ -77,3 +77,23 @@ on conflict (route_offering_id, pickup_starts_at, delivery_ends_at) do nothing;
 insert into public.capacity_buckets (slot_id, max_units)
 select s.id, 20 from public.service_slots s
 on conflict (slot_id) do nothing;
+
+-- 합성 제휴 (D02). 계약 번호·실제 수수료가 아니다.
+insert into public.hotel_partners (name, status, contract_reference)
+select '예시 제휴사', 'active', null
+where not exists (select 1 from public.hotel_partners where name = '예시 제휴사');
+
+update public.hotels set partner_id = (select id from public.hotel_partners where name = '예시 제휴사')
+ where slug = 'sample-hotel-jeju-city' and partner_id is null;
+
+insert into public.partner_codes (code, partner_id, hotel_id, valid_from)
+select 'SAMPLE01', p.id, h.id, current_date - 1
+from public.hotel_partners p join public.hotels h on h.slug = 'sample-hotel-jeju-city'
+where p.name = '예시 제휴사'
+on conflict (code) do nothing;
+
+insert into public.commission_rules (partner_id, kind, rate_bp, valid_from)
+select p.id, 'percent_of_total', 1000, current_date - 30
+from public.hotel_partners p
+where p.name = '예시 제휴사'
+  and not exists (select 1 from public.commission_rules r where r.partner_id = p.id);

@@ -1,7 +1,9 @@
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { LOCALES } from "@luggage/i18n";
 import { fail, failFromDb, isSameOrigin, newRequestId, ok } from "@/server/api";
 import { getAuthContext } from "@/server/auth";
+import { ATTRIBUTION_COOKIE, parseAttribution } from "@/server/attribution";
 import { getOrderView } from "@/server/orders";
 
 export const dynamic = "force-dynamic";
@@ -42,13 +44,16 @@ export async function POST(request: Request) {
   if (!auth.user || !auth.client) return fail("SESSION_REQUIRED", requestId);
 
   const { contact, ...body } = parsed.data;
+  // 유입 귀속은 주문 생성 트랜잭션에서 확정된다 (결제 후 URL·쿠키 변경으로 바뀌지 않음).
+  const attribution = parseAttribution((await cookies()).get(ATTRIBUTION_COOKIE)?.value);
   const { data, error } = await auth.client
-    .rpc("create_order", {
+    .rpc("create_order_with_attribution", {
       p_quote_id: body.quoteId,
       p_idempotency_key: idempotencyKey,
       p_contact: contact,
       p_locale: body.locale,
       p_accepted_policies: body.acceptedPolicies,
+      p_attribution: attribution,
     })
     .single<{ id: string }>();
   if (error || !data) return failFromDb(error, requestId);
