@@ -2,16 +2,22 @@ import "server-only";
 import { z } from "zod";
 import { resolveIntegrationMode, type AppEnv, type IntegrationMode, type IntegrationName } from "@luggage/integrations";
 
+/** .env에 빈 값으로 남긴 항목은 설정하지 않은 것으로 본다. */
+const blank = <T extends z.ZodType>(schema: T) => z.preprocess((value) => (value === "" ? undefined : value), schema);
+
 const schema = z.object({
-  APP_ENV: z.enum(["local", "preview", "staging", "production"]).default("local"),
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1).optional(),
-  PAYMENT_MODE: z.string().optional(),
-  NOTIFICATION_MODE: z.string().optional(),
-  MAPS_MODE: z.string().optional(),
-  WECHAT_MODE: z.string().optional(),
-  APP_URL: z.string().url().default("http://localhost:3000"),
-  PUBLIC_DATA_SOURCE: z.enum(["supabase", "fixture"]).default("supabase"),
+  APP_ENV: blank(z.enum(["local", "preview", "staging", "production"]).default("local")),
+  NEXT_PUBLIC_SUPABASE_URL: blank(z.string().url().optional()),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: blank(z.string().min(1).optional()),
+  PAYMENT_MODE: blank(z.string().optional()),
+  NOTIFICATION_MODE: blank(z.string().optional()),
+  MAPS_MODE: blank(z.string().optional()),
+  WECHAT_MODE: blank(z.string().optional()),
+  APP_URL: blank(z.string().url().default("http://localhost:3000")),
+  PUBLIC_DATA_SOURCE: blank(z.enum(["supabase", "fixture"]).default("supabase")),
+  SUPABASE_SERVER_SECRET: blank(z.string().min(1).optional()),
+  MOCK_PAYMENT_SECRET: blank(z.string().min(16).optional()),
+  CRON_SECRET: blank(z.string().min(16).optional()),
 });
 
 export interface ServerConfig {
@@ -20,6 +26,8 @@ export interface ServerConfig {
   supabase: { url: string; publishableKey: string } | null;
   appUrl: string;
   publicDataSource: "supabase" | "fixture";
+  /** 서버 전용 비밀값. 클라이언트로 보내지 않는다. */
+  secrets: { supabaseServer: string | null; mockPayment: string | null; cron: string | null };
 }
 
 let cached: ServerConfig | undefined;
@@ -46,6 +54,12 @@ export function getServerConfig(): ServerConfig {
         : null,
     appUrl: env.APP_URL.replace(/\/$/, ""),
     publicDataSource: env.PUBLIC_DATA_SOURCE,
+    secrets: {
+      supabaseServer: env.SUPABASE_SERVER_SECRET ?? null,
+      // mock 결제 서명 키: 비운영에서만 쓰며 값이 없으면 로컬 기본값을 쓴다 (운영은 mock 자체가 금지).
+      mockPayment: env.MOCK_PAYMENT_SECRET ?? (appEnv === "production" ? null : "local-mock-payment-secret"),
+      cron: env.CRON_SECRET ?? null,
+    },
   };
   return cached;
 }

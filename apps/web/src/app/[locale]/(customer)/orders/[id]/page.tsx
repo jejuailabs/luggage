@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { formatKst, formatMoney, type MessageKey } from "@luggage/i18n";
+import { OrderActions } from "@/components/booking/order-actions";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { NO_INDEX } from "@/lib/seo";
 import { getViewer } from "@/server/auth";
@@ -12,7 +13,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export default async function OrderPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const locale = await resolveLocale(params);
   const { id } = await params;
-  const { t } = await getRequestContext(locale);
+  const { t, runtime } = await getRequestContext(locale);
   const viewer = await getViewer();
   // 소유 세션이 있어야 한다. 주문 번호만으로는 열리지 않는다 (RLS).
   const order = UUID.test(id) && viewer.client && viewer.user ? await getOrderView(viewer.client, id) : null;
@@ -41,6 +42,9 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
         <p className="mt-2 font-semibold" data-testid="order-status" data-status={order.reservationStatus}>
           {t(`order.status.${order.reservationStatus}` as MessageKey)}
         </p>
+        <p className="text-sm text-muted" data-testid="payment-summary" data-summary={order.payment.summary}>
+          {t(`payment.summary.${order.payment.summary}` as MessageKey)}
+        </p>
       </section>
 
       {order.reservationStatus === "held" && order.holdExpiresAt ? (
@@ -53,6 +57,28 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
           {t("order.expiredNotice")}
         </p>
       ) : null}
+
+      {order.refund ? (
+        <section className={`${panel} text-sm`} data-testid="refund-status">
+          <h2 className="font-semibold">{t("refund.title")}</h2>
+          <p className="mt-1">
+            {t(`refund.status.${order.refund.requestStatus}` as MessageKey)} · {money(order.refund.amountMinor)}
+          </p>
+          {order.refund.executionStatus ? (
+            <p className="text-muted">{t(`refund.execution.${order.refund.executionStatus}` as MessageKey)}</p>
+          ) : null}
+        </section>
+      ) : null}
+
+      <OrderActions
+        locale={locale}
+        orderId={order.id}
+        runtime={runtime}
+        reservationStatus={order.reservationStatus}
+        paymentSummary={order.payment.summary}
+        latestAttemptStatus={order.payment.latestAttempt?.status ?? null}
+        hasRefundRequest={Boolean(order.refund && order.refund.requestStatus !== "rejected")}
+      />
 
       <dl className={`${panel} grid grid-cols-1 gap-3 text-sm`}>
         <div>

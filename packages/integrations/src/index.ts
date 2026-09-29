@@ -1,3 +1,5 @@
+export * from "./payment";
+
 export type AppEnv = "local" | "preview" | "staging" | "production";
 export type IntegrationMode = "mock" | "sandbox" | "live";
 export type IntegrationName = "payment" | "notification" | "maps" | "wechat";

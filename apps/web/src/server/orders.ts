@@ -18,6 +18,11 @@ export interface OrderView {
   contact: { name: string; email?: string; phone?: string; wechat?: string };
   locale: string;
   createdAt: string;
+  payment: {
+    summary: "unpaid" | "pending" | "paid" | "partially_refunded" | "refunded";
+    latestAttempt: { id: string; status: string; method: string } | null;
+  };
+  refund: { requestStatus: string; amountMinor: number; executionStatus: string | null } | null;
 }
 
 const ORDER_COLUMNS = `
@@ -26,7 +31,9 @@ const ORDER_COLUMNS = `
   origin:hotels!orders_origin_hotel_id_fkey(slug, name_ko),
   destination:hotels!orders_destination_hotel_id_fkey(slug, name_ko),
   slot:service_slots!orders_slot_id_fkey(pickup_starts_at, pickup_ends_at, delivery_starts_at, delivery_ends_at),
-  order_bags(size, quantity, unit_amount_minor, amount_minor)
+  order_bags(size, quantity, unit_amount_minor, amount_minor),
+  payment_attempts(id, status, method, created_at),
+  refund_requests(status, amount_minor, created_at, refunds(status))
 `;
 
 interface OrderRow {
@@ -47,11 +54,15 @@ interface OrderRow {
   destination: { slug: string; name_ko: string } | null;
   slot: { pickup_starts_at: string; pickup_ends_at: string; delivery_starts_at: string; delivery_ends_at: string };
   order_bags: { size: string; quantity: number; unit_amount_minor: number; amount_minor: number }[];
+  payment_attempts: { id: string; status: string; method: string; created_at: string }[];
+  refund_requests: { status: string; amount_minor: number; created_at: string; refunds: { status: string } | null }[];
 }
 
 const SIZE_ORDER: Record<string, number> = { standard: 0, large: 1 };
 
-export function toOrderView(row: OrderRow): OrderView {
+export function toOrderView(row: OrderRow, summary: OrderView["payment"]["summary"]): OrderView {
+  const latestAttempt = [...row.payment_attempts].sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+  const latestRefund = [...row.refund_requests].sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
   return {
     id: row.id,
     publicCode: row.public_code,
@@ -76,6 +87,17 @@ export function toOrderView(row: OrderRow): OrderView {
     contact: row.contact,
     locale: row.locale,
     createdAt: row.created_at,
+    payment: {
+      summary,
+      latestAttempt: latestAttempt ? { id: latestAttempt.id, status: latestAttempt.status, method: latestAttempt.method } : null,
+    },
+    refund: latestRefund
+      ? {
+          requestStatus: latestRefund.status,
+          amountMinor: latestRefund.amount_minor,
+          executionStatus: latestRefund.refunds?.status ?? null,
+        }
+      : null,
   };
 }
 
@@ -83,5 +105,7 @@ export function toOrderView(row: OrderRow): OrderView {
 export async function getOrderView(client: SupabaseClient, orderId: string): Promise<OrderView | null | undefined> {
   const { data, error } = await client.from("orders").select(ORDER_COLUMNS).eq("id", orderId).maybeSingle();
   if (error) return undefined;
-  return data ? toOrderView(data as unknown as OrderRow) : null;
+  if (!data) return null;
+  const { data: summary } = await client.rpc("order_payment_summary", { p_order_id: orderId });
+  return toOrderView(data as unknown as OrderRow, (summary as OrderView["payment"]["summary"] | null) ?? "unpaid");
 }

@@ -59,6 +59,12 @@ export const BUSINESS_ERROR_CODES = [
   "ORDER_NOT_PAYABLE",
   "CONTACT_INVALID",
   "POLICY_ACCEPTANCE_REQUIRED",
+  "ORDER_NOT_CANCELLABLE",
+  "CANCELLATION_WINDOW_CLOSED",
+  "REFUND_NOT_FOUND",
+  "REFUND_NOT_APPROVABLE",
+  "REFUND_EXCEEDS_CAPTURED",
+  "FORBIDDEN",
 ] as const;
 export type BusinessErrorCode = (typeof BUSINESS_ERROR_CODES)[number];
 
@@ -72,6 +78,8 @@ export function businessErrorCode(error: { message?: string } | null): BusinessE
 export function failFromDb(error: { message?: string; code?: string } | null, requestId: string) {
   const business = businessErrorCode(error);
   if (business === "SESSION_REQUIRED") return fail("SESSION_REQUIRED", requestId);
+  if (business === "FORBIDDEN") return fail("FORBIDDEN", requestId);
+  if (business === "REFUND_NOT_FOUND") return fail("NOT_FOUND", requestId);
   if (business === "IDEMPOTENCY_CONFLICT") return fail("IDEMPOTENCY_CONFLICT", requestId);
   if (business === "QUOTE_ALREADY_ORDERED") return fail("CONFLICT", requestId, { messageKey: `booking.error.${business}` });
   if (business === "QUOTE_NOT_FOUND" || business === "ORDER_NOT_FOUND" || business === "SLOT_NOT_FOUND") {

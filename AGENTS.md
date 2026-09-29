@@ -115,7 +115,7 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 |---|---|---|
 | 문서 | 중국인 대상 수하물 플랫폼으로 재정리·검증 완료 | 메인 1개 + 상세 9개, 상대 링크 40개와 범위·코드 블록·문자 인코딩 검사 통과 |
 | A | A01–A05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실로그인 검증 대기 | B01 서버 견적 |
-| B | B01–B03 완료 (2026-09-29) | B04 결제·환불(mock PG) → B05 예약증 |
+| B | B01–B04 완료 (2026-09-29) | B05 예약증 |
 | C | 미착수 | B의 주문·짐 모델 필요 |
 | D | 미착수 | B·C 업무 기록 재사용. 미니프로그램 계정·위챗페이 가맹은 A부터 병행 준비 |
 | E | 미착수 | C의 현장 운영 데이터 필요 |
@@ -177,6 +177,14 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 - 연동 모드: 결제 없음. 브라우저에서 견적→주문까지 실제 진행은 원격 DB·익명 로그인 설정 후 확인 필요(자동 E2E는 요금 계산 전까지).
 - 미해결: 홀드 만료 스케줄러 연결(B04에서 cron 경로와 함께), 다른 기기 주문 복구, 계정 삭제 시 주문 보존·익명화 정책(orders.owner_id는 삭제 제한).
 - 다음 ID: B04.
+
+**B04 결제·환불 (mock PG)**
+- 변경 파일: `supabase/migrations/20260929000800_payments_refunds.sql`, `packages/integrations/src/payment.ts`(PG 어댑터 계약 + `MockPaymentAdapter`: HMAC 서명·5분 재전송 차단), `server/{payments,service-client,jobs}.ts`, API `/orders/[id]/payment-attempts`·`/payments/webhooks/[provider]`·`/payments/mock/[attemptId]`(비운영 전용)·`/orders/[id]/cancellation-requests`·`/refunds/[id]/approve`·`/jobs/expire-holds`·`/jobs/reconcile-payments`, `apps/web/vercel.json`(cron 5분·10분), 주문 화면 결제·취소·환불 상태(`order-actions.tsx`), 모의 결제창 `/{locale}/mock-pay/[attemptId]`, env `SUPABASE_SERVER_SECRET`·`CRON_SECRET`·`MOCK_PAYMENT_SECRET`(빈 값은 미설정 처리).
+- 마이그레이션: `payment_attempts`(상점 주문 ID 유일, 클라이언트 키 멱등), `payment_events`(provider+event_id 유일), `refund_requests`(주문당 대기 1건), `refunds`, `ledger_entries`(추가 전용 트리거·부호 제약·중복 기록 금지), `start_payment()`(소유자·홀드 유효), `record_payment_result()`(service_role 전용: 중복 이벤트, 늦은 실패 무시, 금액·통화 불일치→needs_review, 두 결제창 성공→1회 확정+초과수납 검토, 만료 후 성공→용량 재확보 또는 needs_review), `request_cancellation()`(미결제 즉시 취소, 결제 주문은 예약 마감 전 전액 환불 요청), `approve_refund()`(finance, 결제 행 잠금·총액 초과 방지, 전액이면 취소·용량 해제), `record_refund_result()`(unknown→재조회, 원장 1회), `order_payment_summary()`.
+- 검사와 결과: lint·typecheck 통과, `pnpm test` 46개(mock 서명 위조·재전송·만료 거부), `pnpm test:db` 106개, `pnpm test:e2e` 73개(위조 서명 403, 서버 DB 권한 없으면 확정하지 않고 503, 위챗 밖 JSAPI 422, 결제·취소·환불·모의결제 권한, cron 비밀 없으면 403), build 통과.
+- 연동 모드: payment **mock**. 실제 PG(sandbox/live) 어댑터 없음 — 계약 공급사 결정 후 같은 계약으로 추가. mock 결제 확정은 `SUPABASE_SERVER_SECRET`(service role)이 있어야 동작.
+- 미해결: 실제 PG 어댑터·위챗 JSAPI 파라미터·미니프로그램 결제 위임, 환불 승인 화면(finance), 초과 수납·needs_review 운영 큐 화면, 알림 발송(outbox 소비자), Vercel Hobby 플랜은 cron이 하루 1회로 제한되므로 Pro 또는 외부 스케줄러 필요.
+- 다음 ID: B05.
 
 문서 수정은 제품 코드·결제 연동·배포가 완료됐다는 뜻이 아니다. 구현 기록 형식: `작업 ID / 변경 파일 / 마이그레이션 / 검사와 결과 / 연동 모드 / 미해결 사항 / 다음 ID`.
 
