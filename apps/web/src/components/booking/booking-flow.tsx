@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { RouteType } from "@luggage/domain";
 import { createTranslator, formatKst, formatMoney, getMessages, type Locale, type MessageKey } from "@luggage/i18n";
 
 interface Slot {
@@ -46,10 +47,16 @@ async function postJson(url: string, body: unknown, headers: Record<string, stri
 export function BookingFlow({
   locale,
   hotel,
+  routeType,
+  destinations = [],
   policies,
 }: {
   locale: Locale;
+  /** 숙소→공항·숙소→숙소는 출발 호텔, 공항→숙소는 도착 호텔 */
   hotel: { slug: string; name: string };
+  routeType: RouteType;
+  /** 숙소→숙소에서 고를 수 있는 도착 호텔 */
+  destinations?: { slug: string; name: string }[];
   policies: { slug: string; title: string }[];
 }) {
   const t = useMemo(() => createTranslator(locale), [locale]);
@@ -63,6 +70,8 @@ export function BookingFlow({
   const [flightNumber, setFlightNumber] = useState("");
   const [flightDate, setFlightDate] = useState(kstDate(1));
   const [flightTime, setFlightTime] = useState("");
+  const [destination, setDestination] = useState(destinations[0]?.slug ?? "");
+  const needsFlight = routeType !== "hotel_to_hotel";
   const [quote, setQuote] = useState<Quote | null>(null);
   const [idempotencyKey, setIdempotencyKey] = useState<string | null>(null);
   const [accepted, setAccepted] = useState<Set<string>>(new Set());
@@ -83,7 +92,11 @@ export function BookingFlow({
 
   useEffect(() => {
     let cancelled = false;
-    const params = new URLSearchParams({ hotel: hotel.slug, routeType: "hotel_to_airport", date });
+    const params = new URLSearchParams({ hotel: hotel.slug, routeType, date });
+    if (routeType === "hotel_to_hotel") {
+      if (!destination) return;
+      params.set("destinationHotel", destination);
+    }
     fetch(`/api/v1/service-slots?${params}`)
       .then((r) => r.json())
       .then((json) => {
@@ -105,10 +118,10 @@ export function BookingFlow({
     return () => {
       cancelled = true;
     };
-  }, [date, hotel.slug]);
+  }, [date, hotel.slug, routeType, destination]);
 
   const totalBags = bags.standard + bags.large;
-  const canQuote = Boolean(slotId) && totalBags > 0 && Boolean(flightTime) && !busy;
+  const canQuote = Boolean(slotId) && totalBags > 0 && (!needsFlight || Boolean(flightTime)) && !busy;
 
   async function requestQuote() {
     setBusy(true);
@@ -122,10 +135,12 @@ export function BookingFlow({
     }
     const result = await postJson("/api/v1/quotes", {
       slotId,
-      originHotel: hotel.slug,
+      originHotel: routeType === "airport_to_hotel" ? undefined : hotel.slug,
+      destinationHotel: routeType === "airport_to_hotel" ? hotel.slug : routeType === "hotel_to_hotel" ? destination : undefined,
       bags,
-      flightNumber: flightNumber.trim() || undefined,
-      flightDepartsAt: `${flightDate}T${flightTime}:00+09:00`,
+      flightNumber: needsFlight ? flightNumber.trim() || undefined : undefined,
+      flightDepartsAt: routeType === "hotel_to_airport" ? `${flightDate}T${flightTime}:00+09:00` : undefined,
+      flightArrivesAt: routeType === "airport_to_hotel" ? `${flightDate}T${flightTime}:00+09:00` : undefined,
     });
     setBusy(false);
     if (!result.ok) {
@@ -168,6 +183,26 @@ export function BookingFlow({
         <h2 id="step-slot" className="font-semibold">
           {t("booking.step.slot")}
         </h2>
+        {routeType === "hotel_to_hotel" ? (
+          <label className="flex flex-col gap-1">
+            <span className="text-sm font-medium">{t("booking.destinationHotel")}</span>
+            <select
+              value={destination}
+              onChange={(e) => {
+                setDestination(e.target.value);
+                invalidateQuote();
+              }}
+              className={input}
+              data-testid="booking-destination"
+            >
+              {destinations.map((d) => (
+                <option key={d.slug} value={d.slug}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">{t("booking.date")}</span>
           <input
@@ -211,7 +246,7 @@ export function BookingFlow({
                   data-testid="booking-slot"
                 />
                 <span className="text-sm">
-                  {t("booking.slotOption", {
+                  {t(routeType === "hotel_to_airport" ? "booking.slotOption" : `booking.slotOption.${routeType}`, {
                     pickup: `${time(slot.pickup.startsAt)}–${time(slot.pickup.endsAt)}`,
                     delivery: `${time(slot.delivery.startsAt)}–${time(slot.delivery.endsAt)}`,
                   })}
@@ -265,6 +300,7 @@ export function BookingFlow({
         })}
       </section>
 
+      {needsFlight ? (
       <section className={card} aria-labelledby="step-flight">
         <h2 id="step-flight" className="font-semibold">
           {t("booking.step.flight")}
@@ -285,7 +321,9 @@ export function BookingFlow({
         </label>
         <div className="grid grid-cols-2 gap-3">
           <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium">{t("booking.flightDate")}</span>
+            <span className="text-sm font-medium">
+              {t(routeType === "airport_to_hotel" ? "booking.flightArrivalDate" : "booking.flightDate")}
+            </span>
             <input
               type="date"
               value={flightDate}
@@ -298,7 +336,9 @@ export function BookingFlow({
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium">{t("booking.flightTime")}</span>
+            <span className="text-sm font-medium">
+              {t(routeType === "airport_to_hotel" ? "booking.flightArrivalTime" : "booking.flightTime")}
+            </span>
             <input
               type="time"
               value={flightTime}
@@ -312,6 +352,7 @@ export function BookingFlow({
           </label>
         </div>
       </section>
+      ) : null}
 
       {error ? (
         <p role="alert" className="rounded-[var(--radius-button)] border border-warm px-3 py-2 text-sm" data-testid="booking-error">

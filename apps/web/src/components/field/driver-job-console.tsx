@@ -19,10 +19,19 @@ const NEXT_ACTION: Record<string, { event: string; label: string } | undefined> 
   registered: { event: "collected", label: "수거" },
   at_origin: { event: "collected", label: "수거" },
   collected: { event: "loaded", label: "차량 적재" },
-  in_transit: { event: "ready_for_handoff", label: "공항 인계 준비" },
+  in_transit: { event: "ready_for_handoff", label: "도착지 인계 준비" },
 };
 
-export function DriverJobConsole({ jobId, bags }: { jobId: string; bags: ConsoleBag[] }) {
+export function DriverJobConsole({
+  jobId,
+  bags,
+  destination = "airport",
+}: {
+  jobId: string;
+  bags: ConsoleBag[];
+  /** 공항 인계는 고객 수령 코드, 숙소 도착은 도착 호텔 직원이 태그로 인수한다. */
+  destination?: "airport" | "hotel";
+}) {
   const router = useRouter();
   const [selected, setSelected] = useState<string | null>(null);
   const [message, setMessage] = useState<{ tone: "ok" | "warn"; text: string } | null>(null);
@@ -197,7 +206,13 @@ export function DriverJobConsole({ jobId, bags }: { jobId: string; bags: Console
         })}
       </ul>
 
-      <HandoffForm jobId={jobId} readyBags={bags.filter((b) => b.status === "ready_for_handoff")} online={online} />
+      {destination === "airport" ? (
+        <HandoffForm jobId={jobId} readyBags={bags.filter((b) => b.status === "ready_for_handoff")} online={online} />
+      ) : bags.some((b) => b.status === "ready_for_handoff") ? (
+        <p className="rounded-[var(--radius-card)] border border-line bg-card p-4 text-sm">
+          도착 호텔 프런트 직원이 태그를 확인하고 인수 처리하면 인계가 완료됩니다.
+        </p>
+      ) : null}
       <IncidentForm jobId={jobId} tags={bags.map((b) => b.tagId)} />
     </div>
   );

@@ -17,12 +17,24 @@ export interface VoucherBag {
 function staffCardKo(order: OrderView, bagCount: number): string[] {
   const time = (iso: string) => formatKst(new Date(iso), "ko", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
   const date = formatKst(new Date(order.slot.pickupStartsAt), "ko", { month: "long", day: "numeric", weekday: "short" });
-  return [
-    "[짐배송 예약 고객]",
-    `예약번호 ${order.publicCode} · 짐 ${bagCount}개`,
+  const header = ["[짐배송 예약 고객]", `예약번호 ${order.publicCode} · 짐 ${bagCount}개`];
+  const delivery = `${date} ${time(order.slot.deliveryStartsAt)}–${time(order.slot.deliveryEndsAt)} (한국 시간)`;
+  if (order.routeType === "airport_to_hotel") {
+    return [
+      ...header,
+      `공항에서 받은 짐이 ${delivery}에 호텔에 도착합니다.`,
+      "기사가 도착하면 짐마다 태그를 확인하고 인수(보관) 처리해 주세요.",
+    ];
+  }
+  const lines = [
+    ...header,
     `기사 수거: ${date} ${time(order.slot.pickupStartsAt)}–${time(order.slot.pickupEndsAt)} (한국 시간)`,
     "짐을 받아 프런트에 보관해 주세요. 기사가 짐마다 QR을 확인한 뒤 수거합니다.",
   ];
+  if (order.routeType === "hotel_to_hotel" && order.destinationHotel) {
+    lines.push(`도착 숙소: ${order.destinationHotel.nameKo} · ${delivery}`);
+  }
+  return lines;
 }
 
 /**

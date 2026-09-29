@@ -57,7 +57,7 @@ beforeAll(async () => {
       select s.id, s.delivery_ends_at from public.service_slots s
       join public.route_offerings r on r.id = s.route_offering_id
       join public.service_zones z on z.id = r.origin_zone_id
-      where z.code = 'jeju-city' and s.booking_cutoff_at > now()
+      where z.code = 'jeju-city' and r.route_type = 'hotel_to_airport' and s.booking_cutoff_at > now()
       order by s.pickup_starts_at limit 1`)
   ).rows[0];
   slotId = slot.id;

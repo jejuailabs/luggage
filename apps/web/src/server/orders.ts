@@ -10,7 +10,7 @@ export interface OrderView {
   originHotel: { slug: string; nameKo: string } | null;
   destinationHotel: { slug: string; nameKo: string } | null;
   slot: { pickupStartsAt: string; pickupEndsAt: string; deliveryStartsAt: string; deliveryEndsAt: string };
-  flight: { number: string | null; departsAt: string | null };
+  flight: { number: string | null; departsAt: string | null; arrivesAt: string | null };
   bags: { size: string; quantity: number; unitAmountMinor: number; amountMinor: number }[];
   totalMinor: number;
   taxIncludedMinor: number;
@@ -26,7 +26,7 @@ export interface OrderView {
 }
 
 const ORDER_COLUMNS = `
-  id, public_code, reservation_status, hold_expires_at, route_type, flight_number, flight_departs_at,
+  id, public_code, reservation_status, hold_expires_at, route_type, flight_number, flight_departs_at, flight_arrives_at,
   total_minor, tax_minor, currency, contact, locale, created_at,
   origin:hotels!orders_origin_hotel_id_fkey(slug, name_ko),
   destination:hotels!orders_destination_hotel_id_fkey(slug, name_ko),
@@ -44,6 +44,7 @@ interface OrderRow {
   route_type: string;
   flight_number: string | null;
   flight_departs_at: string | null;
+  flight_arrives_at: string | null;
   total_minor: number;
   tax_minor: number;
   currency: string;
@@ -77,7 +78,7 @@ export function toOrderView(row: OrderRow, summary: OrderView["payment"]["summar
       deliveryStartsAt: row.slot.delivery_starts_at,
       deliveryEndsAt: row.slot.delivery_ends_at,
     },
-    flight: { number: row.flight_number, departsAt: row.flight_departs_at },
+    flight: { number: row.flight_number, departsAt: row.flight_departs_at, arrivesAt: row.flight_arrives_at },
     bags: [...row.order_bags]
       .sort((a, b) => (SIZE_ORDER[a.size] ?? 9) - (SIZE_ORDER[b.size] ?? 9))
       .map((b) => ({ size: b.size, quantity: b.quantity, unitAmountMinor: b.unit_amount_minor, amountMinor: b.amount_minor })),

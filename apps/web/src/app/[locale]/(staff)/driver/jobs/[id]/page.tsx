@@ -26,13 +26,16 @@ async function JobDetail({ locale, id }: { locale: string; id: string }) {
     <div className="flex flex-col gap-4" lang="ko">
       <section className="rounded-[var(--radius-card)] bg-sea px-4 py-4">
         <p className="text-sm text-muted">{JOB_STATUS_KO[job.status] ?? job.status}</p>
-        <h1 className="text-xl font-bold">{job.originHotel} → 제주공항</h1>
+        <h1 className="text-xl font-bold">
+          {job.originHotel ?? "제주공항"} → {job.destinationHotel ?? "제주공항"}
+        </h1>
         <p className="text-sm">
-          수거 {kstDate(job.slot.pickupStartsAt)} {kstTime(job.slot.pickupStartsAt)}–{kstTime(job.slot.pickupEndsAt)} · 공항 인계{" "}
+          수거 {kstDate(job.slot.pickupStartsAt)} {kstTime(job.slot.pickupStartsAt)}–{kstTime(job.slot.pickupEndsAt)} ·{" "}
+          {job.destinationHotel ? "숙소 도착" : "공항 인계"}{" "}
           {kstTime(job.slot.deliveryStartsAt)}–{kstTime(job.slot.deliveryEndsAt)} (한국 시간)
         </p>
       </section>
-      <DriverJobConsole jobId={job.id} bags={job.bags} />
+      <DriverJobConsole jobId={job.id} bags={job.bags} destination={job.destinationHotel ? "hotel" : "airport"} />
     </div>
   );
 }

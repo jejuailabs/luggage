@@ -38,7 +38,10 @@ select v.route_type::public.route_type, o.id, d.id, v.enabled
 from (values
   ('hotel_to_airport', 'jeju-city', 'jeju-airport', true),
   ('hotel_to_airport', 'seogwipo', 'jeju-airport', true),
-  ('airport_to_hotel', 'jeju-airport', 'jeju-city', false)
+  ('airport_to_hotel', 'jeju-airport', 'jeju-city', true),
+  ('airport_to_hotel', 'jeju-airport', 'seogwipo', true),
+  ('hotel_to_hotel', 'jeju-city', 'seogwipo', true),
+  ('hotel_to_hotel', 'seogwipo', 'jeju-city', true)
 ) as v(route_type, origin, destination, enabled)
 join public.service_zones o on o.code = v.origin
 join public.service_zones d on d.code = v.destination
@@ -49,10 +52,9 @@ insert into public.price_rules (route_offering_id, bag_size, unit_amount_minor, 
 select r.id, v.size::public.bag_size, v.amount, current_date - 1
 from public.route_offerings r
 cross join (values ('standard', 15000), ('large', 20000)) as v(size, amount)
-where r.route_type = 'hotel_to_airport'
-  and not exists (select 1 from public.price_rules p where p.route_offering_id = r.id and p.bag_size = v.size::public.bag_size);
+where not exists (select 1 from public.price_rules p where p.route_offering_id = r.id and p.bag_size = v.size::public.bag_size);
 
--- 오늘부터 14일간 하루 2회: 오전 수거 → 오후 공항 인계, 낮 수거 → 저녁 공항 인계 (한국 시간)
+-- 오늘부터 14일간 (한국 시간). 숙소→공항 하루 2회, 공항→숙소·숙소→숙소 하루 1회
 insert into public.service_slots (
   route_offering_id, service_date, pickup_starts_at, pickup_ends_at, delivery_starts_at, delivery_ends_at, booking_cutoff_at
 )
@@ -64,11 +66,12 @@ select r.id, d::date,
        (d::date - 1 + time '20:00') at time zone 'Asia/Seoul'
 from public.route_offerings r
 cross join generate_series(current_date, current_date + 13, interval '1 day') as d
-cross join (values
-  (time '09:00', time '11:00', time '14:00', time '16:00'),
-  (time '12:00', time '14:00', time '17:00', time '19:00')
-) as w(pickup_start, pickup_end, delivery_start, delivery_end)
-where r.route_type = 'hotel_to_airport'
+join (values
+  ('hotel_to_airport', time '09:00', time '11:00', time '14:00', time '16:00'),
+  ('hotel_to_airport', time '12:00', time '14:00', time '17:00', time '19:00'),
+  ('airport_to_hotel', time '10:00', time '13:00', time '15:00', time '18:00'),
+  ('hotel_to_hotel', time '10:00', time '12:00', time '15:00', time '18:00')
+) as w(route_type, pickup_start, pickup_end, delivery_start, delivery_end) on w.route_type = r.route_type::text
 on conflict (route_offering_id, pickup_starts_at, delivery_ends_at) do nothing;
 
 insert into public.capacity_buckets (slot_id, max_units)

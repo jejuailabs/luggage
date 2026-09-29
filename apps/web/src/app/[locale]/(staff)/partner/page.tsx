@@ -8,10 +8,11 @@ import { kstDate, kstTime, kstToday } from "@/server/field";
 
 interface PartnerJobRow {
   job_id: string;
+  direction: "pickup" | "dropoff";
   order_code: string;
   customer_name: string | null;
-  pickup_starts_at: string;
-  pickup_ends_at: string;
+  window_starts_at: string;
+  window_ends_at: string;
 }
 
 async function PartnerDesk({ locale, hotelParam }: { locale: string; hotelParam: string | undefined }) {
@@ -40,9 +41,10 @@ async function PartnerDesk({ locale, hotelParam }: { locale: string; hotelParam:
     const orderId = jobOrders?.find((j) => j.id === row.job_id)?.order_id;
     return {
       jobId: row.job_id,
+      direction: row.direction,
       orderCode: row.order_code,
       customerName: row.customer_name,
-      pickupWindow: `${kstDate(row.pickup_starts_at)} ${kstTime(row.pickup_starts_at)}–${kstTime(row.pickup_ends_at)}`,
+      window: `${kstDate(row.window_starts_at)} ${kstTime(row.window_starts_at)}–${kstTime(row.window_ends_at)}`,
       bags: (bags ?? [])
         .filter((b) => b.order_id === orderId && b.bag_status !== "cancelled_before_pickup")
         .map((b) => ({ tagId: b.tag_id, seq: b.seq, size: b.size, status: b.bag_status, version: b.version })),

@@ -5,8 +5,8 @@ test("home shows route availability from the catalog", async ({ page }) => {
   await page.goto("/zh-CN");
   const routes = page.getByTestId("route-list");
   await expect(routes.locator('[data-route="hotel_to_airport"]')).toHaveAttribute("data-open", "true");
-  await expect(routes.locator('[data-route="airport_to_hotel"]')).toHaveAttribute("data-open", "false");
-  await expect(routes.locator('[data-route="hotel_to_hotel"]')).toHaveAttribute("data-open", "false");
+  await expect(routes.locator('[data-route="airport_to_hotel"]')).toHaveAttribute("data-open", "true");
+  await expect(routes.locator('[data-route="hotel_to_hotel"]')).toHaveAttribute("data-open", "true");
 });
 
 test("customer finds a hotel by Chinese alias and sees Korea-time front desk hours", async ({ page }) => {

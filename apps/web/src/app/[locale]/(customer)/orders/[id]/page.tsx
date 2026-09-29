@@ -139,23 +139,24 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
 
       <dl className={`${panel} grid grid-cols-1 gap-3 text-sm`}>
         <div>
-          <dt className="text-muted">{t("order.pickup")}</dt>
+          <dt className="text-muted">{t(order.routeType === "airport_to_hotel" ? "order.pickupAirport" : "order.pickup")}</dt>
           <dd className="font-medium">
-            {order.originHotel?.nameKo} · {formatKst(new Date(order.slot.pickupStartsAt), locale, { dateStyle: "medium" })}{" "}
+            {order.originHotel ? `${order.originHotel.nameKo} · ` : ""}{formatKst(new Date(order.slot.pickupStartsAt), locale, { dateStyle: "medium" })}{" "}
             {time(order.slot.pickupStartsAt)}–{time(order.slot.pickupEndsAt)} ({t("time.kstLabel")})
           </dd>
         </div>
         <div>
-          <dt className="text-muted">{t("order.delivery")}</dt>
+          <dt className="text-muted">{t(order.routeType === "hotel_to_airport" ? "order.delivery" : "order.deliveryHotel")}</dt>
           <dd className="font-medium">
+            {order.destinationHotel ? `${order.destinationHotel.nameKo} · ` : ""}
             {time(order.slot.deliveryStartsAt)}–{time(order.slot.deliveryEndsAt)} ({t("time.kstLabel")})
           </dd>
         </div>
-        {order.flight.departsAt ? (
+        {order.flight.departsAt || order.flight.arrivesAt ? (
           <div>
             <dt className="text-muted">{t("order.flight")}</dt>
             <dd className="font-medium">
-              {order.flight.number ?? ""} {dateTime(order.flight.departsAt)}
+              {order.flight.number ?? ""} {dateTime((order.flight.departsAt ?? order.flight.arrivesAt)!)}
             </dd>
           </div>
         ) : null}

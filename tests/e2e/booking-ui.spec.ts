@@ -66,3 +66,29 @@ test.describe("orders API", () => {
     expect(lookup.status()).toBe(401);
   });
 });
+
+test.describe("route choice", () => {
+  test("offers every open route for the hotel", async ({ page }) => {
+    await page.goto("/en/luggage/book?hotel=sample-hotel-jeju-city");
+    for (const route of ["hotel_to_airport", "airport_to_hotel", "hotel_to_hotel"]) {
+      await expect(page.getByTestId(`route-choice-${route}`)).toBeVisible();
+    }
+    await expect(page.getByTestId("route-choice-hotel_to_airport")).toHaveAttribute("aria-current", "page");
+  });
+
+  test("airport-to-hotel asks for the flight arrival time", async ({ page }) => {
+    await page.goto("/en/luggage/book?hotel=sample-hotel-jeju-city&route=airport_to_hotel");
+    await expect(page.getByTestId("route-choice-airport_to_hotel")).toHaveAttribute("aria-current", "page");
+    await expect(page.getByText("Arrival time (Korea time)")).toBeVisible();
+    await expect(page.getByText(/Airport pickup 10:00–13:00 · Hotel delivery 15:00–18:00/)).toBeVisible();
+  });
+
+  test("hotel-to-hotel asks for a destination hotel and no flight", async ({ page }) => {
+    await page.goto("/en/luggage/book?hotel=sample-hotel-jeju-city&route=hotel_to_hotel");
+    await expect(page.getByTestId("booking-destination")).toHaveValue("sample-hotel-seogwipo");
+    await expect(page.getByTestId("booking-flight-time")).toHaveCount(0);
+    await expect(page.getByTestId("booking-slot")).toHaveCount(1);
+    // 항공편 없이도 요금 계산 버튼이 활성화된다
+    await expect(page.getByTestId("booking-get-quote")).toBeEnabled();
+  });
+});

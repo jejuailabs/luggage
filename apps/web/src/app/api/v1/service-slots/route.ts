@@ -10,6 +10,10 @@ const querySchema = z.object({
   hotel: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
   routeType: z.enum(ROUTE_TYPES),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  destinationHotel: z
+    .string()
+    .regex(/^[a-z0-9][a-z0-9-]*$/)
+    .optional(),
 });
 
 /** 호텔·노선·날짜(한국 기준)의 예약 가능한 슬롯. */
@@ -23,10 +27,14 @@ export async function GET(request: Request) {
   if (!catalog) return fail("PROVIDER_UNAVAILABLE", requestId);
   const hotel = catalog.hotels.find((h) => h.slug === parsed.data.hotel);
   if (!hotel) return fail("NOT_FOUND", requestId);
-  const offering = findOffering(catalog, parsed.data.routeType, hotel);
+  const destination = parsed.data.destinationHotel
+    ? catalog.hotels.find((h) => h.slug === parsed.data.destinationHotel)
+    : undefined;
+  if (parsed.data.destinationHotel && !destination) return fail("NOT_FOUND", requestId);
+  const offering = findOffering(catalog, parsed.data.routeType, hotel, destination);
   if (!offering) return ok({ routeOfferingId: null, slots: [] }, requestId);
 
-  const slots = await listAvailableSlots(offering.id, parsed.data.date);
+  const slots = await listAvailableSlots(offering.id, parsed.data.routeType, parsed.data.date);
   if (!slots) return fail("PROVIDER_UNAVAILABLE", requestId);
   return ok({ routeOfferingId: offering.id, slots }, requestId);
 }

@@ -14,6 +14,8 @@ const bodySchema = z
     bags: z.object({ standard: z.number().int().min(0).max(50), large: z.number().int().min(0).max(50) }).strict(),
     flightNumber: z.string().trim().max(10).optional(),
     flightDepartsAt: z.string().datetime({ offset: true }).optional(),
+    // 공항→숙소: 항공편 도착 시각
+    flightArrivesAt: z.string().datetime({ offset: true }).optional(),
   })
   .strict();
 
@@ -60,6 +62,7 @@ export async function POST(request: Request) {
       p_bag_counts: body.bags,
       p_flight_number: body.flightNumber ?? null,
       p_flight_departs_at: body.flightDepartsAt ?? null,
+      p_flight_arrives_at: body.flightArrivesAt ?? null,
     })
     .single<QuoteRow>();
   if (error || !data) return failFromDb(error, requestId);

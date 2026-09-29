@@ -17,10 +17,21 @@ test.describe("service slots API", () => {
     expect(data.slots[0].pickup.startsAt).toMatch(/T00:00:00/);
   });
 
-  test("returns no slots for a route that is not on sale", async ({ request }) => {
-    const response = await request.get(`/api/v1/service-slots?hotel=sample-hotel-jeju-city&routeType=hotel_to_hotel&date=${kstDate(2)}`);
+  test("hotel-to-hotel needs a destination hotel", async ({ request }) => {
+    const none = await request.get(`/api/v1/service-slots?hotel=sample-hotel-jeju-city&routeType=hotel_to_hotel&date=${kstDate(2)}`);
+    expect((await none.json()).data).toEqual({ routeOfferingId: null, slots: [] });
+    const withDestination = await request.get(
+      `/api/v1/service-slots?hotel=sample-hotel-jeju-city&routeType=hotel_to_hotel&destinationHotel=sample-hotel-seogwipo&date=${kstDate(2)}`,
+    );
+    expect((await withDestination.json()).data.slots).toHaveLength(1);
+  });
+
+  test("airport-to-hotel slots start at the airport in Korea time", async ({ request }) => {
+    const response = await request.get(`/api/v1/service-slots?hotel=sample-hotel-seogwipo&routeType=airport_to_hotel&date=${kstDate(2)}`);
     const { data } = await response.json();
-    expect(data).toEqual({ routeOfferingId: null, slots: [] });
+    expect(data.slots).toHaveLength(1);
+    // 한국 시간 10:00 공항 수거 = UTC 01:00
+    expect(data.slots[0].pickup.startsAt).toMatch(/T01:00:00/);
   });
 
   test("validates the query and hotel", async ({ request }) => {

@@ -19,7 +19,7 @@ const order: OrderView = {
     deliveryStartsAt: "2026-10-01T05:00:00Z",
     deliveryEndsAt: "2026-10-01T07:00:00Z",
   },
-  flight: { number: "KE1234", departsAt: "2026-10-01T11:00:00Z" },
+  flight: { number: "KE1234", departsAt: "2026-10-01T11:00:00Z", arrivesAt: null },
   bags: [{ size: "standard", quantity: 2, unitAmountMinor: 15000, amountMinor: 30000 }],
   totalMinor: 30000,
   taxIncludedMinor: 2727,

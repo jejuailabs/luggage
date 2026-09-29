@@ -7,6 +7,7 @@ export interface FieldJob {
   orderId: string;
   orderCode: string | null;
   originHotel: string | null;
+  destinationHotel: string | null;
   slot: { pickupStartsAt: string; pickupEndsAt: string; deliveryStartsAt: string; deliveryEndsAt: string };
   bags: { tagId: string; seq: number; size: string; status: string; version: number }[];
 }
@@ -19,7 +20,7 @@ export async function loadFieldJob(client: SupabaseClient, jobId: string): Promi
   const { data: job } = await client
     .from("delivery_jobs")
     .select(
-      "id, status, order_id, origin:hotels!delivery_jobs_origin_hotel_id_fkey(name_ko), slot:service_slots!delivery_jobs_slot_id_fkey(pickup_starts_at, pickup_ends_at, delivery_starts_at, delivery_ends_at)",
+      "id, status, order_id, origin:hotels!delivery_jobs_origin_hotel_id_fkey(name_ko), destination:hotels!delivery_jobs_destination_hotel_id_fkey(name_ko), slot:service_slots!delivery_jobs_slot_id_fkey(pickup_starts_at, pickup_ends_at, delivery_starts_at, delivery_ends_at)",
     )
     .eq("id", jobId)
     .maybeSingle();
@@ -29,6 +30,7 @@ export async function loadFieldJob(client: SupabaseClient, jobId: string): Promi
     status: string;
     order_id: string;
     origin: { name_ko: string } | null;
+    destination: { name_ko: string } | null;
     slot: { pickup_starts_at: string; pickup_ends_at: string; delivery_starts_at: string; delivery_ends_at: string };
   };
   const [{ data: bags }, { data: code }] = await Promise.all([
@@ -42,6 +44,7 @@ export async function loadFieldJob(client: SupabaseClient, jobId: string): Promi
     orderId: row.order_id,
     orderCode: code?.public_code ?? null,
     originHotel: row.origin?.name_ko ?? null,
+    destinationHotel: row.destination?.name_ko ?? null,
     slot: {
       pickupStartsAt: row.slot.pickup_starts_at,
       pickupEndsAt: row.slot.pickup_ends_at,

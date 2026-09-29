@@ -117,7 +117,7 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 | A | A01–A05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실로그인 검증 대기 | B01 서버 견적 |
 | B | B01–B05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실결제 흐름 검증 대기 | C01 호텔 보관 |
 | C | C01–C05 코드·로컬 검증 완료 (2026-09-29). 실기기(카메라·사진 업로드·오프라인) 검증 대기 | D01 노선 확장 설정 |
-| D | 미착수 | B·C 업무 기록 재사용. 미니프로그램 계정·위챗페이 가맹은 A부터 병행 준비 |
+| D | D01 완료 (2026-09-29) | D02 호텔 제휴·정산 → D03 유입·호텔 QR → D04 운영 지표 → D05 미니프로그램 (계정·위챗페이 가맹은 병행 준비) |
 | E | 미착수 | C의 현장 운영 데이터 필요 |
 
 ### 구현 기록
@@ -201,6 +201,14 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 - 연동 모드: 사진 저장은 Supabase Storage 서명 URL(서버 키 필요), 알림 발송 없음(outbox 기록만).
 - 미해결: 카메라 QR·사진 업로드·오프라인 큐의 **실기기 검증**, 오프라인 큐 IndexedDB 전환·로그아웃 시 정리 연결(E01), 짐 태그 인쇄물, 반환 작업 화면, 정정(correction) 이벤트 화면, 차량 위치(E02), 보존기간 만료 파일 삭제 작업, 알림 발송(outbox 소비자·템플릿), LOG-05·07·09 중 위치·공유 링크 관련 항목(E단계).
 - 다음 ID: D01.
+
+**D01 노선 확장 (공항→숙소, 숙소→숙소)**
+- 변경 파일: `supabase/migrations/20260929001300_route_expansion.sql`, `supabase/seed.sql`(세 노선 예시 요금·슬롯), 슬롯·견적 API(`destinationHotel`, `flightArrivesAt`), `server/slots.ts`(`findOffering` 노선별 권역 규칙, `routeChoicesForHotel`), 예약 화면 노선 선택·도착 호텔 선택·항공편 도착 시각, 주문·예약증·기사·호텔·배차 화면 노선별 문구, 호텔 화면 맡김/도착 구분.
+- 마이그레이션: `booking_settings.arrival_buffer_minutes`(60분), `quotes/orders.flight_arrives_at`, `create_quote()`에 도착 시각 인자(공항→숙소는 도착 시각 필수·공항 수거 창 종료 60분 전까지, 숙소→숙소는 항공편 없음), `record_bag_event()`에 도착 호텔 직원 인수(`delivered`) 추가(공항 인계는 계속 수령 코드 전용), `issue_handoff_challenge()` 공항 노선 전용, 작업 조회 RLS·`partner_jobs()`(pickup/dropoff)·`driver_jobs()`(도착 호텔) 확장.
+- 검사와 결과: lint·typecheck 통과, `pnpm test` 58개, `pnpm test:db` 140개(도착 시각 필수·늦음 거부, 공항→숙소 수령 코드 불가·기사/타 호텔 인수 불가·도착 호텔 인수로 완료, 숙소→숙소 같은 호텔·권역 불일치 거부·출발 접수/도착 인수 역할 분리), `pnpm test:e2e` 93개(노선 선택, 도착 시각 입력, 도착 호텔 선택·항공편 없음, 노선별 슬롯 API), build 통과.
+- 연동 모드: 변경 없음 (결제 mock).
+- 미해결: 노선별 요금·슬롯 관리 화면, 도착 호텔 보관 후 고객 수령 확인(호텔 운영 영역), 공항 수거 장소 안내(인계 장소 버전 표시).
+- 다음 ID: D02.
 
 문서 수정은 제품 코드·결제 연동·배포가 완료됐다는 뜻이 아니다. 구현 기록 형식: `작업 ID / 변경 파일 / 마이그레이션 / 검사와 결과 / 연동 모드 / 미해결 사항 / 다음 ID`.
 

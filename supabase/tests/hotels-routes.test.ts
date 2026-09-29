@@ -70,10 +70,15 @@ describe("public catalog", () => {
   });
 
   it("shows only enabled route offerings to visitors", async () => {
-    const rows = await asRole(client, "anon", async (c) =>
-      (await c.query("select distinct route_type from public.route_offerings order by route_type")).rows,
-    );
-    expect(rows).toEqual([{ route_type: "hotel_to_airport" }]);
+    await client.query("update public.route_offerings set enabled = false where route_type = 'hotel_to_hotel'");
+    try {
+      const rows = await asRole(client, "anon", async (c) =>
+        (await c.query("select distinct route_type from public.route_offerings order by route_type")).rows,
+      );
+      expect(rows).toEqual([{ route_type: "hotel_to_airport" }, { route_type: "airport_to_hotel" }]);
+    } finally {
+      await client.query("update public.route_offerings set enabled = true where route_type = 'hotel_to_hotel'");
+    }
   });
 
   it("does not let customers change the catalog", async () => {

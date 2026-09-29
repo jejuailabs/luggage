@@ -22,7 +22,9 @@ describe("searchHotels", () => {
 
 describe("openRouteTypes", () => {
   it("includes only enabled route types", () => {
-    expect([...openRouteTypes(CATALOG_FIXTURE)]).toEqual(["hotel_to_airport"]);
+    expect([...openRouteTypes(CATALOG_FIXTURE)]).toEqual(["hotel_to_airport", "airport_to_hotel", "hotel_to_hotel"]);
+    const closed = { ...CATALOG_FIXTURE, routes: CATALOG_FIXTURE.routes.map((r) => (r.routeType === "hotel_to_hotel" ? r : { ...r, enabled: false })) };
+    expect([...openRouteTypes(closed)]).toEqual(["hotel_to_hotel"]);
   });
 
   it("shows nothing as open when the catalog is unavailable", () => {

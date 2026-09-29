@@ -73,7 +73,7 @@ async function Dispatch({ locale, date }: { locale: string; date: string }) {
                   {job.order?.public_code} · {job.origin?.name_ko}
                 </p>
                 <p className="text-sm text-muted">
-                  수거 {kstTime(job.slot.pickup_starts_at)}–{kstTime(job.slot.pickup_ends_at)} · 공항 {kstTime(job.slot.delivery_ends_at)}까지 ·{" "}
+                  수거 {kstTime(job.slot.pickup_starts_at)}–{kstTime(job.slot.pickup_ends_at)} · 도착 {kstTime(job.slot.delivery_ends_at)}까지 ·{" "}
                   {JOB_STATUS_KO[job.status] ?? job.status} · 인계 {delivered}/{orderBags.length}개
                 </p>
               </div>

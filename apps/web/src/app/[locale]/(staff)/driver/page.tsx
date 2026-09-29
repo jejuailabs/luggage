@@ -11,6 +11,7 @@ interface DriverJobRow {
   order_code: string;
   customer_name: string | null;
   origin_hotel_name: string | null;
+  destination_hotel_name: string | null;
   pickup_starts_at: string;
   pickup_ends_at: string;
   delivery_starts_at: string;
@@ -40,10 +41,10 @@ async function DriverJobs({ locale }: { locale: string }) {
                 <span className="text-sm">{JOB_STATUS_KO[job.job_status] ?? job.job_status}</span>
               </span>
               <span className="text-sm">
-                {job.origin_hotel_name} · {job.customer_name} · 짐 {job.bag_count}개
+                {job.origin_hotel_name ?? "제주공항"} → {job.destination_hotel_name ?? "제주공항"} · {job.customer_name} · 짐 {job.bag_count}개
               </span>
               <span className="text-sm text-muted">
-                수거 {kstDate(job.pickup_starts_at)} {kstTime(job.pickup_starts_at)}–{kstTime(job.pickup_ends_at)} → 공항{" "}
+                수거 {kstDate(job.pickup_starts_at)} {kstTime(job.pickup_starts_at)}–{kstTime(job.pickup_ends_at)} → 도착{" "}
                 {kstTime(job.delivery_starts_at)}–{kstTime(job.delivery_ends_at)}
               </span>
             </Link>
