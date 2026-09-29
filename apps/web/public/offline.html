@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>离线 · 오프라인 · Offline</title>
+    <style>
+      :root { color-scheme: light dark; --bg: #f8fafc; --card: #fff; --text: #0f172a; --muted: #475569; --line: #cbd5e1; --brand: #0f766e; }
+      @media (prefers-color-scheme: dark) { :root { --bg: #0b1220; --card: #111c2e; --text: #f1f5f9; --muted: #cbd5e1; --line: #475569; --brand: #5eead4; } }
+      body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; line-height: 1.6; }
+      main { max-width: 480px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+      section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+      h1 { font-size: 22px; margin: 0; color: var(--brand); }
+      .muted { color: var(--muted); font-size: 14px; }
+      .code { font-family: ui-monospace, monospace; font-size: 24px; font-weight: 700; letter-spacing: 0.15em; }
+      button { min-height: 48px; border-radius: 12px; border: 0; background: var(--brand); color: var(--bg); font-weight: 600; font-size: 16px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section>
+        <h1>当前离线</h1>
+        <p>网络恢复后请刷新。离线时无法付款或完成交付。</p>
+        <p class="muted" lang="ko">오프라인입니다. 연결되면 새로고침하세요. 오프라인에서는 결제·최종 인계를 할 수 없습니다.</p>
+        <p class="muted" lang="en">You are offline. Payments and final handoffs need a connection.</p>
+        <button type="button" onclick="location.reload()">重新加载 · 다시 시도</button>
+      </section>
+      <section id="pending" hidden>
+        <p lang="ko">이 기기에 서버 전송을 기다리는 현장 기록 <strong id="pending-count">0</strong>건이 있습니다. 연결되면 자동으로 다시 보냅니다. (아직 확정 아님)</p>
+      </section>
+      <div id="vouchers"></div>
+    </main>
+    <script>
+      // IndexedDB에 저장된 예약증 사본과 대기 기록 수를 보여 준다 (마지막 서버 확인 시각과 함께).
+      (function () {
+        if (!("indexedDB" in window)) return;
+        var open = indexedDB.open("luggage-local", 1);
+        open.onupgradeneeded = function () {
+          var db = open.result;
+          ["queue", "vouchers", "jobs"].forEach(function (name) {
+            if (!db.objectStoreNames.contains(name)) db.createObjectStore(name);
+          });
+        };
+        open.onsuccess = function () {
+          var db = open.result;
+          var tx = db.transaction(["queue", "vouchers"], "readonly");
+          var countReq = tx.objectStore("queue").count();
+          countReq.onsuccess = function () {
+            if (countReq.result > 0) {
+              document.getElementById("pending").hidden = false;
+              document.getElementById("pending-count").textContent = String(countReq.result);
+            }
+          };
+          var all = tx.objectStore("vouchers").getAll();
+          all.onsuccess = function () {
+            var box = document.getElementById("vouchers");
+            (all.result || []).forEach(function (v) {
+              var s = document.createElement("section");
+              var title = document.createElement("p");
+              title.textContent = "预约凭证 · 예약증 (离线副本 · 오프라인 사본)";
+              var code = document.createElement("p");
+              code.className = "code";
+              code.textContent = v.publicCode;
+              var lines = document.createElement("p");
+              lines.className = "muted";
+              lines.textContent = (v.lines || []).join(" · ");
+              var checked = document.createElement("p");
+              checked.className = "muted";
+              checked.textContent = "最后确认 / 마지막 서버 확인: " + v.checkedAtKst + " (KST) — 最新状态请联网查看";
+              [title, code, lines, checked].forEach(function (n) { s.appendChild(n); });
+              box.appendChild(s);
+            });
+          };
+        };
+      })();
+    </script>
+  </body>
+</html>

@@ -18,6 +18,9 @@ const schema = z.object({
   SUPABASE_SERVER_SECRET: blank(z.string().min(1).optional()),
   MOCK_PAYMENT_SECRET: blank(z.string().min(16).optional()),
   CRON_SECRET: blank(z.string().min(16).optional()),
+  NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY: blank(z.string().min(40).optional()),
+  WEB_PUSH_PRIVATE_KEY: blank(z.string().min(20).optional()),
+  WEB_PUSH_SUBJECT: blank(z.string().regex(/^(mailto:|https:\/\/)/).optional()),
 });
 
 export interface ServerConfig {
@@ -28,6 +31,8 @@ export interface ServerConfig {
   publicDataSource: "supabase" | "fixture";
   /** 서버 전용 비밀값. 클라이언트로 보내지 않는다. */
   secrets: { supabaseServer: string | null; mockPayment: string | null; cron: string | null };
+  /** 웹 푸시(VAPID). 세 값이 모두 있어야 켜진다. */
+  webPush: { publicKey: string; privateKey: string; subject: string } | null;
 }
 
 let cached: ServerConfig | undefined;
@@ -60,6 +65,10 @@ export function getServerConfig(): ServerConfig {
       mockPayment: env.MOCK_PAYMENT_SECRET ?? (appEnv === "production" ? null : "local-mock-payment-secret"),
       cron: env.CRON_SECRET ?? null,
     },
+    webPush:
+      env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY && env.WEB_PUSH_PRIVATE_KEY && env.WEB_PUSH_SUBJECT
+        ? { publicKey: env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY, privateKey: env.WEB_PUSH_PRIVATE_KEY, subject: env.WEB_PUSH_SUBJECT }
+        : null,
   };
   return cached;
 }

@@ -41,17 +41,17 @@ export function DriverJobConsole({
   const [reason, setReason] = useState("");
   const [online, setOnline] = useState(true);
 
-  const refreshPending = useCallback(() => {
-    setPending(readQueue().map((item) => String(item.body.tagId)));
+  const refreshPending = useCallback(async () => {
+    setPending((await readQueue()).map((item) => String(item.body.tagId)));
   }, []);
 
   // 연결이 돌아오면 대기 이벤트를 같은 ID로 다시 보낸다.
   useEffect(() => {
     const sync = async () => {
       setOnline(navigator.onLine);
-      if (!navigator.onLine || readQueue().length === 0) return refreshPending();
+      if (!navigator.onLine || (await readQueue()).length === 0) return refreshPending();
       const result = await flushQueue();
-      refreshPending();
+      await refreshPending();
       if (result.rejected.length > 0) {
         setMessage({ tone: "warn", text: `서버가 거절한 기록 ${result.rejected.length}건: ${fieldErrorText(result.rejected[0]!.code)}` });
       }
@@ -112,9 +112,13 @@ export function DriverJobConsole({
     }
     if (result.network) {
       // 서버 확정 전이다. 완료로 표시하지 않는다.
-      enqueue({ clientEventId: body.clientEventId, body, queuedAt: new Date().toISOString() });
-      refreshPending();
-      setMessage({ tone: "warn", text: `${bag.seq}번 짐: 네트워크 없음 — 동기화 대기 (아직 확정 아님)` });
+      try {
+        await enqueue({ clientEventId: body.clientEventId, body, queuedAt: new Date().toISOString() });
+        await refreshPending();
+        setMessage({ tone: "warn", text: `${bag.seq}번 짐: 네트워크 없음 — 동기화 대기 (아직 확정 아님)` });
+      } catch {
+        setMessage({ tone: "warn", text: `${bag.seq}번 짐: 네트워크가 없고 기기에 저장하지 못했습니다. 연결 후 다시 스캔하세요.` });
+      }
       return;
     }
     setMessage({ tone: "warn", text: fieldErrorText(result.code) });

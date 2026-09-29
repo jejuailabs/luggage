@@ -1,6 +1,7 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
+import { clearAll, deleteItem, getAll, putItem } from "./local-store";
 
 /** 현장 화면(기사·호텔·운영) 오류 문구. 업무 화면은 한국어다. */
 export const FIELD_ERRORS: Record<string, string> = {
@@ -49,11 +50,9 @@ export async function fieldRequest<T>(url: string, method: "POST" | "PUT", body:
   return { ok: false, code };
 }
 
-// 오프라인 재전송 큐 ---------------------------------------------------------
+// 오프라인 재전송 큐 (IndexedDB) ------------------------------------------------
 // 스캔·상태 이벤트만 담는다. 같은 clientEventId로 재전송하므로 서버에서 중복되지 않는다.
 // 수령 코드 검증·최종 인계는 온라인 전용이라 큐에 넣지 않는다.
-
-const QUEUE_KEY = "luggage.field.pendingEvents";
 
 export interface PendingEvent {
   clientEventId: string;
@@ -61,46 +60,41 @@ export interface PendingEvent {
   queuedAt: string;
 }
 
-export function readQueue(): PendingEvent[] {
+export async function readQueue(): Promise<PendingEvent[]> {
   try {
-    return JSON.parse(localStorage.getItem(QUEUE_KEY) ?? "[]") as PendingEvent[];
+    const items = await getAll<PendingEvent>("queue");
+    return items.sort((a, b) => a.queuedAt.localeCompare(b.queuedAt));
   } catch {
     return [];
   }
 }
 
-function writeQueue(items: PendingEvent[]) {
-  try {
-    localStorage.setItem(QUEUE_KEY, JSON.stringify(items));
-  } catch {
-    // 저장 공간이 없으면 큐를 유지할 수 없다 — 화면에서 미전송으로 계속 보여 준다.
-  }
-}
-
-export function enqueue(event: PendingEvent) {
-  const items = readQueue().filter((item) => item.clientEventId !== event.clientEventId);
-  writeQueue([...items, event]);
+/** 같은 clientEventId는 한 건만 남는다. 저장 실패는 호출자에게 알린다 (화면에서 미전송 유지). */
+export async function enqueue(event: PendingEvent): Promise<void> {
+  await putItem("queue", event.clientEventId, event);
 }
 
 /** 대기 중 이벤트를 순서대로 다시 보낸다. 서버가 거절한 이벤트는 큐에서 빼고 결과를 돌려준다. */
 export async function flushQueue(): Promise<{ sent: number; rejected: { event: PendingEvent; code: string }[] }> {
   const rejected: { event: PendingEvent; code: string }[] = [];
   let sent = 0;
-  const remaining: PendingEvent[] = [];
-  for (const item of readQueue()) {
+  for (const item of await readQueue()) {
     const result = await fieldRequest("/api/v1/bags/events", "POST", item.body);
-    if (result.ok) sent += 1;
-    else if (result.network) remaining.push(item);
-    else rejected.push({ event: item, code: result.code });
+    if (result.ok) {
+      sent += 1;
+      await deleteItem("queue", item.clientEventId);
+    } else if (!result.network) {
+      rejected.push({ event: item, code: result.code });
+      await deleteItem("queue", item.clientEventId);
+    }
   }
-  writeQueue(remaining);
   return { sent, rejected };
 }
 
-/** 로그아웃·배정 해제 시 기기에 남은 현장 데이터를 지운다. */
-export function clearFieldStorage() {
+/** 로그아웃·배정 해제 시 기기에 남은 현장 데이터(대기 기록·작업·예약증 사본)를 지운다. */
+export async function clearFieldStorage(): Promise<void> {
   try {
-    localStorage.removeItem(QUEUE_KEY);
+    await clearAll();
   } catch {
     // 무시
   }

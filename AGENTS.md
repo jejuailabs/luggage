@@ -118,7 +118,7 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 | B | B01–B05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실결제 흐름 검증 대기 | C01 호텔 보관 |
 | C | C01–C05 코드·로컬 검증 완료 (2026-09-29). 실기기(카메라·사진 업로드·오프라인) 검증 대기 | D01 노선 확장 설정 |
 | D | D01–D05 코드·로컬 검증 완료 (2026-09-29). 미니프로그램 개발자 도구·실기기·실결제 검증 대기 | E01 현장용 PWA 강화 |
-| E | 미착수 | C의 현장 운영 데이터 필요 |
+| E | E01 코드·자동 검증 완료 (2026-09-29). 실기기(설치·푸시·카메라·오프라인) 검증 대기 | E02 차량 위치 |
 
 ### 구현 기록
 
@@ -241,6 +241,14 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 - 연동 모드: wechat **mock**(openid 가짜), 미니프로그램 결제 **mock**. AppID·AppSecret·업무 도메인·위챗페이 가맹·구독 템플릿은 미설정.
 - 미해결: 위챗 개발자 도구·실기기 실행, 실제 WeChatIdentity(code2session)·위챗페이 prepay 어댑터, 구독 메시지 발송(outbox 소비자), openid↔계정 명시적 연결(재방문 시 이전 주문 복구), 위챗 내장 브라우저 JSAPI 결제, 심사 제출.
 - 다음 ID: E01.
+
+**E01 현장용 PWA·알림**
+- 변경 파일: `app/manifest.ts`(standalone·아이콘·기사/호텔/운영 바로가기), `public/icons/*`(SVG→PNG 192·512·maskable·apple), `public/sw.js`(정적 자원만 캐시·API/페이지 미캐시·오프라인 안내·푸시 표시·알림 클릭), `public/offline.html`(3개 언어, IndexedDB의 예약증 사본·대기 기록 수), `components/service-worker.tsx`(운영 빌드만 등록, 강제 새로고침 없음), `lib/local-store.ts`(IndexedDB `luggage-local`: queue·vouchers·jobs), 오프라인 큐 localStorage→IndexedDB, 예약증 오프라인 사본 저장, `server/notify.ts`(outbox→업무자 알림 규칙·알림함·웹 푸시, 만료 구독 삭제), `/api/v1/push/subscriptions`, `/api/v1/jobs/dispatch-outbox`(cron 매분), 업무 화면 도구(알림함·이 기기 알림 켜기·로그아웃 시 기기 데이터·푸시 구독 정리), `/{locale}/notifications`, env `NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY`·`WEB_PUSH_PRIVATE_KEY`·`WEB_PUSH_SUBJECT`(로컬 키는 `.env.local`에 생성, 운영은 별도 생성).
+- 마이그레이션: `20260929001800_notifications.sql` — `notifications`(본인만, read_at만 수정, 이벤트당 1건), `push_subscriptions`(본인, https만), `claim_outbox()`(lease·SKIP LOCKED·만료 lease 재수거), `complete_outbox()`(지수 백오프, 5회 후 dead).
+- 검사와 결과: lint·typecheck 통과, `pnpm test` 77개(알림 규칙·연락처 미포함, IndexedDB 큐·로그아웃 정리), `pnpm test:db` 166개(outbox 1회 lease·백오프·dead·만료 lease 재수거·고객 차단, 알림·구독 소유권), `pnpm test:e2e` 115개(manifest·아이콘, 서비스 워커 제어 후 **오프라인 전환 시 안내 화면**, 오프라인 예약증 사본·마지막 확인 시각·대기 기록 수, API 미캐시, 푸시·outbox 권한), build 통과.
+- 연동 모드: 웹 푸시 VAPID(로컬 키). 고객 알림 채널(이메일·위챗 구독 메시지)은 공급사 미정으로 미발송.
+- 미해결(실기기): iOS 홈 화면 설치 후 푸시 수신, Android 설치·푸시, 카메라 QR·사진, 비행기 모드 재전송. 기사 배정 작업 오프라인 사본(jobs 스토어) 표시는 미구현. Vercel Hobby는 매분 cron 불가(Pro 또는 외부 스케줄러).
+- 다음 ID: E02.
 
 문서 수정은 제품 코드·결제 연동·배포가 완료됐다는 뜻이 아니다. 구현 기록 형식: `작업 ID / 변경 파일 / 마이그레이션 / 검사와 결과 / 연동 모드 / 미해결 사항 / 다음 ID`.
 

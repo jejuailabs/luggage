@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { HTML_LANG, LOCALES } from "@luggage/i18n";
 import { RuntimeEnvironmentMarker } from "@/components/runtime-environment-marker";
+import { ServiceWorkerRegistration } from "@/components/service-worker";
 import { getServerConfig, isTestMode } from "@/lib/env";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { THEME_BOOT_SCRIPT } from "@/lib/theme";
@@ -15,6 +16,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: { default: `${t("brand.name")} · ${t("brand.tagline")}`, template: `%s · ${t("brand.name")}` },
     description: t("home.subheadline"),
+    icons: { icon: "/icons/icon.svg", apple: "/icons/apple-touch-icon.png" },
+    appleWebApp: { capable: true, title: t("brand.name"), statusBarStyle: "default" },
   };
 }
 
@@ -53,6 +56,7 @@ export default async function LocaleLayout({
       </head>
       <body className="min-h-dvh antialiased">
         <RuntimeEnvironmentMarker />
+        <ServiceWorkerRegistration />
         {testMode ? (
           <div role="status" data-testid="test-mode-banner" className="bg-warm px-4 py-1 text-center text-xs text-bg">
             {t("env.testMode")}

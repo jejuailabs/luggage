@@ -2,6 +2,7 @@ import QRCode from "qrcode";
 import { formatKst, type Locale, type MessageKey, type Translate } from "@luggage/i18n";
 import type { OrderView } from "@/server/orders";
 import { PrintButton } from "./print-button";
+import { VoucherOfflineCopy } from "./voucher-offline-copy";
 
 export interface VoucherBag {
   seq: number;
@@ -55,6 +56,8 @@ export async function Voucher({
 }) {
   const qrSvg = await QRCode.toString(order.publicCode, { type: "svg", margin: 2, errorCorrectionLevel: "M" });
   const total = bags.length;
+  const checkedAtKst = formatKst(checkedAt, locale, { dateStyle: "medium", timeStyle: "short", hourCycle: "h23" });
+  const kstTime = (iso: string) => formatKst(new Date(iso), locale, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 
   return (
     <section
@@ -108,6 +111,18 @@ export async function Voucher({
       </p>
       <p className="text-xs text-muted">{t("voucher.offlineNote")}</p>
       <PrintButton label={t("voucher.save")} />
+      <VoucherOfflineCopy
+        snapshot={{
+          orderId: order.id,
+          publicCode: order.publicCode,
+          lines: [
+            t(`route.${order.routeType}` as MessageKey),
+            `${kstTime(order.slot.pickupStartsAt)} → ${kstTime(order.slot.deliveryEndsAt)}`,
+            bags.map((b) => b.tagId).join(" "),
+          ],
+          checkedAtKst,
+        }}
+      />
     </section>
   );
 }
