@@ -1,0 +1,8 @@
+{
+  "name": "@luggage/i18n",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc -p ." },
+  "dependencies": { "intl-messageformat": "^10.7.0" }
+}

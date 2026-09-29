@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/* 다크 모드는 data-theme 속성으로 제어한다 (light | dark 렌더값). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* 10 문서 3절 시각 토큰. 대비 검증 후 조정한다. */
+:root {
+  --color-brand: #0f766e;
+  --color-primary: #0f766e;
+  --color-on-primary: #ffffff;
+  --color-sea: #e7f7f9;
+  --color-bg: #f8fafc;
+  --color-card: #ffffff;
+  --color-text: #0f172a;
+  --color-text-muted: #475569;
+  --color-warm: #c84b00;
+  --color-border: #cbd5e1;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --color-brand: #5eead4;
+  --color-primary: #5eead4;
+  --color-on-primary: #042f2e;
+  --color-sea: #11333b;
+  --color-bg: #0b1220;
+  --color-card: #111c2e;
+  --color-text: #f1f5f9;
+  --color-text-muted: #cbd5e1;
+  --color-warm: #fdba74;
+  --color-border: #475569;
+  color-scheme: dark;
+}
+
+/* 스크립트가 실행되지 않은 system 모드에서도 기기 설정을 따른다. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-brand: #5eead4;
+    --color-primary: #5eead4;
+    --color-on-primary: #042f2e;
+    --color-sea: #11333b;
+    --color-bg: #0b1220;
+    --color-card: #111c2e;
+    --color-text: #f1f5f9;
+    --color-text-muted: #cbd5e1;
+    --color-warm: #fdba74;
+    --color-border: #475569;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-brand: var(--color-brand);
+  --color-primary: var(--color-primary);
+  --color-on-primary: var(--color-on-primary);
+  --color-sea: var(--color-sea);
+  --color-bg: var(--color-bg);
+  --color-card: var(--color-card);
+  --color-text: var(--color-text);
+  --color-muted: var(--color-text-muted);
+  --color-warm: var(--color-warm);
+  --color-line: var(--color-border);
+  --radius-card: 16px;
+  --radius-button: 12px;
+  /* 외부 웹폰트를 쓰지 않는다 (중국 로밍 환경 차단·지연 방지). */
+  --font-sans: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC",
+    "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Segoe UI", Roboto, sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}

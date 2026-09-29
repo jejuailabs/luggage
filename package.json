@@ -1,0 +1,31 @@
+{
+  "name": "luggage",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @luggage/web dev",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r --parallel typecheck && tsc -p supabase/tests && tsc -p tests/e2e",
+    "test": "vitest run",
+    "test:db": "node scripts/test-db.mjs",
+    "test:e2e": "playwright test",
+    "build": "pnpm --filter @luggage/web build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@playwright/test": "1.63.0",
+    "@types/node": "^22.18.0",
+    "@types/pg": "^8.15.0",
+    "embedded-postgres": "17.10.0-beta.17",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "16.3.6",
+    "pg": "^8.23.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^5.0.2"
+  }
+}
