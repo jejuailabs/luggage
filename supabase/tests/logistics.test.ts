@@ -257,3 +257,12 @@ describe("airport handoff", () => {
     await expect(verify(job.id, code, await tags(order.id), driver2)).rejects.toThrow("LUGGAGE:FORBIDDEN");
   });
 });
+
+describe("driver directory", () => {
+  it("lists drivers for dispatch only", async () => {
+    const rows = await as<{ user_id: string } | undefined>("authenticated", dispatcher, "select * from public.list_drivers() where user_id = $1", [driver1]);
+    expect(rows?.user_id).toBe(driver1);
+    const hidden = await as<{ user_id: string } | undefined>("authenticated", customer, "select * from public.list_drivers()");
+    expect(hidden).toBeUndefined();
+  });
+});
