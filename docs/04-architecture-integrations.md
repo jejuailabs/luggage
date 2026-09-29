@@ -115,7 +115,7 @@ Supabase는 서울 리전을 우선 선택하고 API 실행 지역도 데이터�
 | Notification | sendTemplate, deliveryStatus | 웹 내 알림·운영자 재발송 |
 | Maps | geocode, staticImage, directionsLink | 검수된 주소·랜드마크·텍스트 |
 | Flight | lookup | 수기 항공편·출발시각 |
-| Tracking | ingest, latest | QR 이벤트 타임라인 |
+| Tracking | 표준 서명 웹훅 ingest(`deviceId, latitude, longitude, accuracyM, observedAt` + `x-tracking-timestamp`·HMAC `x-tracking-signature`), 기사 기기 위치(작업 화면 열린 동안), latest | QR 이벤트 타임라인 |
 | WeChatIdentity | exchangeCode, refresh/verify | guest 예약 유지 |
 
 지도 원칙: 업무 화면(기사·운영)은 카카오맵 또는 네이버 지도 API를 쓴다. 고객 화면에는 인터랙티브 지도를 넣지 않고 서버가 생성해 자체 도메인으로 제공하는 정적 지도 이미지, 현장 사진, 층·출구·중국어 안내문을 보여 준다. 길찾기는 고덕지도·바이두 지도·애플 지도 딥링크로 넘긴다. 구글 지도는 한국 길찾기가 제한되고 중국 로밍에서 차단될 수 있으므로 쓰지 않는다.

@@ -28,6 +28,6 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
     // 공개 콘텐츠는 합성 fixture로 검증한다 (원격 DB 상태와 무관).
-    env: { APP_ENV: "local", PUBLIC_DATA_SOURCE: "fixture", APP_URL: baseURL },
+    env: { APP_ENV: "local", PUBLIC_DATA_SOURCE: "fixture", APP_URL: baseURL, TRACKING_WEBHOOK_SECRET: "e2e-tracking-secret-0000" },
   },
 });

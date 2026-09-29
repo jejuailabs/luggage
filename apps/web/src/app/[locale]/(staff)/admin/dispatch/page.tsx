@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AssignDriver } from "@/components/admin/assign-driver";
+import { VehicleForm, VehicleSelect } from "@/components/admin/vehicle-controls";
 import { INCIDENT_TYPE_KO, JOB_STATUS_KO } from "@/components/field/labels";
 import { StaffGate } from "@/components/staff-gate";
 import { resolveLocale } from "@/lib/request-context";
@@ -13,7 +14,7 @@ interface JobRow {
   order: { public_code: string } | null;
   slot: { service_date: string; pickup_starts_at: string; pickup_ends_at: string; delivery_ends_at: string };
   origin: { name_ko: string } | null;
-  assignments: { driver_id: string; released_at: string | null }[];
+  assignments: { driver_id: string; released_at: string | null; vehicle_id: string | null }[];
 }
 
 /**
@@ -25,11 +26,11 @@ async function Dispatch({ locale, date }: { locale: string; date: string }) {
   const client = viewer.client!;
   const canAssign = viewer.roles.some((r) => r.role === "dispatcher" || r.role === "admin");
 
-  const [jobs, drivers, incidents, reviews, tickets] = await Promise.all([
+  const [jobs, drivers, incidents, reviews, tickets, vehicles] = await Promise.all([
     client
       .from("delivery_jobs")
       .select(
-        "id, status, order_id, order:orders!delivery_jobs_order_id_fkey(public_code), slot:service_slots!inner(service_date, pickup_starts_at, pickup_ends_at, delivery_ends_at), origin:hotels!delivery_jobs_origin_hotel_id_fkey(name_ko), assignments:job_assignments(driver_id, released_at)",
+        "id, status, order_id, order:orders!delivery_jobs_order_id_fkey(public_code), slot:service_slots!inner(service_date, pickup_starts_at, pickup_ends_at, delivery_ends_at), origin:hotels!delivery_jobs_origin_hotel_id_fkey(name_ko), assignments:job_assignments(driver_id, released_at, vehicle_id)",
       )
       .eq("slot.service_date", date)
       .neq("status", "cancelled"),
@@ -37,7 +38,10 @@ async function Dispatch({ locale, date }: { locale: string; date: string }) {
     client.from("incidents").select("id, type, severity, description, created_at, order_id").neq("status", "resolved").order("severity", { ascending: false }).limit(20),
     client.from("orders").select("id, public_code, reservation_status, updated_at").eq("reservation_status", "needs_review").limit(20),
     client.from("support_tickets").select("id, subject, locale, status, created_at").neq("status", "resolved").order("created_at").limit(20),
+    client.from("vehicles").select("id, label, telematics_device_id").eq("status", "active").order("label"),
   ]);
+  const vehicleList = (vehicles.data ?? []).map((v) => ({ id: v.id, label: v.label }));
+  const isAdmin = viewer.roles.some((r) => r.role === "admin");
 
   const jobRows = ((jobs.data ?? []) as unknown as JobRow[]).sort((a, b) => a.slot.pickup_starts_at.localeCompare(b.slot.pickup_starts_at));
   const orderIds = jobRows.map((j) => j.order_id);
@@ -65,7 +69,8 @@ async function Dispatch({ locale, date }: { locale: string; date: string }) {
         {jobRows.map((job) => {
           const orderBags = (bags ?? []).filter((b) => b.order_id === job.order_id && b.bag_status !== "cancelled_before_pickup");
           const delivered = orderBags.filter((b) => b.bag_status === "delivered").length;
-          const current = job.assignments.find((a) => a.released_at === null)?.driver_id ?? null;
+          const active = job.assignments.find((a) => a.released_at === null);
+          const current = active?.driver_id ?? null;
           return (
             <div key={job.id} className={`${card} flex flex-col gap-2 md:flex-row md:items-center md:justify-between`} data-testid="dispatch-job">
               <div>
@@ -77,11 +82,34 @@ async function Dispatch({ locale, date }: { locale: string; date: string }) {
                   {JOB_STATUS_KO[job.status] ?? job.status} · 인계 {delivered}/{orderBags.length}개
                 </p>
               </div>
-              {canAssign ? <AssignDriver jobId={job.id} currentDriverId={current} drivers={driverList} /> : null}
+              {canAssign ? (
+                <div className="flex flex-col gap-2">
+                  <AssignDriver jobId={job.id} currentDriverId={current} drivers={driverList} />
+                  {active ? <VehicleSelect jobId={job.id} current={active.vehicle_id} vehicles={vehicleList} /> : null}
+                </div>
+              ) : null}
             </div>
           );
         })}
       </section>
+
+      {isAdmin ? (
+        <section className={`${card} flex flex-col gap-2`}>
+          <h2 className="font-semibold">차량 {vehicleList.length}대</h2>
+          <p className="text-xs text-muted">
+            관제 단말 ID를 넣으면 표준 웹훅(/api/v1/tracking/webhooks/telematics)으로 받은 위치가 그 차량의 진행 중 작업에 연결됩니다. 고객에게는 짐 자체가
+            아닌 ‘배송 차량 위치’로만 표시됩니다.
+          </p>
+          <ul className="text-sm">
+            {(vehicles.data ?? []).map((v) => (
+              <li key={v.id}>
+                {v.label} <span className="font-mono text-xs text-muted">{v.telematics_device_id ?? "단말 없음"}</span>
+              </li>
+            ))}
+          </ul>
+          <VehicleForm />
+        </section>
+      ) : null}
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className={card}>

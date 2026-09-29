@@ -3,6 +3,7 @@
   "crons": [
     { "path": "/api/v1/jobs/expire-holds", "schedule": "*/5 * * * *" },
     { "path": "/api/v1/jobs/reconcile-payments", "schedule": "*/10 * * * *" },
-    { "path": "/api/v1/jobs/dispatch-outbox", "schedule": "* * * * *" }
+    { "path": "/api/v1/jobs/dispatch-outbox", "schedule": "* * * * *" },
+    { "path": "/api/v1/jobs/purge-locations", "schedule": "30 18 * * *" }
   ]
 }

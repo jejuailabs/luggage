@@ -1,4 +1,5 @@
 export * from "./payment";
+export * from "./tracking";
 export * from "./wechat";
 
 export type AppEnv = "local" | "preview" | "staging" | "production";

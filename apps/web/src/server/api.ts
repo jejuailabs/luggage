@@ -90,6 +90,9 @@ export const BUSINESS_ERROR_CODES = [
   "FLIGHT_TOO_LATE",
   "VALIDATION_FAILED",
   "PAY_TICKET_INVALID",
+  "TRACKING_NOT_ACTIVE",
+  "LOCATION_STALE",
+  "LOCATION_INACCURATE",
 ] as const;
 export type BusinessErrorCode = (typeof BUSINESS_ERROR_CODES)[number];
 

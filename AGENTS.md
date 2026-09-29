@@ -118,7 +118,7 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 | B | B01–B05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실결제 흐름 검증 대기 | C01 호텔 보관 |
 | C | C01–C05 코드·로컬 검증 완료 (2026-09-29). 실기기(카메라·사진 업로드·오프라인) 검증 대기 | D01 노선 확장 설정 |
 | D | D01–D05 코드·로컬 검증 완료 (2026-09-29). 미니프로그램 개발자 도구·실기기·실결제 검증 대기 | E01 현장용 PWA 강화 |
-| E | E01 코드·자동 검증 완료 (2026-09-29). 실기기(설치·푸시·카메라·오프라인) 검증 대기 | E02 차량 위치 |
+| E | E01·E02 코드·자동 검증 완료 (2026-09-29). 실기기 검증·관제 업체 선정 대기 | 실기기 검증표(09 문서 12절) 작성, 운영 전환 준비 |
 
 ### 구현 기록
 
@@ -249,6 +249,14 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 - 연동 모드: 웹 푸시 VAPID(로컬 키). 고객 알림 채널(이메일·위챗 구독 메시지)은 공급사 미정으로 미발송.
 - 미해결(실기기): iOS 홈 화면 설치 후 푸시 수신, Android 설치·푸시, 카메라 QR·사진, 비행기 모드 재전송. 기사 배정 작업 오프라인 사본(jobs 스토어) 표시는 미구현. Vercel Hobby는 매분 cron 불가(Pro 또는 외부 스케줄러).
 - 다음 ID: E02.
+
+**E02 검증된 차량 위치**
+- 변경 파일: `supabase/migrations/20260929001900_vehicle_tracking.sql`, `packages/integrations/src/tracking.ts`(업체 중립 표준 서명 웹훅: HMAC·5분 재전송 차단·좌표 검증, 고덕·바이두·애플 지도 링크 WGS84), `/api/v1/tracking/driver-location`, `/api/v1/tracking/webhooks/telematics`, `/api/v1/delivery-jobs/[id]/vehicle`, `/api/v1/vehicles`, `/api/v1/jobs/purge-locations`(cron 매일), 기사 작업 화면 ‘차량 위치 공유’(화면이 열린 동안 30초 간격, 권한 거부해도 작업 계속), 고객 주문 화면 ‘배송 차량 위치’(짐 자체 GPS 아님 명시, stale 표시, 지도 앱 링크), 배차 화면 차량 지정·차량/단말 등록, env `TRACKING_WEBHOOK_SECRET`, 04·07 문서 반영.
+- 마이그레이션: `vehicles`(관제 단말 ID), `job_assignments.vehicle_id`, `vehicle_locations`(운영자만 원시 조회), `record_driver_location()`(배정 기사·활성 작업·기기 시각 ±·정확도 1km·15초 제한), `ingest_telematics_location()`(서버 전용, 차량의 활성 작업에만), `latest_vehicle_location()`(소유자, 수거~운송 중만, 좌표 반올림, 5분 stale), `set_job_vehicle()`, `purge_vehicle_locations()`(7일).
+- 검사와 결과: lint·typecheck 통과, `pnpm test` 85개(웹훅 서명·변조·재전송·좌표 범위, 지도 링크 구글 없음, 차량 위치 카드 문구·stale·빈 상태), `pnpm test:db` 172개(배정 기사만·전송 제한·오래된/미래/부정확 거부, 단말→활성 작업만·서버 전용, 고객 요약만·타인 불가·원시 비공개·인계 준비 후 숨김, stale, 보존 삭제), `pnpm test:e2e` 119개(위조·재전송 웹훅 403, 서버 키 없으면 기록 안 함, 위치 API 권한, 정리 작업 cron 비밀), build 통과.
+- 연동 모드: 관제 업체 **미선정** — 표준 웹훅으로 어느 업체든 연결 가능(업체 형식이 다르면 매핑 어댑터 추가). 기사 기기 위치는 실기기 미검증.
+- 미해결: 관제 업체 선정·단말 설치·웹훅 설정, 업무 화면 지도 표시(카카오·네이버 키 필요), 실기기 위치 정확도·배터리 확인, LOG-05(연결 끊김 시 stale) 실측.
+- 다음: 실기기 검증표 작성과 운영 전환(원격 DB 적용·계정·도메인·PG·위챗 계정).
 
 문서 수정은 제품 코드·결제 연동·배포가 완료됐다는 뜻이 아니다. 구현 기록 형식: `작업 ID / 변경 파일 / 마이그레이션 / 검사와 결과 / 연동 모드 / 미해결 사항 / 다음 ID`.
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DriverJobConsole } from "@/components/field/driver-job-console";
+import { LocationShare } from "@/components/field/location-share";
 import { JOB_STATUS_KO } from "@/components/field/labels";
 import { StaffGate } from "@/components/staff-gate";
 import { resolveLocale } from "@/lib/request-context";
@@ -35,6 +36,7 @@ async function JobDetail({ locale, id }: { locale: string; id: string }) {
           {kstTime(job.slot.deliveryStartsAt)}–{kstTime(job.slot.deliveryEndsAt)} (한국 시간)
         </p>
       </section>
+      {["assigned", "picking_up", "transporting", "ready"].includes(job.status) ? <LocationShare jobId={job.id} /> : null}
       <DriverJobConsole jobId={job.id} bags={job.bags} destination={job.destinationHotel ? "hotel" : "airport"} />
     </div>
   );

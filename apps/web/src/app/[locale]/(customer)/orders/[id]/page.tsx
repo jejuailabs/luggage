@@ -3,6 +3,7 @@ import { formatKst, formatMoney, type MessageKey } from "@luggage/i18n";
 import { HandoffCode } from "@/components/booking/handoff-code";
 import { OrderActions } from "@/components/booking/order-actions";
 import { SupportForm } from "@/components/support/support-form";
+import { VehicleLocation } from "@/components/booking/vehicle-location";
 import { Voucher, type VoucherBag } from "@/components/booking/voucher";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { NO_INDEX } from "@/lib/seo";
@@ -122,6 +123,9 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
             })}
           </ul>
         </section>
+      ) : null}
+      {order.reservationStatus === "confirmed" && viewer.client ? (
+        <VehicleLocation client={viewer.client} orderId={order.id} locale={locale} t={t} />
       ) : null}
       {order.reservationStatus === "confirmed" && bags.length > 0 ? (
         <HandoffCode locale={locale} orderId={order.id} ready={bags.some((b) => b.status === "ready_for_handoff")} />
