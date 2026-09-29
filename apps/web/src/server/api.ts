@@ -36,3 +36,49 @@ export function isSameOrigin(request: Request): boolean {
     return false;
   }
 }
+
+/** DB 함수가 올린 업무 오류 코드 ('LUGGAGE:<CODE>'). 고객 문구 키는 booking.error.<CODE>다. */
+export const BUSINESS_ERROR_CODES = [
+  "SESSION_REQUIRED",
+  "SLOT_NOT_FOUND",
+  "ROUTE_NOT_AVAILABLE",
+  "BOOKING_CUTOFF_PASSED",
+  "ORIGIN_HOTEL_INVALID",
+  "DESTINATION_HOTEL_INVALID",
+  "FLIGHT_NUMBER_INVALID",
+  "FLIGHT_REQUIRED",
+  "FLIGHT_TOO_EARLY",
+  "BAGS_INVALID",
+  "PRICE_UNAVAILABLE",
+  "CAPACITY_UNAVAILABLE",
+  "QUOTE_NOT_FOUND",
+  "QUOTE_EXPIRED",
+  "IDEMPOTENCY_CONFLICT",
+  "ORDER_NOT_FOUND",
+  "ORDER_NOT_PAYABLE",
+  "CONTACT_INVALID",
+  "POLICY_ACCEPTANCE_REQUIRED",
+] as const;
+export type BusinessErrorCode = (typeof BUSINESS_ERROR_CODES)[number];
+
+export function businessErrorCode(error: { message?: string } | null): BusinessErrorCode | null {
+  const match = error?.message?.match(/^LUGGAGE:([A-Z_]+)$/);
+  const code = match?.[1];
+  return code && (BUSINESS_ERROR_CODES as readonly string[]).includes(code) ? (code as BusinessErrorCode) : null;
+}
+
+/** DB 오류를 API 응답으로 바꾼다. 내부 메시지·SQL은 노출하지 않는다. */
+export function failFromDb(error: { message?: string; code?: string } | null, requestId: string) {
+  const business = businessErrorCode(error);
+  if (business === "SESSION_REQUIRED") return fail("SESSION_REQUIRED", requestId);
+  if (business === "IDEMPOTENCY_CONFLICT") return fail("IDEMPOTENCY_CONFLICT", requestId);
+  if (business === "QUOTE_NOT_FOUND" || business === "ORDER_NOT_FOUND" || business === "SLOT_NOT_FOUND") {
+    return fail("NOT_FOUND", requestId, { messageKey: `booking.error.${business}` });
+  }
+  if (business === "CAPACITY_UNAVAILABLE") {
+    return fail("CAPACITY_UNAVAILABLE", requestId, { messageKey: "booking.error.CAPACITY_UNAVAILABLE" });
+  }
+  if (business) return fail("BUSINESS_RULE_VIOLATION", requestId, { messageKey: `booking.error.${business}` });
+  if (error?.code === "42501") return fail("FORBIDDEN", requestId);
+  return fail("PROVIDER_UNAVAILABLE", requestId);
+}

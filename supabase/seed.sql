@@ -43,3 +43,34 @@ from (values
 join public.service_zones o on o.code = v.origin
 join public.service_zones d on d.code = v.destination
 on conflict (route_type, origin_zone_id, destination_zone_id) do nothing;
+
+-- 합성 요금·슬롯 (B01·B02). 금액과 시간은 개발용 예시이며 실제 판매 요금이 아니다.
+insert into public.price_rules (route_offering_id, bag_size, unit_amount_minor, valid_from)
+select r.id, v.size::public.bag_size, v.amount, current_date - 1
+from public.route_offerings r
+cross join (values ('standard', 15000), ('large', 20000)) as v(size, amount)
+where r.route_type = 'hotel_to_airport'
+  and not exists (select 1 from public.price_rules p where p.route_offering_id = r.id and p.bag_size = v.size::public.bag_size);
+
+-- 오늘부터 14일간 하루 2회: 오전 수거 → 오후 공항 인계, 낮 수거 → 저녁 공항 인계 (한국 시간)
+insert into public.service_slots (
+  route_offering_id, service_date, pickup_starts_at, pickup_ends_at, delivery_starts_at, delivery_ends_at, booking_cutoff_at
+)
+select r.id, d::date,
+       (d::date + w.pickup_start) at time zone 'Asia/Seoul',
+       (d::date + w.pickup_end) at time zone 'Asia/Seoul',
+       (d::date + w.delivery_start) at time zone 'Asia/Seoul',
+       (d::date + w.delivery_end) at time zone 'Asia/Seoul',
+       (d::date - 1 + time '20:00') at time zone 'Asia/Seoul'
+from public.route_offerings r
+cross join generate_series(current_date, current_date + 13, interval '1 day') as d
+cross join (values
+  (time '09:00', time '11:00', time '14:00', time '16:00'),
+  (time '12:00', time '14:00', time '17:00', time '19:00')
+) as w(pickup_start, pickup_end, delivery_start, delivery_end)
+where r.route_type = 'hotel_to_airport'
+on conflict (route_offering_id, pickup_starts_at, delivery_ends_at) do nothing;
+
+insert into public.capacity_buckets (slot_id, max_units)
+select s.id, 20 from public.service_slots s
+on conflict (slot_id) do nothing;

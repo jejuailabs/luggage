@@ -115,7 +115,7 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 |---|---|---|
 | 문서 | 중국인 대상 수하물 플랫폼으로 재정리·검증 완료 | 메인 1개 + 상세 9개, 상대 링크 40개와 범위·코드 블록·문자 인코딩 검사 통과 |
 | A | A01–A05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실로그인 검증 대기 | B01 서버 견적 |
-| B | 미착수 | B01 견적 → B02 슬롯·용량 → B03 비회원 주문 → B04 결제·환불(mock PG) → B05 예약증 |
+| B | B01·B02 완료 (2026-09-29) | B03 비회원 주문(원자적 홀드·멱등) → B04 결제·환불(mock PG) → B05 예약증 |
 | C | 미착수 | B의 주문·짐 모델 필요 |
 | D | 미착수 | B·C 업무 기록 재사용. 미니프로그램 계정·위챗페이 가맹은 A부터 병행 준비 |
 | E | 미착수 | C의 현장 운영 데이터 필요 |
@@ -161,6 +161,14 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 - 연동 모드: 공개 카탈로그 `PUBLIC_DATA_SOURCE=supabase` 기본, E2E는 fixture. 관리자 로그인 후 등록·상태 변경·노선 전환은 **원격 마이그레이션 적용 + 업무 계정 발급 후 실기 확인 필요**(자동 E2E는 비로그인 경로만 검증).
 - 미해결: 권역·인계 장소 관리 화면(DB·RLS는 준비), 호텔 번역 수정 화면, 인계 장소 사진 업로드(비공개 Storage), 업무 계정 발급·MFA.
 - 다음 ID: B01.
+
+**B01·B02 서버 견적·슬롯·용량**
+- 변경 파일: `supabase/migrations/20260929000500_slots_pricing.sql`, `20260929000600_quotes.sql`, `supabase/seed.sql`(예시 요금 15,000/20,000원·14일치 슬롯), `server/{slots,api}.ts`, `/api/v1/service-slots`, `/api/v1/quotes`.
+- 마이그레이션: `booking_settings`(견적 15분·홀드 10분·항공 여유 120분·최대 8개·부가세 10%), `bag_size_rules`(보통 1·대형 2단위), `price_rules`(노선·규격별, 유효기간 겹침 금지), `service_slots`(수거·인계 창, 마감), `capacity_buckets`(held+committed≤max 제약), `available_slots()`(공개, 남은 단위만), `quotes` + `create_quote()`(security definer, 소유 세션·판매 여부·마감·호텔 권역·항공편 여유·짐 수량·요금 규칙·용량 검사, 정수 KRW·부가세 포함 세액 half-up), `luggage_error()`. 감사 트리거가 UUID가 아닌 id도 기록하도록 보강.
+- 검사와 결과: lint·typecheck 통과, `pnpm test` 39개(DB 오류→API 매핑), `pnpm test:db` 70개(가격·세액, 견적 소유자만 조회, 직접 insert로 금액 위조 차단, 11가지 입력 거부, 마감·판매중지·용량부족·요금없음, 용량 불변식, 요금 기간 겹침), `pnpm test:e2e` 슬롯·견적 API 6개(fixture 슬롯, 미판매 노선 빈 결과, 400/404, 견적 401·금액 필드 거부·교차출처 403).
+- 연동 모드: 결제 없음. 견적은 로그인(guest 포함) 세션 + 원격 DB 필요 → 원격 마이그레이션 적용 전에는 실제 견적 생성 E2E 불가. DB 수준 테스트로 검증.
+- 미해결: 쿠폰·호텔 제휴 할인(D단계), 슬롯·요금 관리 화면, 항공편 조회 API(현재 수기 입력).
+- 다음 ID: B03.
 
 문서 수정은 제품 코드·결제 연동·배포가 완료됐다는 뜻이 아니다. 구현 기록 형식: `작업 ID / 변경 파일 / 마이그레이션 / 검사와 결과 / 연동 모드 / 미해결 사항 / 다음 ID`.
 
