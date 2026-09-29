@@ -24,7 +24,7 @@ export default async function CustomerLayout({
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col md:max-w-3xl">
-      <header className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur">
+      <header className="sticky top-0 print:hidden z-10 flex items-center justify-between gap-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur">
         <Link href={`/${locale}`} className="text-lg font-bold text-brand">
           {t("brand.name")}
         </Link>

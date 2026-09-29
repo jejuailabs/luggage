@@ -9,8 +9,9 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./apps/web/src", import.meta.url)),
     },
   },
+  oxc: { jsx: { runtime: "automatic" } },
   test: {
-    include: ["packages/*/src/**/*.test.ts", "apps/web/src/**/*.test.ts"],
+    include: ["packages/*/src/**/*.test.ts", "apps/web/src/**/*.test.{ts,tsx}"],
     environment: "node",
   },
 });

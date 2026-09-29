@@ -14,7 +14,7 @@ export function BottomNav({ locale, label, items }: { locale: string; label: str
   return (
     <nav
       aria-label={label}
-      className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-card pb-[env(safe-area-inset-bottom)]"
+      className="fixed inset-x-0 bottom-0 z-10 print:hidden border-t border-line bg-card pb-[env(safe-area-inset-bottom)]"
     >
       <ul className="mx-auto grid max-w-[480px] grid-cols-4 md:max-w-3xl">
         {items.map((item) => {

@@ -115,7 +115,7 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 |---|---|---|
 | 문서 | 중국인 대상 수하물 플랫폼으로 재정리·검증 완료 | 메인 1개 + 상세 9개, 상대 링크 40개와 범위·코드 블록·문자 인코딩 검사 통과 |
 | A | A01–A05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실로그인 검증 대기 | B01 서버 견적 |
-| B | B01–B04 완료 (2026-09-29) | B05 예약증 |
+| B | B01–B05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실결제 흐름 검증 대기 | C01 호텔 보관 |
 | C | 미착수 | B의 주문·짐 모델 필요 |
 | D | 미착수 | B·C 업무 기록 재사용. 미니프로그램 계정·위챗페이 가맹은 A부터 병행 준비 |
 | E | 미착수 | C의 현장 운영 데이터 필요 |
@@ -185,6 +185,14 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 - 연동 모드: payment **mock**. 실제 PG(sandbox/live) 어댑터 없음 — 계약 공급사 결정 후 같은 계약으로 추가. mock 결제 확정은 `SUPABASE_SERVER_SECRET`(service role)이 있어야 동작.
 - 미해결: 실제 PG 어댑터·위챗 JSAPI 파라미터·미니프로그램 결제 위임, 환불 승인 화면(finance), 초과 수납·needs_review 운영 큐 화면, 알림 발송(outbox 소비자), Vercel Hobby 플랜은 cron이 하루 1회로 제한되므로 Pro 또는 외부 스케줄러 필요.
 - 다음 ID: B05.
+
+**B05 예약증**
+- 변경 파일: `supabase/migrations/20260929000900_bags_voucher.sql`, `components/booking/{voucher,print-button}.tsx`, 주문 화면(확정 시 예약증), 인쇄 시 헤더·하단 탭 숨김, `voucher.test.tsx`, i18n `voucher.*`, vitest TSX 설정(oxc automatic JSX).
+- 마이그레이션: `bags`(짐 1개당 1행, 무작위 태그 `T`+10자, 짐 상태 enum), 예약 확정 시 짐 생성·취소 시 수거 전 짐 `cancelled_before_pickup`(트리거, 1회), 고객은 자기 주문 짐만 조회.
+- 검사와 결과: lint·typecheck 통과, `pnpm test` 50개(QR에 참조 번호만, 연락처 미노출, 한국어 직원 카드·한국 시간, 짐별 태그·서버 확인 시각), `pnpm test:db` 110개(확정 시에만 짐 생성·태그 유일, 취소 시 짐 상태, 소유자만 조회), `pnpm test:e2e` 73개, build 통과.
+- 연동 모드: 결제 mock. 예약증 화면 실기 확인은 원격 DB + service role 키 + mock 결제 흐름 필요.
+- 미해결: PWA 오프라인 예약증 캐시(E01), 짐 태그 인쇄·부착(C단계), 고객 수령 코드(C04).
+- 다음 ID: C01.
 
 문서 수정은 제품 코드·결제 연동·배포가 완료됐다는 뜻이 아니다. 구현 기록 형식: `작업 ID / 변경 파일 / 마이그레이션 / 검사와 결과 / 연동 모드 / 미해결 사항 / 다음 ID`.
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { formatKst, formatMoney, type MessageKey } from "@luggage/i18n";
 import { OrderActions } from "@/components/booking/order-actions";
+import { Voucher, type VoucherBag } from "@/components/booking/voucher";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { NO_INDEX } from "@/lib/seo";
 import { getViewer } from "@/server/auth";
@@ -19,6 +20,13 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
   const order = UUID.test(id) && viewer.client && viewer.user ? await getOrderView(viewer.client, id) : null;
 
   const panel = "rounded-[var(--radius-card)] border border-line bg-card p-4";
+  // 예약증은 서버가 확정한 주문에만 보여 준다 (결제창 복귀만으로는 표시하지 않는다).
+  const bags: VoucherBag[] =
+    order?.reservationStatus === "confirmed" && viewer.client
+      ? (
+          (await viewer.client.from("bags").select("seq, size, tag_id, bag_status").eq("order_id", order.id).order("seq")).data ?? []
+        ).map((b) => ({ seq: b.seq, size: b.size, tagId: b.tag_id, status: b.bag_status }))
+      : [];
   if (!order) {
     return (
       <section className={panel} data-testid="order-not-found">
@@ -68,6 +76,10 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
             <p className="text-muted">{t(`refund.execution.${order.refund.executionStatus}` as MessageKey)}</p>
           ) : null}
         </section>
+      ) : null}
+
+      {order.reservationStatus === "confirmed" && bags.length > 0 ? (
+        <Voucher order={order} bags={bags} locale={locale} t={t} checkedAt={new Date()} />
       ) : null}
 
       <OrderActions
