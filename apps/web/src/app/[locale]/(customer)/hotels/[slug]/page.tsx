@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Locale } from "@luggage/i18n";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
+import { PageView } from "@/components/page-view";
 import { localizedAlternates } from "@/lib/seo";
 import { loadPublicCatalog, toPublicHotel } from "@/server/catalog";
 import { routeChoicesForHotel } from "@/server/slots";
@@ -32,6 +33,7 @@ export default async function HotelPage({ params }: { params: Params }) {
 
   return (
     <div className="flex flex-col gap-4">
+      <PageView locale={locale} event="hotel_selected" hotel={hotel.slug} />
       <section className="rounded-[var(--radius-card)] bg-sea px-4 py-6">
         <h1 className="text-2xl font-bold">{hotel.name}</h1>
         {hotel.name !== hotel.nameKo ? (

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ContentView } from "@/components/content-view";
+import { PageView } from "@/components/page-view";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { localizedAlternates } from "@/lib/seo";
 import { getContent, getContentRecord } from "@/server/content";
@@ -27,6 +28,7 @@ export default async function Page({ params }: { params: Params }) {
   const result = await getContent(slug, locale);
   return (
     <div className="flex flex-col gap-4">
+      <PageView locale={locale} />
       <section className="rounded-[var(--radius-card)] border border-line bg-card p-4">
         <ContentView result={result} t={t} headingLevel={1} testId="content-page" />
       </section>

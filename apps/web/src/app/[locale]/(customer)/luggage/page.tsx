@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ContentView } from "@/components/content-view";
 import { RouteList } from "@/components/route-list";
+import { PageView } from "@/components/page-view";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { localizedAlternates } from "@/lib/seo";
 import { loadPublicCatalog, openRouteTypes } from "@/server/catalog";
@@ -30,6 +31,7 @@ export default async function LuggagePage({ params }: { params: Promise<{ locale
 
   return (
     <div className="flex flex-col gap-5">
+      <PageView locale={locale} />
       <section className="rounded-[var(--radius-card)] bg-sea px-4 py-6">
         <h1 className="text-[26px] font-bold leading-tight">{t("luggage.title")}</h1>
         <p className="mt-2 text-muted">{t("luggage.intro")}</p>

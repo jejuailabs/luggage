@@ -61,3 +61,16 @@ test.describe("staff acquisition tools", () => {
     expect(response.status()).toBe(401);
   });
 });
+
+test.describe("metrics", () => {
+  test("page-view beacon always answers 204 and ignores bad input", async ({ request }) => {
+    expect((await request.post("/api/v1/analytics", { data: { event: "landing_viewed", locale: "zh-CN", path: "/zh-CN" } })).status()).toBe(204);
+    expect((await request.post("/api/v1/analytics", { data: { event: "payment_confirmed", locale: "zh-CN", path: "/" } })).status()).toBe(204);
+    expect((await request.post("/api/v1/analytics", { data: "garbage" })).status()).toBe(204);
+  });
+
+  test("metrics dashboard requires staff sign-in", async ({ page }) => {
+    await page.goto("/ko/admin/metrics");
+    await expect(page.getByTestId("staff-login")).toBeVisible();
+  });
+});

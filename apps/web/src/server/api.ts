@@ -88,6 +88,7 @@ export const BUSINESS_ERROR_CODES = [
   "PAYOUT_REFERENCE_REQUIRED",
   "HANDOFF_NOT_APPLICABLE",
   "FLIGHT_TOO_LATE",
+  "VALIDATION_FAILED",
 ] as const;
 export type BusinessErrorCode = (typeof BUSINESS_ERROR_CODES)[number];
 
@@ -105,6 +106,7 @@ export function failFromDb(error: { message?: string; code?: string } | null, re
   if (business === "REFUND_NOT_FOUND" || business === "NOT_FOUND" || business === "JOB_NOT_FOUND" || business === "TAG_NOT_FOUND") {
     return fail("NOT_FOUND", requestId, { messageKey: `field.error.${business}` });
   }
+  if (business === "VALIDATION_FAILED") return fail("VALIDATION_FAILED", requestId);
   if (business === "VERSION_CONFLICT") return fail("CONFLICT", requestId, { messageKey: `field.error.${business}` });
   if (business === "IDEMPOTENCY_CONFLICT") return fail("IDEMPOTENCY_CONFLICT", requestId);
   if (business === "QUOTE_ALREADY_ORDERED") return fail("CONFLICT", requestId, { messageKey: `booking.error.${business}` });

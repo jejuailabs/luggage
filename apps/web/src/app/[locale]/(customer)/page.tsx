@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { RouteList } from "@/components/route-list";
+import { PageView } from "@/components/page-view";
 import { ThemePreferencePicker } from "@/components/theme-controls";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { getViewer } from "@/server/auth";
@@ -19,6 +20,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <div className="flex flex-col gap-4">
+      <PageView locale={locale} />
       <section className="rounded-[var(--radius-card)] bg-sea px-4 py-6">
         <h1 className="text-[26px] font-bold leading-tight">{t("home.headline")}</h1>
         <p className="mt-2 text-muted">{t("home.subheadline")}</p>
