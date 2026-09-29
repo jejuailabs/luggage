@@ -75,6 +75,17 @@ export const en: Messages = {
   "legal.title": "Terms & policies",
   "faq.title": "FAQ",
 
+  "hotels.title": "Find your hotel",
+  "hotels.search.submit": "Find hotel",
+  "hotels.search.resultCount": "{count, plural, =0 {No hotels found} one {# hotel} other {# hotels}}",
+  "hotels.search.noResult": "No matching hotel. Try the Chinese, English or Korean name.",
+  "hotels.zone": "Area",
+  "hotels.address": "Address (Korean)",
+  "hotels.frontDesk": "Front desk drop-off hours",
+  "hotels.frontDeskHours": "{opensAt}–{closesAt} (Korea time)",
+  "hotels.frontDeskUnknown": "Please check with the front desk",
+  "hotels.bookFromHere": "Book from this hotel",
+
   "error.notFound": "Page not found",
   "error.backHome": "Back to home",
 };

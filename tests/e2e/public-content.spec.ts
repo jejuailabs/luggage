@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-// CONTENT_SOURCE=fixture 합성 콘텐츠 기준 (apps/web/src/server/content-fixtures.ts).
+// PUBLIC_DATA_SOURCE=fixture 합성 콘텐츠 기준 (apps/web/src/server/content-fixtures.ts).
 test.describe("luggage service page", () => {
   test("blocks booking when a critical notice lacks an approved Chinese version", async ({ page }) => {
     await page.goto("/zh-CN/luggage");

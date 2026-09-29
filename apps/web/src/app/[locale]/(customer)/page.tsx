@@ -5,6 +5,7 @@ import { ThemePreferencePicker } from "@/components/theme-controls";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { getViewer } from "@/server/auth";
 import { localizedAlternates } from "@/lib/seo";
+import { loadPublicCatalog, openRouteTypes } from "@/server/catalog";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   return { alternates: localizedAlternates(await resolveLocale(params), "") };
@@ -14,6 +15,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const locale = await resolveLocale(params);
   const { t, themePreference } = await getRequestContext(locale);
   const signedIn = Boolean((await getViewer()).user);
+  const catalog = await loadPublicCatalog();
 
   return (
     <div className="flex flex-col gap-4">
@@ -26,15 +28,16 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <h2 id="search-title" className="text-lg font-semibold">
           {t("home.search.title")}
         </h2>
-        <form className="mt-3 flex flex-col gap-3" aria-describedby="search-unavailable">
+        <form action={`/${locale}/hotels`} method="get" className="mt-3 flex flex-col gap-3" role="search">
           <label className="flex flex-col gap-1">
             <span className="text-sm font-medium">{t("home.search.hotel")}</span>
             <input
-              name="hotel"
+              name="q"
               type="search"
+              enterKeyHint="search"
               placeholder={t("home.search.hotelPlaceholder")}
-              disabled
-              className="min-h-11 rounded-[var(--radius-button)] border border-line bg-bg px-3 disabled:opacity-60"
+              data-testid="home-hotel-search"
+              className="min-h-11 rounded-[var(--radius-button)] border border-line bg-bg px-3"
             />
           </label>
           <label className="flex flex-col gap-1">
@@ -45,15 +48,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               name="date"
               type="date"
               disabled
+              aria-describedby="search-unavailable"
               className="min-h-11 rounded-[var(--radius-button)] border border-line bg-bg px-3 disabled:opacity-60"
             />
           </label>
           <button
             type="submit"
-            disabled
-            className="min-h-12 rounded-[var(--radius-button)] bg-primary px-4 font-semibold text-on-primary disabled:opacity-60"
+            className="min-h-12 rounded-[var(--radius-button)] bg-primary px-4 font-semibold text-on-primary"
           >
-            {t("home.search.submit")}
+            {t("hotels.search.submit")}
           </button>
           <p id="search-unavailable" className="text-center text-sm text-muted">
             {t("home.search.unavailable")}
@@ -70,7 +73,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             {t("luggage.howItWorks")} →
           </Link>
         </div>
-        <RouteList t={t} />
+        <RouteList t={t} open={openRouteTypes(catalog)} />
       </section>
 
       <section

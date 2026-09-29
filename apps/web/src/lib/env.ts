@@ -11,7 +11,7 @@ const schema = z.object({
   MAPS_MODE: z.string().optional(),
   WECHAT_MODE: z.string().optional(),
   APP_URL: z.string().url().default("http://localhost:3000"),
-  CONTENT_SOURCE: z.enum(["supabase", "fixture"]).default("supabase"),
+  PUBLIC_DATA_SOURCE: z.enum(["supabase", "fixture"]).default("supabase"),
 });
 
 export interface ServerConfig {
@@ -19,7 +19,7 @@ export interface ServerConfig {
   integrations: Record<IntegrationName, IntegrationMode>;
   supabase: { url: string; publishableKey: string } | null;
   appUrl: string;
-  contentSource: "supabase" | "fixture";
+  publicDataSource: "supabase" | "fixture";
 }
 
 let cached: ServerConfig | undefined;
@@ -29,8 +29,8 @@ export function getServerConfig(): ServerConfig {
   if (cached) return cached;
   const env = schema.parse(process.env);
   const appEnv = env.APP_ENV;
-  if (appEnv === "production" && env.CONTENT_SOURCE === "fixture") {
-    throw new Error("CONTENT_SOURCE=fixture is not allowed in production");
+  if (appEnv === "production" && env.PUBLIC_DATA_SOURCE === "fixture") {
+    throw new Error("PUBLIC_DATA_SOURCE=fixture is not allowed in production");
   }
   cached = {
     appEnv,
@@ -45,7 +45,7 @@ export function getServerConfig(): ServerConfig {
         ? { url: env.NEXT_PUBLIC_SUPABASE_URL, publishableKey: env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }
         : null,
     appUrl: env.APP_URL.replace(/\/$/, ""),
-    contentSource: env.CONTENT_SOURCE,
+    publicDataSource: env.PUBLIC_DATA_SOURCE,
   };
   return cached;
 }

@@ -4,6 +4,7 @@ import { ContentView } from "@/components/content-view";
 import { RouteList } from "@/components/route-list";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { localizedAlternates } from "@/lib/seo";
+import { loadPublicCatalog, openRouteTypes } from "@/server/catalog";
 import { getContent } from "@/server/content";
 
 /** 결제 전에 반드시 보여 줘야 하는 필수 안내 (01 문서 4절). */
@@ -18,6 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function LuggagePage({ params }: { params: Promise<{ locale: string }> }) {
   const locale = await resolveLocale(params);
   const { t } = await getRequestContext(locale);
+  const catalog = await loadPublicCatalog();
   const [howItWorks, ...notices] = await Promise.all([
     getContent("how-it-works", locale),
     ...REQUIRED_NOTICES.map((slug) => getContent(slug, locale)),
@@ -36,7 +38,7 @@ export default async function LuggagePage({ params }: { params: Promise<{ locale
         <h2 id="routes-title" className="mb-2 text-lg font-semibold">
           {t("home.routes.title")}
         </h2>
-        <RouteList t={t} />
+        <RouteList t={t} open={openRouteTypes(catalog)} />
       </section>
 
       <section className="rounded-[var(--radius-card)] border border-line bg-card p-4">

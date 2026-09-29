@@ -135,7 +135,7 @@ describe("role_assignments", () => {
     await expect(
       asRole(client, "service_role", (c) =>
         c.query(
-          "insert into public.role_assignments (user_id, role, scope_type, scope_id) values ($1, 'admin', 'hotel', gen_random_uuid())",
+          "insert into public.role_assignments (user_id, role, scope_type, scope_id) values ($1, 'admin', 'hotel', (select id from public.hotels limit 1))",
           [bob],
         ),
       ),
@@ -179,7 +179,7 @@ describe("has_role", () => {
   it("checks only the caller's own roles, with admin implying all", async () => {
     const result = await asRole(client, "service_role", async (c) => {
       await c.query("insert into public.role_assignments (user_id, role) values ($1, 'admin')", [bob]);
-      const hotel = "11111111-1111-1111-1111-111111111111";
+      const hotel = (await c.query<{ id: string }>("select id from public.hotels where slug = 'sample-hotel-jeju-city'")).rows[0]!.id;
       await c.query("insert into public.role_assignments (user_id, role, scope_type, scope_id) values ($1, 'hotel_staff', 'hotel', $2)", [
         alice,
         hotel,

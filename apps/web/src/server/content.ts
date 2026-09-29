@@ -72,7 +72,7 @@ function supabaseSource(url: string, key: string): ContentSource {
 
 function getSource(): ContentSource | null {
   const config = getServerConfig();
-  if (config.contentSource === "fixture") return fixtureSource;
+  if (config.publicDataSource === "fixture") return fixtureSource;
   if (!config.supabase) return null;
   return supabaseSource(config.supabase.url, config.supabase.publishableKey);
 }

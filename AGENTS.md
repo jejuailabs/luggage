@@ -114,8 +114,8 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 | 단계 | 상태 | 다음 작업 |
 |---|---|---|
 | 문서 | 중국인 대상 수하물 플랫폼으로 재정리·검증 완료 | 메인 1개 + 상세 9개, 상대 링크 40개와 범위·코드 블록·문자 인코딩 검사 통과 |
-| A | A01–A04 완료 (2026-09-29) | A05 호텔·권역·노선·인계 장소 관리 (+ `/hotels/{slug}` 공개 페이지) |
-| B | 미착수 | A의 공통 데이터·인증 필요 |
+| A | A01–A05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실로그인 검증 대기 | B01 서버 견적 |
+| B | 미착수 | B01 견적 → B02 슬롯·용량 → B03 비회원 주문 → B04 결제·환불(mock PG) → B05 예약증 |
 | C | 미착수 | B의 주문·짐 모델 필요 |
 | D | 미착수 | B·C 업무 기록 재사용. 미니프로그램 계정·위챗페이 가맹은 A부터 병행 준비 |
 | E | 미착수 | C의 현장 운영 데이터 필요 |
@@ -150,9 +150,17 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 - 변경 파일: `/{locale}/luggage`(노선·이용 방법·필수 안내·예약 진입), `/{locale}/guide/[slug]`, `/{locale}/legal/[slug]`, `/{locale}/help`(FAQ), `components/{content-view,route-list}.tsx`, `server/content.ts`(supabase/fixture 저장소), `server/content-fixtures.ts`(‘예시’ 표시 합성 콘텐츠), `lib/seo.ts`, `app/robots.ts`, `app/sitemap.ts`, 업무·계정 화면 noindex.
 - 마이그레이션: 없음 (A03 콘텐츠 테이블 사용).
 - 검사와 결과: lint·typecheck 통과, `pnpm test` 31개, `pnpm test:e2e` 36개(필수 안내 미승인 언어 예약 차단, 대체 언어 안내·lang 표시, 잘못된 slug·종류 404, canonical·hreflang, noindex, 비운영 robots 차단), build 통과.
-- 연동 모드: 콘텐츠 `CONTENT_SOURCE=supabase` 기본, E2E는 `fixture`. 원격 DB에 게시 콘텐츠가 없으면 안내 ‘불러오지 못함/없음’과 예약 차단이 표시된다(의도된 동작). fixture는 production에서 기동 실패.
+- 연동 모드: 콘텐츠 `PUBLIC_DATA_SOURCE=supabase` 기본, E2E는 `fixture`. 원격 DB에 게시 콘텐츠가 없으면 안내 ‘불러오지 못함/없음’과 예약 차단이 표시된다(의도된 동작). fixture는 production에서 기동 실패.
 - 미해결: 실제 승인 문구(짐 규격·금지 품목·보상·취소) 작성과 DB 게시, 공유 이미지(OG), 호텔별 공개 페이지는 A05에서.
 - 다음 ID: A05.
+
+**A05 호텔·권역·노선·인계 장소 관리**
+- 변경 파일: `supabase/migrations/20260929000400_hotels_zones_routes.sql`, `supabase/seed.sql`(합성 권역·호텔·노선), `server/{catalog,catalog-fixtures,admin}.ts`, `/{locale}/hotels`(검색)·`/{locale}/hotels/[slug]`, 홈 숙소 검색 활성화, 노선 판매 표시를 운영 설정에서 읽도록 변경, `/api/v1/hotels`, `/api/v1/admin/hotels`(POST)·`/api/v1/admin/hotels/[id]`(PATCH 상태)·`/api/v1/admin/route-offerings/[id]`(PATCH 판매), `/admin`·`/admin/hotels`·`/admin/routes`(한국어 업무 화면), `PUBLIC_DATA_SOURCE`(구 CONTENT_SOURCE).
+- 마이그레이션: `service_zones`(area/airport), `hotel_partners`(비공개 계약 참조), `hotels`(+`hotel_translations` 별칭), `handoff_locations`(+번역, 같은 코드 유효기간 겹침 금지), `route_offerings`(노선 방향·권역 종류 일치 검사), 공통 `audit_row_change`(변경 필드 전후 기록), 호텔 범위 역할의 호텔 존재 검사, `is_operations_staff()`. 공개는 활성 데이터만, 쓰기는 admin만, 삭제 권한 없음(보관 상태 사용).
+- 검사와 결과: lint·typecheck 통과, `pnpm test` 36개, `pnpm test:db` 47개(비활성 호텔 비공개, 계약정보 비공개, 호텔 직원 자기 지점만, dispatcher 쓰기 불가, 감사 기록, 노선 방향 검사, 인계 장소 기간 겹침·미래 버전 비공개, 호텔 범위 역할 검사), `pnpm test:e2e` 48개(중국어 별칭 검색→호텔 페이지·한국 시간, 번역 없으면 한국어 원명, 404, 공개 DTO 필드 제한, 관리 화면 로그인 요구, 관리 API 401/403), build 통과.
+- 연동 모드: 공개 카탈로그 `PUBLIC_DATA_SOURCE=supabase` 기본, E2E는 fixture. 관리자 로그인 후 등록·상태 변경·노선 전환은 **원격 마이그레이션 적용 + 업무 계정 발급 후 실기 확인 필요**(자동 E2E는 비로그인 경로만 검증).
+- 미해결: 권역·인계 장소 관리 화면(DB·RLS는 준비), 호텔 번역 수정 화면, 인계 장소 사진 업로드(비공개 Storage), 업무 계정 발급·MFA.
+- 다음 ID: B01.
 
 문서 수정은 제품 코드·결제 연동·배포가 완료됐다는 뜻이 아니다. 구현 기록 형식: `작업 ID / 변경 파일 / 마이그레이션 / 검사와 결과 / 연동 모드 / 미해결 사항 / 다음 ID`.
 

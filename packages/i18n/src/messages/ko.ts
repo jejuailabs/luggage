@@ -75,6 +75,17 @@ export const ko: Messages = {
   "legal.title": "약관·정책",
   "faq.title": "자주 묻는 질문",
 
+  "hotels.title": "숙소 찾기",
+  "hotels.search.submit": "숙소 찾기",
+  "hotels.search.resultCount": "{count, plural, =0 {숙소가 없습니다} other {숙소 #곳}}",
+  "hotels.search.noResult": "일치하는 숙소가 없습니다. 한국어·중국어·영어 이름으로 다시 검색해 보세요.",
+  "hotels.zone": "권역",
+  "hotels.address": "주소",
+  "hotels.frontDesk": "프런트 짐 맡김 시간",
+  "hotels.frontDeskHours": "{opensAt}–{closesAt} (한국 시간)",
+  "hotels.frontDeskUnknown": "프런트에 확인하세요",
+  "hotels.bookFromHere": "이 숙소에서 예약",
+
   "error.notFound": "페이지를 찾을 수 없습니다",
   "error.backHome": "홈으로",
 };
