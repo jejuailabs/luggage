@@ -9,6 +9,8 @@ export const bookingKo: Record<keyof typeof bookingZhCN, string> = {
   "booking.step.flight": "3. 항공편",
   "booking.step.quote": "4. 요금 확인",
   "booking.step.contact": "5. 연락처와 필수 안내",
+  "guide.cta": "숙소 찾고 예약하기",
+  "luggage.scenarios": "상황별 안내",
   "booking.chooseRoute": "노선 선택",
   "booking.noRoutes": "이 숙소는 지금 예약 가능한 노선이 없습니다.",
   "booking.destinationHotel": "도착 숙소",

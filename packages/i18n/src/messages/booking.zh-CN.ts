@@ -8,6 +8,8 @@ export const bookingZhCN = {
   "booking.step.flight": "3. 航班信息",
   "booking.step.quote": "4. 确认费用",
   "booking.step.contact": "5. 联系方式与须知",
+  "guide.cta": "查找酒店并预约",
+  "luggage.scenarios": "按情况选择",
   "booking.chooseRoute": "选择路线",
   "booking.noRoutes": "该酒店暂无可预约路线。",
   "booking.destinationHotel": "送达酒店",

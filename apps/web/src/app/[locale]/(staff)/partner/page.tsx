@@ -53,7 +53,12 @@ async function PartnerDesk({ locale, hotelParam }: { locale: string; hotelParam:
 
   return (
     <div className="flex flex-col gap-4" lang="ko">
-      <h1 className="text-xl font-bold">{hotel.name_ko} · 짐 보관</h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-xl font-bold">{hotel.name_ko} · 짐 보관</h1>
+        <Link href={`/${locale}/partner/qr?hotel=${hotel.id}`} className="inline-flex min-h-11 items-center text-sm text-primary underline">
+          QR·실적
+        </Link>
+      </div>
       {allowed.length > 1 ? (
         <nav className="flex flex-wrap gap-2 text-sm" aria-label="지점 선택">
           {allowed.map((h) => (

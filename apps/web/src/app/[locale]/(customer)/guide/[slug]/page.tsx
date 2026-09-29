@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ContentView } from "@/components/content-view";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
@@ -25,8 +26,19 @@ export default async function Page({ params }: { params: Params }) {
   const { t } = await getRequestContext(locale);
   const result = await getContent(slug, locale);
   return (
-    <section className="rounded-[var(--radius-card)] border border-line bg-card p-4">
-      <ContentView result={result} t={t} headingLevel={1} testId="content-page" />
-    </section>
+    <div className="flex flex-col gap-4">
+      <section className="rounded-[var(--radius-card)] border border-line bg-card p-4">
+        <ContentView result={result} t={t} headingLevel={1} testId="content-page" />
+      </section>
+      {record?.relatedRoute ? (
+        <Link
+          href={`/${locale}/hotels`}
+          data-testid="guide-cta"
+          className="flex min-h-12 items-center justify-center rounded-[var(--radius-button)] bg-primary px-4 font-semibold text-on-primary"
+        >
+          {t("guide.cta")} · {t(`route.${record.relatedRoute}`)}
+        </Link>
+      ) : null}
+    </div>
   );
 }

@@ -5,6 +5,55 @@ import type { ContentRecord } from "./content";
  * 각 본문에 ‘예시’임을 표시한다. 운영 콘텐츠는 DB에서 승인·게시한다.
  */
 export const CONTENT_FIXTURES: ContentRecord[] = [
+  // 상황별 안내 (08 문서 3절). 가격·장소는 본문에 복사하지 않고 예약 화면에서 운영 설정을 보여 준다.
+  {
+    slug: "checkout-day",
+    kind: "guide",
+    criticality: "general",
+    sortOrder: 1,
+    relatedRoute: "hotel_to_airport",
+    translations: [
+      {
+        locale: "zh-CN",
+        title: "退房当天：先寄行李，轻松逛到登机前",
+        body: "【示例】退房时把行李交给酒店前台，我们按约定时间送到机场。你可以空手去看海、吃饭、购物，到机场凭取件码领取。\n可预约时间、截止时间和机场取件地点以预约页面显示为准。",
+      },
+      { locale: "ko", title: "체크아웃 날: 짐 맡기고 비행기 타기 전까지 가볍게", body: "[예시] 체크아웃 때 프런트에 짐을 맡기면 약속한 시간에 공항으로 보내 드립니다." },
+      { locale: "en", title: "Checkout day: drop your bags and explore until your flight", body: "[Sample] Leave your bags at the front desk at checkout and pick them up at the airport." },
+    ],
+  },
+  {
+    slug: "arrival-day",
+    kind: "guide",
+    criticality: "general",
+    sortOrder: 2,
+    relatedRoute: "airport_to_hotel",
+    translations: [
+      {
+        locale: "zh-CN",
+        title: "刚到济州：行李直接送酒店，先去玩",
+        body: "【示例】下飞机后在机场把行李交给我们，我们送到你的酒店前台。入住前也能轻松出发。\n航班到达时间需在机场取件时段结束前留出余量。",
+      },
+      { locale: "ko", title: "제주 도착 직후: 짐은 숙소로, 여행은 바로", body: "[예시] 공항에서 짐을 맡기면 숙소 프런트로 보내 드립니다." },
+      { locale: "en", title: "Just landed: send your bags to the hotel and start exploring", body: "[Sample] Hand us your bags at the airport and we deliver them to your hotel." },
+    ],
+  },
+  {
+    slug: "hotel-move",
+    kind: "guide",
+    criticality: "general",
+    sortOrder: 3,
+    relatedRoute: "hotel_to_hotel",
+    translations: [
+      {
+        locale: "zh-CN",
+        title: "换酒店：行李帮你搬过去",
+        body: "【示例】从济州市换到西归浦？把行李交给现在的酒店，我们送到下一家酒店前台。",
+      },
+      { locale: "ko", title: "숙소 이동: 짐은 다음 숙소로", body: "[예시] 지금 숙소에 맡기면 다음 숙소 프런트로 보내 드립니다." },
+      { locale: "en", title: "Changing hotels: we move your bags", body: "[Sample] Leave your bags at your current hotel and we deliver them to the next one." },
+    ],
+  },
   {
     slug: "how-it-works",
     kind: "guide",

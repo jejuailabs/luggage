@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { resolveContent, type ContentCriticality, type Locale, type PublishedTranslation, type ResolvedContent } from "@luggage/i18n";
+import type { RouteType } from "@luggage/domain";
 import { getServerConfig } from "@/lib/env";
 import { CONTENT_FIXTURES } from "./content-fixtures";
 
@@ -11,6 +12,8 @@ export interface ContentRecord {
   kind: ContentKind;
   criticality: ContentCriticality;
   sortOrder: number;
+  /** 상황별 안내가 연결하는 노선 */
+  relatedRoute?: RouteType | null;
   translations: PublishedTranslation[];
 }
 
@@ -40,6 +43,7 @@ interface ContentRow {
   kind: ContentKind;
   criticality: ContentCriticality;
   sort_order: number;
+  related_route: RouteType | null;
   content_translations: { locale: string; title: string; body: string }[];
 }
 
@@ -49,13 +53,14 @@ function toRecord(row: ContentRow): ContentRecord {
     kind: row.kind,
     criticality: row.criticality,
     sortOrder: row.sort_order,
+    relatedRoute: row.related_route,
     translations: row.content_translations,
   };
 }
 
 function supabaseSource(url: string, key: string): ContentSource {
   const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
-  const columns = "slug, kind, criticality, sort_order, content_translations(locale, title, body)";
+  const columns = "slug, kind, criticality, sort_order, related_route, content_translations(locale, title, body)";
   return {
     async listByKind(kind) {
       const { data, error } = await client.from("content_items").select(columns).eq("kind", kind).order("sort_order");

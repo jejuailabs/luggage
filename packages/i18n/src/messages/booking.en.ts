@@ -9,6 +9,8 @@ export const bookingEn: Record<keyof typeof bookingZhCN, string> = {
   "booking.step.flight": "3. Flight",
   "booking.step.quote": "4. Price",
   "booking.step.contact": "5. Contact and required notices",
+  "guide.cta": "Find your hotel and book",
+  "luggage.scenarios": "Pick your situation",
   "booking.chooseRoute": "Choose a route",
   "booking.noRoutes": "No routes are open for this hotel right now.",
   "booking.destinationHotel": "Destination hotel",

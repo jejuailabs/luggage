@@ -5,13 +5,15 @@ import type { Locale } from "@luggage/i18n";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { localizedAlternates } from "@/lib/seo";
 import { loadPublicCatalog, toPublicHotel } from "@/server/catalog";
+import { routeChoicesForHotel } from "@/server/slots";
 
 type Params = Promise<{ locale: string; slug: string }>;
 
 async function findHotel(slug: string, locale: Locale) {
   const catalog = await loadPublicCatalog();
   const hotel = catalog?.hotels.find((h) => h.slug === slug);
-  return catalog && hotel ? toPublicHotel(hotel, catalog, locale) : null;
+  if (!catalog || !hotel) return null;
+  return { ...toPublicHotel(hotel, catalog, locale), routes: routeChoicesForHotel(catalog, hotel).map((c) => c.routeType) };
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
@@ -57,12 +59,18 @@ export default async function HotelPage({ params }: { params: Params }) {
         </div>
       </dl>
       {hotel.handoffNote ? <p className="whitespace-pre-line text-sm">{hotel.handoffNote}</p> : null}
-      <Link
-        href={`/${locale}/luggage/book?hotel=${encodeURIComponent(hotel.slug)}`}
-        className="flex min-h-12 items-center justify-center rounded-[var(--radius-button)] bg-primary px-4 font-semibold text-on-primary"
-      >
-        {t("hotels.bookFromHere")}
-      </Link>
+      <div className="flex flex-col gap-2">
+        {hotel.routes.map((route) => (
+          <Link
+            key={route}
+            href={`/${locale}/luggage/book?hotel=${encodeURIComponent(hotel.slug)}&route=${route}`}
+            data-testid={`hotel-book-${route}`}
+            className="flex min-h-12 items-center justify-center rounded-[var(--radius-button)] bg-primary px-4 font-semibold text-on-primary"
+          >
+            {t("hotels.bookFromHere")} · {t(`route.${route}`)}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

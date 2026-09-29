@@ -5,7 +5,7 @@ import { RouteList } from "@/components/route-list";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { localizedAlternates } from "@/lib/seo";
 import { loadPublicCatalog, openRouteTypes } from "@/server/catalog";
-import { getContent } from "@/server/content";
+import { getContent, listContent } from "@/server/content";
 
 /** 결제 전에 반드시 보여 줘야 하는 필수 안내 (01 문서 4절). */
 const REQUIRED_NOTICES = ["bag-size-rules", "prohibited-items"] as const;
@@ -20,6 +20,7 @@ export default async function LuggagePage({ params }: { params: Promise<{ locale
   const locale = await resolveLocale(params);
   const { t } = await getRequestContext(locale);
   const catalog = await loadPublicCatalog();
+  const guides = ((await listContent("guide", locale)) ?? []).filter((g) => ["checkout-day", "arrival-day", "hotel-move"].includes(g.slug));
   const [howItWorks, ...notices] = await Promise.all([
     getContent("how-it-works", locale),
     ...REQUIRED_NOTICES.map((slug) => getContent(slug, locale)),
@@ -40,6 +41,26 @@ export default async function LuggagePage({ params }: { params: Promise<{ locale
         </h2>
         <RouteList t={t} open={openRouteTypes(catalog)} />
       </section>
+
+      {guides.length > 0 ? (
+        <section aria-labelledby="scenarios-title" className="flex flex-col gap-2">
+          <h2 id="scenarios-title" className="text-lg font-semibold">
+            {t("luggage.scenarios")}
+          </h2>
+          {guides.map((guide) =>
+            guide.result.status === "ok" ? (
+              <Link
+                key={guide.slug}
+                href={`/${locale}/guide/${guide.slug}`}
+                data-testid="scenario-link"
+                className="flex min-h-12 items-center rounded-[var(--radius-card)] border border-line bg-card px-4 font-medium"
+              >
+                {guide.result.translation.title}
+              </Link>
+            ) : null,
+          )}
+        </section>
+      ) : null}
 
       <section className="rounded-[var(--radius-card)] border border-line bg-card p-4">
         <ContentView result={howItWorks!} t={t} testId="content-how-it-works" />
