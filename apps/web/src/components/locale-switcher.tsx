@@ -2,9 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { syncPreferenceToAccount } from "@/lib/preferences-client";
-import { LOCALE_COOKIE, LOCALES, type Locale } from "@luggage/i18n";
-
-const LOCALE_NAMES: Record<Locale, string> = { "zh-CN": "简体中文", ko: "한국어", en: "English" };
+import { LOCALE_COOKIE, LOCALE_NAMES, LOCALES, type Locale } from "@luggage/i18n";
 
 export function LocaleSwitcher({
   locale,

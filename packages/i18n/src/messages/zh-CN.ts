@@ -63,6 +63,20 @@ export const zhCN = {
   "staff.login.failed": "邮箱或密码不正确。",
   "staff.login.unavailable": "登录服务暂未配置。",
 
+  "content.fallbackNotice": "此内容暂无简体中文版本，以下为{language}内容。",
+  "content.criticalBlocked": "此项重要说明的简体中文版本正在审核中。审核完成前暂不开放预约，如有疑问请联系客服。",
+  "content.unavailable": "内容暂时无法加载，请稍后再试。",
+  "content.empty": "暂无内容。",
+
+  "luggage.title": "济州行李配送服务",
+  "luggage.intro": "退房后把行李交给我们，空手游玩济州，在约定时间和地点取回行李。",
+  "luggage.howItWorks": "服务流程",
+  "luggage.rules": "预约前请确认",
+  "luggage.bookingBlocked": "部分必读说明尚未提供简体中文审核版本，暂不开放预约。",
+  "guide.title": "使用指南",
+  "legal.title": "条款与政策",
+  "faq.title": "常见问题",
+
   "error.notFound": "页面不存在",
   "error.backHome": "返回首页",
 } as const;

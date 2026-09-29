@@ -45,3 +45,6 @@ export const HTML_LANG: Record<Locale, string> = {
   ko: "ko",
   en: "en",
 };
+
+/** 언어 선택·대체 언어 안내에 쓰는 각 언어의 자국어 이름. */
+export const LOCALE_NAMES: Record<Locale, string> = { "zh-CN": "简体中文", ko: "한국어", en: "English" };

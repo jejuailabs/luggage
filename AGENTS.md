@@ -114,7 +114,7 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 | 단계 | 상태 | 다음 작업 |
 |---|---|---|
 | 문서 | 중국인 대상 수하물 플랫폼으로 재정리·검증 완료 | 메인 1개 + 상세 9개, 상대 링크 40개와 범위·코드 블록·문자 인코딩 검사 통과 |
-| A | A01–A03 완료 (2026-09-29) | A04 수하물 공개 페이지, A05 호텔·노선 관리 |
+| A | A01–A04 완료 (2026-09-29) | A05 호텔·권역·노선·인계 장소 관리 (+ `/hotels/{slug}` 공개 페이지) |
 | B | 미착수 | A의 공통 데이터·인증 필요 |
 | C | 미착수 | B의 주문·짐 모델 필요 |
 | D | 미착수 | B·C 업무 기록 재사용. 미니프로그램 계정·위챗페이 가맹은 A부터 병행 준비 |
@@ -145,6 +145,14 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 - 연동 모드: mock. 계정 선호 저장은 원격 마이그레이션 적용 후 실사용 확인 필요.
 - 미해결: 콘텐츠 편집 화면(운영자용), 예약 당시 약관 스냅샷(B단계), 고객 문의·기사 메모 원문/번역 구분(C단계).
 - 다음 ID: A04.
+
+**A04 수하물 공개 페이지**
+- 변경 파일: `/{locale}/luggage`(노선·이용 방법·필수 안내·예약 진입), `/{locale}/guide/[slug]`, `/{locale}/legal/[slug]`, `/{locale}/help`(FAQ), `components/{content-view,route-list}.tsx`, `server/content.ts`(supabase/fixture 저장소), `server/content-fixtures.ts`(‘예시’ 표시 합성 콘텐츠), `lib/seo.ts`, `app/robots.ts`, `app/sitemap.ts`, 업무·계정 화면 noindex.
+- 마이그레이션: 없음 (A03 콘텐츠 테이블 사용).
+- 검사와 결과: lint·typecheck 통과, `pnpm test` 31개, `pnpm test:e2e` 36개(필수 안내 미승인 언어 예약 차단, 대체 언어 안내·lang 표시, 잘못된 slug·종류 404, canonical·hreflang, noindex, 비운영 robots 차단), build 통과.
+- 연동 모드: 콘텐츠 `CONTENT_SOURCE=supabase` 기본, E2E는 `fixture`. 원격 DB에 게시 콘텐츠가 없으면 안내 ‘불러오지 못함/없음’과 예약 차단이 표시된다(의도된 동작). fixture는 production에서 기동 실패.
+- 미해결: 실제 승인 문구(짐 규격·금지 품목·보상·취소) 작성과 DB 게시, 공유 이미지(OG), 호텔별 공개 페이지는 A05에서.
+- 다음 ID: A05.
 
 문서 수정은 제품 코드·결제 연동·배포가 완료됐다는 뜻이 아니다. 구현 기록 형식: `작업 ID / 변경 파일 / 마이그레이션 / 검사와 결과 / 연동 모드 / 미해결 사항 / 다음 ID`.
 

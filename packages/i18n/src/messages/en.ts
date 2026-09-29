@@ -61,6 +61,20 @@ export const en: Messages = {
   "staff.login.failed": "Incorrect email or password.",
   "staff.login.unavailable": "Sign-in is not configured yet.",
 
+  "content.fallbackNotice": "This content is not yet available in English. Showing the {language} version.",
+  "content.criticalBlocked": "The English version of this required notice is under review. Booking is unavailable until it is approved. Contact support with any questions.",
+  "content.unavailable": "Content could not be loaded. Please try again later.",
+  "content.empty": "No content yet.",
+
+  "luggage.title": "Jeju luggage delivery",
+  "luggage.intro": "Drop your bags after checkout, explore Jeju hands-free, and collect them at the agreed time and place.",
+  "luggage.howItWorks": "How it works",
+  "luggage.rules": "Before you book",
+  "luggage.bookingBlocked": "Some required notices are not yet approved in English, so booking is unavailable.",
+  "guide.title": "Guides",
+  "legal.title": "Terms & policies",
+  "faq.title": "FAQ",
+
   "error.notFound": "Page not found",
   "error.backHome": "Back to home",
 };

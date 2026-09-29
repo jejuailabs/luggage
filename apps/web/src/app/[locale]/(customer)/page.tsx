@@ -1,10 +1,14 @@
-import { ROUTE_TYPES, type RouteType } from "@luggage/domain";
+import Link from "next/link";
+import type { Metadata } from "next";
+import { RouteList } from "@/components/route-list";
 import { ThemePreferencePicker } from "@/components/theme-controls";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { getViewer } from "@/server/auth";
+import { localizedAlternates } from "@/lib/seo";
 
-/** A단계 임시값. A05에서 운영 설정(노선 판매 여부)으로 교체한다. */
-const OPEN_ROUTES: ReadonlySet<RouteType> = new Set(["hotel_to_airport"]);
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  return { alternates: localizedAlternates(await resolveLocale(params), "") };
+}
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const locale = await resolveLocale(params);
@@ -58,25 +62,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       </section>
 
       <section aria-labelledby="routes-title">
-        <h2 id="routes-title" className="mb-2 text-lg font-semibold">
-          {t("home.routes.title")}
-        </h2>
-        <ul className="flex flex-col gap-3">
-          {ROUTE_TYPES.map((route) => {
-            const open = OPEN_ROUTES.has(route);
-            return (
-              <li
-                key={route}
-                className="flex min-h-14 items-center justify-between rounded-[var(--radius-card)] border border-line bg-card px-4"
-              >
-                <span className="font-medium">{t(`route.${route}`)}</span>
-                <span className={open ? "text-sm font-semibold text-primary" : "text-sm text-muted"}>
-                  {open ? t("route.status.open") : t("route.status.comingSoon")}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 id="routes-title" className="text-lg font-semibold">
+            {t("home.routes.title")}
+          </h2>
+          <Link href={`/${locale}/luggage`} className="inline-flex min-h-11 items-center text-sm font-medium text-primary">
+            {t("luggage.howItWorks")} →
+          </Link>
+        </div>
+        <RouteList t={t} />
       </section>
 
       <section

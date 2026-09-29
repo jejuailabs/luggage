@@ -1,4 +1,8 @@
+import type { Metadata } from "next";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
+import { NO_INDEX } from "@/lib/seo";
+
+export const metadata: Metadata = { robots: NO_INDEX };
 
 /** 기사·호텔·운영 화면. 고객 하단 탭을 노출하지 않는다. 권한 검사는 A03 인증에서 추가한다. */
 export default async function StaffLayout({

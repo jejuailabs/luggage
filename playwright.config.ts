@@ -27,6 +27,7 @@ export default defineConfig({
     url: `${baseURL}/api/v1/health`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
-    env: { APP_ENV: "local" },
+    // 공개 콘텐츠는 합성 fixture로 검증한다 (원격 DB 상태와 무관).
+    env: { APP_ENV: "local", CONTENT_SOURCE: "fixture", APP_URL: baseURL },
   },
 });

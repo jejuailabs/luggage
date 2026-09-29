@@ -61,6 +61,20 @@ export const ko: Messages = {
   "staff.login.failed": "이메일 또는 비밀번호가 올바르지 않습니다.",
   "staff.login.unavailable": "로그인 설정이 아직 없습니다.",
 
+  "content.fallbackNotice": "이 내용은 아직 한국어 버전이 없어 {language}로 보여 드립니다.",
+  "content.criticalBlocked": "이 필수 안내의 한국어 승인본을 검토 중입니다. 검토가 끝나기 전에는 예약할 수 없습니다. 궁금한 점은 고객지원에 문의하세요.",
+  "content.unavailable": "내용을 불러오지 못했습니다. 잠시 후 다시 시도하세요.",
+  "content.empty": "아직 내용이 없습니다.",
+
+  "luggage.title": "제주 짐배송 서비스",
+  "luggage.intro": "체크아웃 후 짐을 맡기고 가볍게 제주를 여행한 뒤, 약속한 시간과 장소에서 짐을 돌려받으세요.",
+  "luggage.howItWorks": "이용 방법",
+  "luggage.rules": "예약 전 확인하세요",
+  "luggage.bookingBlocked": "일부 필수 안내의 한국어 승인본이 없어 지금은 예약할 수 없습니다.",
+  "guide.title": "이용 안내",
+  "legal.title": "약관·정책",
+  "faq.title": "자주 묻는 질문",
+
   "error.notFound": "페이지를 찾을 수 없습니다",
   "error.backHome": "홈으로",
 };
