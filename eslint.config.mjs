@@ -8,6 +8,15 @@ const config = [
   ...nextVitals,
   ...nextTs,
   {
+    // 위챗 미니프로그램: CommonJS + 플랫폼 전역
+    files: ["apps/wechat/**/*.js"],
+    languageOptions: {
+      sourceType: "commonjs",
+      globals: { wx: "readonly", App: "readonly", Page: "readonly", getApp: "readonly", require: "readonly", module: "writable" },
+    },
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
+  {
     settings: { next: { rootDir: "apps/web/" } },
     rules: {
       // 고객 화면은 구글 서비스에 의존하지 않는다 (04 문서 8절).

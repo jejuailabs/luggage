@@ -89,6 +89,7 @@ export const BUSINESS_ERROR_CODES = [
   "HANDOFF_NOT_APPLICABLE",
   "FLIGHT_TOO_LATE",
   "VALIDATION_FAILED",
+  "PAY_TICKET_INVALID",
 ] as const;
 export type BusinessErrorCode = (typeof BUSINESS_ERROR_CODES)[number];
 

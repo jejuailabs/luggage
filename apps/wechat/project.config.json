@@ -1,0 +1,19 @@
+{
+  "description": "제주 커넥트 미니프로그램 (web-view 하이브리드). appid는 위챗 공식 플랫폼에서 발급받은 값으로 교체한다.",
+  "appid": "touristappid",
+  "projectname": "jeju-connect",
+  "compileType": "miniprogram",
+  "libVersion": "3.0.0",
+  "setting": {
+    "es6": true,
+    "enhance": true,
+    "minified": true,
+    "urlCheck": true
+  },
+  "packOptions": {
+    "ignore": [
+      { "type": "suffix", "value": ".test.js" },
+      { "type": "file", "value": "README.md" }
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+.page {
+  padding: 32rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+.message {
+  font-size: 32rpx;
+  line-height: 1.6;
+  color: #0f172a;
+}
+.primary {
+  background: #0f766e;
+  color: #ffffff;
+}

@@ -48,7 +48,7 @@ jeju-unified-platform/
   docs/                         # 상세 구현 문서 9개
   apps/
     web/                        # 공개 예약 + 기사·호텔·운영 화면(PWA)
-    wechat/                     # WeChat Mini Program 하이브리드 셸(D단계)
+    wechat/                     # WeChat Mini Program 하이브리드 셸 (web-view + 결제 페이지)
   packages/
     contracts/                  # API 스키마·오류 코드
     domain/                     # 가격·예약·배송 상태
@@ -117,7 +117,7 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 | A | A01–A05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실로그인 검증 대기 | B01 서버 견적 |
 | B | B01–B05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실결제 흐름 검증 대기 | C01 호텔 보관 |
 | C | C01–C05 코드·로컬 검증 완료 (2026-09-29). 실기기(카메라·사진 업로드·오프라인) 검증 대기 | D01 노선 확장 설정 |
-| D | D01–D04 완료 (2026-09-29) | D05 미니프로그램 (계정·위챗페이 가맹은 병행 준비) |
+| D | D01–D05 코드·로컬 검증 완료 (2026-09-29). 미니프로그램 개발자 도구·실기기·실결제 검증 대기 | E01 현장용 PWA 강화 |
 | E | 미착수 | C의 현장 운영 데이터 필요 |
 
 ### 구현 기록
@@ -233,6 +233,14 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 - 연동 모드: 외부 분석 도구 없음 (1차 데이터만).
 - 미해결: 개선 실험(문구·버튼 버전 기록), 기사·호텔별 누락·증빙률 지표, 알림 실패 지표(알림 발송 구현 후), 지표 기간이 길 때의 집계 성능(필요 시 일별 요약 테이블).
 - 다음 ID: D05.
+
+**D05 위챗 미니프로그램 (하이브리드)**
+- 변경 파일: `supabase/migrations/20260929001700_miniprogram_pay.sql`, `packages/integrations/src/wechat.ts`(WeChatIdentity·미니프로그램 결제 어댑터 계약 + mock), `server/wechat.ts`, 결제 시도 API의 미니프로그램 위임(1회용 티켓 → `wx.miniProgram.navigateTo`), `/api/v1/wechat/pay-tickets/redeem`(티켓+wx.login code → 결제 파라미터), `/api/v1/wechat/mock-complete`(비운영), `lib/miniprogram-bridge.ts`(위챗 JS-SDK는 미니프로그램 실행 환경에서만 로드), `apps/wechat/`(web-view 첫 화면·결제 페이지·설정·README 출시 체크리스트), lint·vitest 설정.
+- 마이그레이션: `miniprogram_pay_tickets`(해시 저장, 5분, 1회), `create_miniprogram_pay_ticket()`(주문 소유자·미니프로그램 결제 방식만), `redeem_miniprogram_pay_ticket()`(서버 전용, 행 잠금 1회 소비).
+- 검사와 결과: lint·typecheck 통과, `pnpm test` 70개(mock openid 안정성·잘못된 code 거부·mock 결제 파라미터 표시, web-view 주소 같은 출처만·결제 쿼리 검증), `pnpm test:db` 161개(티켓 소유자만 발급·해시 저장·서버만 소비·동시 소비 1회·만료·다른 결제 방식 거부), `pnpm test:e2e` 108개(미니프로그램 밖 위임 거부 422, 서버 키 없으면 결제 파라미터 미발급 503, 모의 완료 토큰 검증 403), build 통과.
+- 연동 모드: wechat **mock**(openid 가짜), 미니프로그램 결제 **mock**. AppID·AppSecret·업무 도메인·위챗페이 가맹·구독 템플릿은 미설정.
+- 미해결: 위챗 개발자 도구·실기기 실행, 실제 WeChatIdentity(code2session)·위챗페이 prepay 어댑터, 구독 메시지 발송(outbox 소비자), openid↔계정 명시적 연결(재방문 시 이전 주문 복구), 위챗 내장 브라우저 JSAPI 결제, 심사 제출.
+- 다음 ID: E01.
 
 문서 수정은 제품 코드·결제 연동·배포가 완료됐다는 뜻이 아니다. 구현 기록 형식: `작업 ID / 변경 파일 / 마이그레이션 / 검사와 결과 / 연동 모드 / 미해결 사항 / 다음 ID`.
 

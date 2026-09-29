@@ -11,7 +11,7 @@ export default defineConfig({
   },
   oxc: { jsx: { runtime: "automatic" } },
   test: {
-    include: ["packages/*/src/**/*.test.ts", "apps/web/src/**/*.test.{ts,tsx}"],
+    include: ["packages/*/src/**/*.test.ts", "apps/web/src/**/*.test.{ts,tsx}", "apps/wechat/**/*.test.js"],
     environment: "node",
   },
 });

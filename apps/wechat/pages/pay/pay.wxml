@@ -1,0 +1,7 @@
+<view class="page">
+  <view class="message">{{message}}</view>
+  <block wx:if="{{mock}}">
+    <button class="primary" data-outcome="succeeded" bindtap="onMockResult">模拟付款成功 / 모의 결제 성공</button>
+    <button data-outcome="failed" bindtap="onMockResult">模拟付款失败 / 모의 결제 실패</button>
+  </block>
+</view>

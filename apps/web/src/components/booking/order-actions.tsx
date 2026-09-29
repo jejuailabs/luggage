@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { paymentOptionsFor, type RuntimeEnvironment } from "@luggage/domain";
 import { createTranslator, getMessages, type Locale, type MessageKey } from "@luggage/i18n";
+import { navigateToMiniProgramPage } from "@/lib/miniprogram-bridge";
 
 interface Props {
   locale: Locale;
@@ -70,7 +71,14 @@ export function OrderActions(props: Props) {
       window.location.assign(action.url);
       return;
     }
-    // 위챗 JSAPI·미니프로그램 결제는 채널 연동 단계에서 연결한다.
+    if (action?.type === "miniprogram" && typeof action.page === "string") {
+      // 미니프로그램 결제 페이지로 위임한다. 결과는 서버 확인 후 이 화면이 다시 읽는다.
+      const moved = await navigateToMiniProgramPage(action.page, action.query ?? {});
+      setBusy(false);
+      if (!moved) setError(t("payment.methodUnavailable"));
+      return;
+    }
+    // 위챗 JSAPI(위챗 내장 브라우저) 결제는 공급사 연동 단계에서 연결한다.
     setBusy(false);
     setError(t("payment.methodUnavailable"));
   }
@@ -126,7 +134,7 @@ export function OrderActions(props: Props) {
                 </p>
               );
             }
-            if (option.handoff) return null;
+            if (option.handoff && option.handoff !== "delegate_to_miniprogram_page") return null;
             return (
               <button
                 key={option.method}

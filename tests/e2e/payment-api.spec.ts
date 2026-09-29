@@ -104,3 +104,39 @@ test.describe("customer actions and jobs", () => {
     expect((await request.get("/api/v1/jobs/reconcile-payments", { headers: { Authorization: "Bearer wrong-secret-value" } })).status()).toBe(403);
   });
 });
+
+test.describe("WeChat mini program", () => {
+  const MINIPROGRAM_UA =
+    "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/111.0 Mobile Safari/537.36 MicroMessenger/8.0.49 miniProgram/wx0000000000000000";
+
+  test("mini program payment is delegated only inside the mini program", async ({ request, baseURL }) => {
+    const origin = new URL(baseURL!).origin;
+    const outside = await request.post(`/api/v1/orders/${ORDER_ID}/payment-attempts`, {
+      headers: { Origin: origin, "Idempotency-Key": "mp-key-12345678" },
+      data: { method: "wechat_pay_miniprogram", locale: "zh-CN" },
+    });
+    expect(outside.status()).toBe(422);
+    const inside = await request.post(`/api/v1/orders/${ORDER_ID}/payment-attempts`, {
+      headers: { Origin: origin, "Idempotency-Key": "mp-key-12345678", "User-Agent": MINIPROGRAM_UA },
+      data: { method: "wechat_pay_miniprogram", locale: "zh-CN" },
+    });
+    // 방식은 허용되지만 주문 소유 세션이 필요하다
+    expect(inside.status()).toBe(401);
+  });
+
+  test("pay ticket redemption validates input and never confirms without the server role", async ({ request }) => {
+    expect((await request.post("/api/v1/wechat/pay-tickets/redeem", { data: { ticket: "x", code: "y" } })).status()).toBe(400);
+    const response = await request.post("/api/v1/wechat/pay-tickets/redeem", {
+      data: { ticket: "a".repeat(64), code: "wx-code-12345678" },
+    });
+    // E2E 환경에는 service role 키가 없다 → 결제 파라미터를 만들지 않는다
+    expect(response.status()).toBe(503);
+  });
+
+  test("mock completion requires a valid token", async ({ request }) => {
+    const response = await request.post("/api/v1/wechat/mock-complete", {
+      data: { attemptId: ORDER_ID, token: "b".repeat(64), outcome: "succeeded" },
+    });
+    expect(response.status()).toBe(403);
+  });
+});
