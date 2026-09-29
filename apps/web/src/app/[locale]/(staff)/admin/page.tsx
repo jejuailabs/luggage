@@ -13,6 +13,7 @@ export default async function AdminHome({ params }: { params: Promise<{ locale: 
           {[
             { href: "hotels", label: ADMIN_LABELS.hotels },
             { href: "routes", label: ADMIN_LABELS.routes },
+            { href: "dispatch", label: "배차·운영 현황" },
           ].map((item) => (
             <li key={item.href}>
               <Link

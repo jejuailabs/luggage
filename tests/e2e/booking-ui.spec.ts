@@ -15,6 +15,9 @@ test("blocks booking when a required notice is not approved in the customer's la
 test("walks through slot, bags and flight before a price can be requested", async ({ page }) => {
   await page.goto("/en/luggage/book?hotel=sample-hotel-jeju-city");
   await expect(page.getByTestId("booking-flow")).toBeVisible();
+  // 내일 슬롯은 한국 시간 20시에 마감되므로 실행 시각과 무관하게 이틀 뒤를 고른다.
+  const inTwoDays = new Date(Date.now() + 9 * 3600_000 + 2 * 86_400_000).toISOString().slice(0, 10);
+  await page.getByTestId("booking-date").fill(inTwoDays);
   await expect(page.getByTestId("booking-slot")).toHaveCount(2);
   await expect(page.getByTestId("booking-slot").first()).toBeChecked();
   // 한국 시간으로 표시한다 (09:00–11:00 수거)

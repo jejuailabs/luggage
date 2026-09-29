@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createTranslator, formatKst, formatMoney, getMessages, type Locale, type MessageKey } from "@luggage/i18n";
 
 interface Slot {
@@ -68,6 +68,8 @@ export function BookingFlow({
   const [accepted, setAccepted] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 기본 날짜에 슬롯이 없으면(예: 내일 마감이 지난 저녁) 사용자가 날짜를 고르기 전까지 다음 날로 넘긴다.
+  const autoAdvance = useRef({ userChose: false, steps: 0 });
 
   const errorText = (key: string | undefined) =>
     key && key in messages ? t(key as MessageKey) : t("booking.error.generic");
@@ -87,6 +89,15 @@ export function BookingFlow({
       .then((json) => {
         if (cancelled) return;
         const list: Slot[] = json?.data?.slots ?? [];
+        if (list.length === 0 && !autoAdvance.current.userChose && autoAdvance.current.steps < 3) {
+          autoAdvance.current.steps += 1;
+          const next = new Date(`${date}T00:00:00Z`);
+          next.setUTCDate(next.getUTCDate() + 1);
+          const nextDate = next.toISOString().slice(0, 10);
+          setDate(nextDate);
+          setFlightDate(nextDate);
+          return;
+        }
         setSlots(list);
         setSlotId((current) => (list.some((s) => s.slotId === current) ? current : (list[0]?.slotId ?? null)));
       })
@@ -165,6 +176,7 @@ export function BookingFlow({
             min={kstDate(0)}
             max={kstDate(60)}
             onChange={(e) => {
+              autoAdvance.current.userChose = true;
               setDate(e.target.value);
               setFlightDate(e.target.value);
               invalidateQuote();

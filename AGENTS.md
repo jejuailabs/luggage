@@ -116,7 +116,7 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 | 문서 | 중국인 대상 수하물 플랫폼으로 재정리·검증 완료 | 메인 1개 + 상세 9개, 상대 링크 40개와 범위·코드 블록·문자 인코딩 검사 통과 |
 | A | A01–A05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실로그인 검증 대기 | B01 서버 견적 |
 | B | B01–B05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실결제 흐름 검증 대기 | C01 호텔 보관 |
-| C | 미착수 | B의 주문·짐 모델 필요 |
+| C | C01–C05 코드·로컬 검증 완료 (2026-09-29). 실기기(카메라·사진 업로드·오프라인) 검증 대기 | D01 노선 확장 설정 |
 | D | 미착수 | B·C 업무 기록 재사용. 미니프로그램 계정·위챗페이 가맹은 A부터 병행 준비 |
 | E | 미착수 | C의 현장 운영 데이터 필요 |
 
@@ -193,6 +193,14 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 - 연동 모드: 결제 mock. 예약증 화면 실기 확인은 원격 DB + service role 키 + mock 결제 흐름 필요.
 - 미해결: PWA 오프라인 예약증 캐시(E01), 짐 태그 인쇄·부착(C단계), 고객 수령 코드(C04).
 - 다음 ID: C01.
+
+**C01–C05 호텔 보관·기사 작업·QR·사진·공항 인계·사고·지원**
+- 변경 파일: 마이그레이션 `20260929001000_logistics_core.sql`·`001100_evidence_incidents_support.sql`·`001200_staff_directory.sql`; API `/bags/events`·`/delivery-jobs/[id]/assignment`·`/uploads/intents`·`/evidence/[id]/url`·`/orders/[id]/handoff-challenges`·`/handoffs/verify`·`/incidents`·`/support/tickets`(+`/[id]/messages`); 화면 `/driver`(작업 목록)·`/driver/jobs/[id]`(태그 스캔·사진·수거·적재·인계 준비·수령 코드 인계·사고 보고)·`/partner`(지점별 오늘·내일 예약, 태그 확인 후 보관)·`/admin/dispatch`(배차·인계 n/m·미해결 사고·운영 확인 주문·열린 문의)·`/admin/support/[id]`(내부 메모 분리); 고객 주문 화면 짐별 상태·마지막 확인 시각·수령 코드·문의, `/help` 문의 양식, `/help/requests/[id]`; `lib/field-client.ts`(오프라인 재전송 큐·사진 재인코딩으로 EXIF 제거·서명 URL 업로드), `components/field/*`, 예약 기본 날짜 자동 이동.
+- 마이그레이션: `delivery_jobs`(확정 시 생성, 수거 후 취소면 유지), `job_assignments`(작업당 현재 1명), `bag_events`(추가 전용), `handoff_challenges`(해시, 15분, 5회 잠금), `record_bag_event()`, `assign_driver()`, `issue_handoff_challenge()`, `verify_handoff()`, `recompute_job_status()`, `driver_jobs()`/`partner_jobs()`(최소 정보, 전화·이메일 없음), `evidence_files`+`create_evidence_intent()`+비공개 `evidence` 버킷, 이벤트 증빙 같은 작업 검사, `incidents`/`report_incident()`, `compensation_claims`(PG 환불과 분리), `support_tickets`/`support_messages`(내부 메모 고객 비공개)+`create_support_ticket()`/`add_support_message()`, `list_drivers()`.
+- 검사와 결과: lint·typecheck 통과, `pnpm test` 54개(오프라인 큐: 같은 ID 1건·성공 시 제거·네트워크 없으면 유지·서버 거절 시 보고), `pnpm test:db` 136개(LOG-01 다른 주문 태그 거부, LOG-02 부분 인계는 완료 아님, LOG-03 재전송 1건, LOG-04 재배정 후 이전 기사 권한 종료, LOG-06 환불 후 수거 짐·작업 유지, LOG-08 동시 검증 1회 완료, 코드 5회 잠금, 호텔 지점 범위, 증빙 경로 개인정보 없음·형식·크기, 내부 메모 비공개, 문의 멱등), `pnpm test:e2e` 89개(현장 API 401/403, 업무 화면 로그인 요구, 문의 스레드 비공개), build 통과.
+- 연동 모드: 사진 저장은 Supabase Storage 서명 URL(서버 키 필요), 알림 발송 없음(outbox 기록만).
+- 미해결: 카메라 QR·사진 업로드·오프라인 큐의 **실기기 검증**, 오프라인 큐 IndexedDB 전환·로그아웃 시 정리 연결(E01), 짐 태그 인쇄물, 반환 작업 화면, 정정(correction) 이벤트 화면, 차량 위치(E02), 보존기간 만료 파일 삭제 작업, 알림 발송(outbox 소비자·템플릿), LOG-05·07·09 중 위치·공유 링크 관련 항목(E단계).
+- 다음 ID: D01.
 
 문서 수정은 제품 코드·결제 연동·배포가 완료됐다는 뜻이 아니다. 구현 기록 형식: `작업 ID / 변경 파일 / 마이그레이션 / 검사와 결과 / 연동 모드 / 미해결 사항 / 다음 ID`.
 

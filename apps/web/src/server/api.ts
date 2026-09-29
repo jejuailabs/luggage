@@ -65,6 +65,24 @@ export const BUSINESS_ERROR_CODES = [
   "REFUND_NOT_APPROVABLE",
   "REFUND_EXCEEDS_CAPTURED",
   "FORBIDDEN",
+  "NOT_FOUND",
+  "TAG_NOT_FOUND",
+  "JOB_NOT_FOUND",
+  "JOB_CANCELLED",
+  "JOB_NOT_ASSIGNABLE",
+  "DRIVER_INVALID",
+  "BAG_NOT_IN_JOB",
+  "VERSION_CONFLICT",
+  "INVALID_TRANSITION",
+  "EVIDENCE_REQUIRED",
+  "EVIDENCE_INVALID",
+  "EVIDENCE_LIMIT",
+  "HANDOFF_NOT_READY",
+  "HANDOFF_CODE_INVALID",
+  "HANDOFF_CODE_EXPIRED",
+  "HANDOFF_CODE_LOCKED",
+  "SUPPORT_INVALID",
+  "SUPPORT_LIMIT",
 ] as const;
 export type BusinessErrorCode = (typeof BUSINESS_ERROR_CODES)[number];
 
@@ -79,7 +97,10 @@ export function failFromDb(error: { message?: string; code?: string } | null, re
   const business = businessErrorCode(error);
   if (business === "SESSION_REQUIRED") return fail("SESSION_REQUIRED", requestId);
   if (business === "FORBIDDEN") return fail("FORBIDDEN", requestId);
-  if (business === "REFUND_NOT_FOUND") return fail("NOT_FOUND", requestId);
+  if (business === "REFUND_NOT_FOUND" || business === "NOT_FOUND" || business === "JOB_NOT_FOUND" || business === "TAG_NOT_FOUND") {
+    return fail("NOT_FOUND", requestId, { messageKey: `field.error.${business}` });
+  }
+  if (business === "VERSION_CONFLICT") return fail("CONFLICT", requestId, { messageKey: `field.error.${business}` });
   if (business === "IDEMPOTENCY_CONFLICT") return fail("IDEMPOTENCY_CONFLICT", requestId);
   if (business === "QUOTE_ALREADY_ORDERED") return fail("CONFLICT", requestId, { messageKey: `booking.error.${business}` });
   if (business === "QUOTE_NOT_FOUND" || business === "ORDER_NOT_FOUND" || business === "SLOT_NOT_FOUND") {

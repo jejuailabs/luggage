@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { formatKst, formatMoney, type MessageKey } from "@luggage/i18n";
+import { HandoffCode } from "@/components/booking/handoff-code";
 import { OrderActions } from "@/components/booking/order-actions";
+import { SupportForm } from "@/components/support/support-form";
 import { Voucher, type VoucherBag } from "@/components/booking/voucher";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { NO_INDEX } from "@/lib/seo";
@@ -27,6 +29,18 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
           (await viewer.client.from("bags").select("seq, size, tag_id, bag_status").eq("order_id", order.id).order("seq")).data ?? []
         ).map((b) => ({ seq: b.seq, size: b.size, tagId: b.tag_id, status: b.bag_status }))
       : [];
+  // 짐별 마지막 서버 기록 시각 (배송 조회)
+  const lastEvents = new Map<string, string>();
+  if (order && bags.length > 0 && viewer.client) {
+    const { data: events } = await viewer.client
+      .from("bag_events")
+      .select("bag_id, server_received_at, bags!inner(tag_id)")
+      .eq("order_id", order.id)
+      .order("server_received_at", { ascending: false });
+    for (const event of (events ?? []) as unknown as { server_received_at: string; bags: { tag_id: string } }[]) {
+      if (!lastEvents.has(event.bags.tag_id)) lastEvents.set(event.bags.tag_id, event.server_received_at);
+    }
+  }
   if (!order) {
     return (
       <section className={panel} data-testid="order-not-found">
@@ -82,6 +96,37 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
         <Voucher order={order} bags={bags} locale={locale} t={t} checkedAt={new Date()} />
       ) : null}
 
+      {bags.length > 0 ? (
+        <section className={`${panel} flex flex-col gap-2`} data-testid="delivery-status">
+          <h2 className="font-semibold">{t("delivery.title")}</h2>
+          <p className="text-sm text-muted">
+            {t("delivery.progress", {
+              delivered: bags.filter((b) => b.status === "delivered").length,
+              total: bags.filter((b) => b.status !== "cancelled_before_pickup").length,
+            })}
+          </p>
+          <ul className="flex flex-col gap-2 text-sm">
+            {bags.map((bag) => {
+              const last = lastEvents.get(bag.tagId);
+              return (
+                <li key={bag.tagId} className="flex flex-col rounded-[var(--radius-button)] border border-line px-3 py-2" data-status={bag.status}>
+                  <span className="flex justify-between gap-2">
+                    <span>{t("delivery.bagLine", { seq: bag.seq, size: t(`booking.bag.${bag.size}` as MessageKey) })}</span>
+                    <span className="font-medium">{t(`bag.status.${bag.status}` as MessageKey)}</span>
+                  </span>
+                  <span className="text-xs text-muted">
+                    {last ? t("delivery.lastUpdate", { time: dateTime(last) }) : t("delivery.noUpdate")}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
+      {order.reservationStatus === "confirmed" && bags.length > 0 ? (
+        <HandoffCode locale={locale} orderId={order.id} ready={bags.some((b) => b.status === "ready_for_handoff")} />
+      ) : null}
+
       <OrderActions
         locale={locale}
         orderId={order.id}
@@ -125,6 +170,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
           <dd className="text-lg font-bold">{money(order.totalMinor)}</dd>
         </div>
       </dl>
+      <SupportForm locale={locale} orderId={order.id} />
     </div>
   );
 }

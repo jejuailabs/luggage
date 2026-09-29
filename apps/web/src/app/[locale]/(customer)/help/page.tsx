@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ContentView } from "@/components/content-view";
+import { SupportForm } from "@/components/support/support-form";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { localizedAlternates } from "@/lib/seo";
 import { listContent } from "@/server/content";
@@ -37,6 +38,7 @@ export default async function HelpPage({ params }: { params: Promise<{ locale: s
           ))
         )}
       </section>
+      <SupportForm locale={locale} />
     </div>
   );
 }
