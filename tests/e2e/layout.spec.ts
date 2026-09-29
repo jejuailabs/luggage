@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 // 모바일(360px)과 데스크톱 모두에서 실행한다.
-for (const path of ["/zh-CN", "/ko", "/en", "/zh-CN/help", "/zh-CN/luggage", "/zh-CN/hotels", "/zh-CN/hotels/sample-hotel-jeju-city", "/ko/admin"]) {
+for (const path of ["/zh-CN", "/ko", "/en", "/zh-CN/help", "/zh-CN/luggage", "/zh-CN/hotels", "/zh-CN/hotels/sample-hotel-jeju-city", "/en/luggage/book?hotel=sample-hotel-jeju-city", "/ko/admin"]) {
   test(`no horizontal overflow on ${path}`, async ({ page }) => {
     await page.goto(path);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);

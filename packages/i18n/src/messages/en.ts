@@ -1,3 +1,4 @@
+import { bookingEn } from "./booking.en";
 import type { Messages } from "./zh-CN";
 
 export const en: Messages = {
@@ -88,4 +89,6 @@ export const en: Messages = {
 
   "error.notFound": "Page not found",
   "error.backHome": "Back to home",
+
+  ...bookingEn,
 };

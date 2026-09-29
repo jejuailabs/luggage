@@ -1,3 +1,5 @@
+import { bookingZhCN } from "./booking.zh-CN";
+
 /**
  * 중국어 간체가 기준 메시지다. 다른 언어는 같은 키를 모두 가져야 한다.
  * 고객 노출 문구는 승인 전 초안이며 운영 승인본으로 교체한다.
@@ -90,6 +92,8 @@ export const zhCN = {
 
   "error.notFound": "页面不存在",
   "error.backHome": "返回首页",
+
+  ...bookingZhCN,
 } as const;
 
 export type MessageKey = keyof typeof zhCN;

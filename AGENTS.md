@@ -115,7 +115,7 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 |---|---|---|
 | 문서 | 중국인 대상 수하물 플랫폼으로 재정리·검증 완료 | 메인 1개 + 상세 9개, 상대 링크 40개와 범위·코드 블록·문자 인코딩 검사 통과 |
 | A | A01–A05 코드·로컬 검증 완료 (2026-09-29). 원격 Supabase 적용·실로그인 검증 대기 | B01 서버 견적 |
-| B | B01·B02 완료 (2026-09-29) | B03 비회원 주문(원자적 홀드·멱등) → B04 결제·환불(mock PG) → B05 예약증 |
+| B | B01–B03 완료 (2026-09-29) | B04 결제·환불(mock PG) → B05 예약증 |
 | C | 미착수 | B의 주문·짐 모델 필요 |
 | D | 미착수 | B·C 업무 기록 재사용. 미니프로그램 계정·위챗페이 가맹은 A부터 병행 준비 |
 | E | 미착수 | C의 현장 운영 데이터 필요 |
@@ -169,6 +169,14 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 - 연동 모드: 결제 없음. 견적은 로그인(guest 포함) 세션 + 원격 DB 필요 → 원격 마이그레이션 적용 전에는 실제 견적 생성 E2E 불가. DB 수준 테스트로 검증.
 - 미해결: 쿠폰·호텔 제휴 할인(D단계), 슬롯·요금 관리 화면, 항공편 조회 API(현재 수기 입력).
 - 다음 ID: B03.
+
+**B03 비회원 주문**
+- 변경 파일: `supabase/migrations/20260929000700_orders.sql`, `server/orders.ts`, `/api/v1/orders`(POST, Idempotency-Key 필수)·`/api/v1/orders/[id]`(GET), `components/booking/booking-flow.tsx`, `/{locale}/luggage/book`(호텔 선택·필수 안내 게시 확인), `/{locale}/orders/[id]`, i18n `messages/booking.*.ts`.
+- 마이그레이션: `idempotency_keys`(actor+operation+key, 요청 해시), `outbox_events`, `orders`(예약 상태·홀드 만료·금액·연락처 스냅샷, 참조 번호 JC+8자), `order_bags`(규격별 가격·세액 배분 스냅샷, 잔여는 최대 금액 행), `capacity_holds`, `policy_acceptances`(동의 당시 제목·본문·버전), 예약 상태 전이 가드, `create_order()`(멱등→견적 소유·만료·재사용→연락처(한국 번호 강제 없음, 국제 형식·위챗 허용)→고객 언어 게시 정책 동의→슬롯 재검사→버킷 FOR UPDATE 홀드→주문·짐·홀드·동의·outbox), `expire_holds()`(service_role, SKIP LOCKED, 재실행 안전).
+- 검사와 결과: lint·typecheck 통과, `pnpm test` 39개, `pnpm test:db` 89개(스냅샷·세액 합계, **동시 중복 클릭 같은 주문**, 같은 키 다른 본문 409, 견적 재사용·타인 견적·만료 거부, 연락처 규칙, 정책 언어 게시 필수, 실패 시 키 재사용, **마지막 용량 동시 주문 1건만 성공**, 홀드 만료 1회 해제, 소유자·운영자만 조회, 고객 직접 수정 불가, 잘못된 상태 전이 거부), `pnpm test:e2e` 62개(호텔 미선택 안내, 필수 안내 미승인 언어 예약 차단, 슬롯·짐·항공편 입력 후 요금 버튼 활성, 주문 페이지 소유 세션 없으면 비공개, 주문 API 400/401), build 통과.
+- 연동 모드: 결제 없음. 브라우저에서 견적→주문까지 실제 진행은 원격 DB·익명 로그인 설정 후 확인 필요(자동 E2E는 요금 계산 전까지).
+- 미해결: 홀드 만료 스케줄러 연결(B04에서 cron 경로와 함께), 다른 기기 주문 복구, 계정 삭제 시 주문 보존·익명화 정책(orders.owner_id는 삭제 제한).
+- 다음 ID: B04.
 
 문서 수정은 제품 코드·결제 연동·배포가 완료됐다는 뜻이 아니다. 구현 기록 형식: `작업 ID / 변경 파일 / 마이그레이션 / 검사와 결과 / 연동 모드 / 미해결 사항 / 다음 ID`.
 

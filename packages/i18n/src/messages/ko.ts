@@ -1,3 +1,4 @@
+import { bookingKo } from "./booking.ko";
 import type { Messages } from "./zh-CN";
 
 export const ko: Messages = {
@@ -88,4 +89,6 @@ export const ko: Messages = {
 
   "error.notFound": "페이지를 찾을 수 없습니다",
   "error.backHome": "홈으로",
+
+  ...bookingKo,
 };

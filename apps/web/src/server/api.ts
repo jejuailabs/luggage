@@ -53,6 +53,7 @@ export const BUSINESS_ERROR_CODES = [
   "CAPACITY_UNAVAILABLE",
   "QUOTE_NOT_FOUND",
   "QUOTE_EXPIRED",
+  "QUOTE_ALREADY_ORDERED",
   "IDEMPOTENCY_CONFLICT",
   "ORDER_NOT_FOUND",
   "ORDER_NOT_PAYABLE",
@@ -72,6 +73,7 @@ export function failFromDb(error: { message?: string; code?: string } | null, re
   const business = businessErrorCode(error);
   if (business === "SESSION_REQUIRED") return fail("SESSION_REQUIRED", requestId);
   if (business === "IDEMPOTENCY_CONFLICT") return fail("IDEMPOTENCY_CONFLICT", requestId);
+  if (business === "QUOTE_ALREADY_ORDERED") return fail("CONFLICT", requestId, { messageKey: `booking.error.${business}` });
   if (business === "QUOTE_NOT_FOUND" || business === "ORDER_NOT_FOUND" || business === "SLOT_NOT_FOUND") {
     return fail("NOT_FOUND", requestId, { messageKey: `booking.error.${business}` });
   }
