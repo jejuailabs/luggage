@@ -88,10 +88,39 @@ test.describe("runtime environment detection", () => {
   }
 });
 
-test("staff screens do not show the customer tab bar", async ({ page }) => {
-  await page.goto("/ko/driver");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("기사 작업");
-  await expect(page.getByRole("navigation", { name: "주 메뉴" })).toHaveCount(0);
+test("staff screens require sign-in and hide the customer tab bar", async ({ page }) => {
+  for (const area of ["driver", "partner", "admin"]) {
+    await page.goto(`/ko/${area}`);
+    await expect(page.getByTestId("staff-login")).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "주 메뉴" })).toHaveCount(0);
+  }
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("운영 관리");
+});
+
+test.describe("auth API", () => {
+  test("me requires a session", async ({ request }) => {
+    const response = await request.get("/api/v1/me");
+    expect(response.status()).toBe(401);
+    const body = await response.json();
+    expect(body.error).toMatchObject({ code: "SESSION_REQUIRED", retryable: false });
+    expect(body.meta.requestId).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
+  test("me rejects a forged bearer token", async ({ request }) => {
+    const response = await request.get("/api/v1/me", { headers: { Authorization: "Bearer not-a-real-token" } });
+    expect(response.status()).toBe(401);
+  });
+
+  test("guest session creation refuses cross-origin requests", async ({ request }) => {
+    const response = await request.post("/api/v1/sessions/guest", { headers: { Origin: "https://evil.example" } });
+    expect(response.status()).toBe(403);
+    expect((await response.json()).error.code).toBe("FORBIDDEN");
+  });
+
+  test("sign-out refuses requests without an origin", async ({ request }) => {
+    const response = await request.delete("/api/v1/sessions");
+    expect(response.status()).toBe(403);
+  });
 });
 
 test("health endpoint reports mock integrations without secrets", async ({ request }) => {

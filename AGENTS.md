@@ -114,7 +114,7 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 | 단계 | 상태 | 다음 작업 |
 |---|---|---|
 | 문서 | 중국인 대상 수하물 플랫폼으로 재정리·검증 완료 | 메인 1개 + 상세 9개, 상대 링크 40개와 범위·코드 블록·문자 인코딩 검사 통과 |
-| A | A01 완료 (2026-09-29) | A02 DB·인증(프로필·역할·guest 세션), A03 i18n·테마 저장 확장, A04 수하물 공개 페이지, A05 호텔·노선 관리 |
+| A | A01·A02 완료 (2026-09-29) | A03 i18n·테마 저장 확장, A04 수하물 공개 페이지, A05 호텔·노선 관리 |
 | B | 미착수 | A의 공통 데이터·인증 필요 |
 | C | 미착수 | B의 주문·짐 모델 필요 |
 | D | 미착수 | B·C 업무 기록 재사용. 미니프로그램 계정·위챗페이 가맹은 A부터 병행 준비 |
@@ -129,6 +129,14 @@ A01에서 `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:db`
 - 연동 모드: payment·notification·maps·wechat 모두 mock. Supabase 원격 개발 프로젝트 URL·publishable key는 `apps/web/.env.local`(git 제외)에 설정, 아직 코드에서 호출하지 않음.
 - 미해결: Docker·Supabase CLI 미설치 → DB 테스트는 embedded Postgres + Supabase 역할/auth 흉내(`supabase/tests/support/supabase-shim.sql`)로 실행. 실제 Supabase auth·storage 동작은 A02에서 원격 개발 프로젝트로 검증 필요. 원격 프로젝트는 연결된 Supabase MCP 계정에 없어 마이그레이션 적용 경로(DB 비밀번호 또는 CLI 링크) 결정 필요. 고객 문구는 승인 전 초안.
 - 다음 ID: A02.
+
+**A02 DB·인증**
+- 변경 파일: `supabase/migrations/20260929000200_profiles_roles.sql`, `apps/web/src/server/{supabase,auth,api}.ts`, `apps/web/src/proxy.ts`(세션 쿠키 갱신), `/api/v1/sessions/guest`·`/api/v1/sessions`·`/api/v1/me`, `components/staff-{gate,login}.tsx`, 업무 화면 3개, `packages/domain/src/access.ts`, i18n 업무 문구, 05 문서 7절 결정 기록.
+- 마이그레이션: `profiles`(가입 시 자동 생성, 본인만 조회, display_name·locale·theme 열만 수정), `role_assignments`(서버만 부여, 본인만 조회, 호텔 직원=호텔 범위·그 외=전역, anonymous 사용자 금지, 중복 금지), `audit_events`(역할 부여·회수 자동 기록, 추가 전용), `has_role()`. 원격 개발 프로젝트에는 아직 미적용.
+- 검사와 결과: lint·typecheck 통과, `pnpm test` 27개, `pnpm test:db` 23개(타인 프로필 차단, 자기 역할 부여 차단, guest 역할 금지, 감사 기록, 계정 삭제 시 정리), `pnpm test:e2e` 24개(업무 화면 3곳 로그인 요구·고객 탭 미노출, `/me` 401, 위조 Bearer 401, 교차 출처 guest 생성 403), build 통과.
+- 연동 모드: 인증은 Supabase(원격 개발 프로젝트) 연결 코드 준비, 실제 로그인·guest 생성은 마이그레이션 적용과 anonymous sign-in 활성화 후 확인 필요. 결제·알림 mock.
+- 미해결: 운영자 MFA, 업무 계정 발급 화면, guest 생성 남용 방지(CAPTCHA/rate limit), 다른 기기 주문 복구(B단계 연락 채널과 함께), 연락 채널 암호화 저장.
+- 다음 ID: A03.
 
 문서 수정은 제품 코드·결제 연동·배포가 완료됐다는 뜻이 아니다. 구현 기록 형식: `작업 ID / 변경 파일 / 마이그레이션 / 검사와 결과 / 연동 모드 / 미해결 사항 / 다음 ID`.
 

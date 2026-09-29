@@ -1,7 +1,13 @@
 import { PlaceholderPanel } from "@/components/placeholder-panel";
+import { StaffGate } from "@/components/staff-gate";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
-  const { t } = await getRequestContext(await resolveLocale(params));
-  return <PlaceholderPanel title={t("staff.admin")} body={t("staff.loginRequired")} />;
+  const locale = await resolveLocale(params);
+  const { t } = await getRequestContext(locale);
+  return (
+    <StaffGate locale={locale} area="admin">
+      <PlaceholderPanel title={t("staff.admin")} body={t("staff.comingSoon")} />
+    </StaffGate>
+  );
 }

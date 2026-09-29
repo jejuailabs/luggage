@@ -100,7 +100,7 @@ UNIQUE (actor_id, operation, idempotency_key);
 
 ## 7. 한국 번호 없는 비회원 예약
 
-guest는 보호된 소유 세션으로 주문을 생성한다. Supabase anonymous auth 또는 동등한 서버 관리 방식 중 A01 검증 결과에 맞춰 선택한다. Supabase DB의 `anon` role과 anonymous auth 사용자를 혼동하지 않는다.
+guest는 보호된 소유 세션으로 주문을 생성한다. **결정(A02):** Supabase anonymous auth를 사용한다. 웹은 `POST /api/v1/sessions/guest`(동일 출처 검사)로 쿠키 세션을 만들고, 미니프로그램 등은 같은 사용자 토큰을 `Authorization: Bearer`로 보낸다. anonymous 사용자에게 업무 역할을 줄 수 없도록 DB 트리거로 막는다. Supabase 프로젝트에서 anonymous sign-in 활성화와 남용 방지(CAPTCHA 또는 rate limit)를 설정한다. Supabase DB의 `anon` role과 anonymous auth 사용자를 혼동하지 않는다.
 
 다른 기기에서 복구하려면 검증된 연락 채널로 전달한 단기 코드/링크를 교환한다. 토큰은 해시·만료·단일 사용·시도 제한을 적용한다. 링크의 GET 미리보기만으로 소모하지 않고, 교환 후 URL에서 비밀값을 제거한다. 같은 이메일 문자열만으로 기존 guest 주문을 다른 회원에게 붙이지 않는다.
 
