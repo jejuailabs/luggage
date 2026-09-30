@@ -46,6 +46,7 @@ const pages = [
   ["demo-zh", "/zh-CN/demo"],
   ["hotel-zh", "/zh-CN/hotels/sample-hotel-jeju-city"],
   ["service-en", "/en/luggage"],
+  ["service-zh", "/zh-CN/luggage"],
   ["help-zh", "/zh-CN/help"],
   ["account-en", "/en/account"],
   ["guide-checkout", "/ko/guide/checkout-day"],

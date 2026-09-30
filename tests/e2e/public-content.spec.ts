@@ -12,7 +12,7 @@ test.describe("luggage service page", () => {
 
   test("blocks booking when a critical notice lacks an approved Chinese version", async ({ page }) => {
     await page.goto("/zh-CN/luggage");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("济州行李配送服务");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("先跟着体验一遍行李配送");
     await expect(page.getByTestId("content-how-it-works")).toHaveAttribute("data-content-status", "ok");
     await expect(page.getByTestId("content-bag-size-rules")).toHaveAttribute("data-content-status", "ok");
     await expect(page.getByTestId("content-prohibited-items")).toHaveAttribute("data-content-status", "blocked");

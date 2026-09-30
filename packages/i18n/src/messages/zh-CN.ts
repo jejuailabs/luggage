@@ -13,6 +13,7 @@ export const zhCN = {
   "nav.orders": "我的行李",
   "account.notice": "请在完成预约的同一设备上打开订单链接。无法找到订单时，请联系客户支持。",
   "nav.help": "客服",
+  "nav.preview": "服务预览",
   "nav.primary": "主导航",
 
   "home.headline": "轻装出发，畅游济州",

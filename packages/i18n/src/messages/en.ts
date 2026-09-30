@@ -10,6 +10,7 @@ export const en: Messages = {
   "nav.orders": "My bags",
   "account.notice": "Open your booking link on the same device used to book. Contact support if you cannot find it.",
   "nav.help": "Support",
+  "nav.preview": "Preview",
   "nav.primary": "Main navigation",
 
   "home.headline": "Travel light. Explore Jeju.",

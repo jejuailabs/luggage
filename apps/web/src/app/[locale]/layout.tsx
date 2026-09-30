@@ -11,6 +11,7 @@ import "../playful-home.css";
 import "../playful-theme.css";
 import "../demo.css";
 import "../pages.css";
+import "../preview.css";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));

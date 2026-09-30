@@ -10,6 +10,7 @@ export const ko: Messages = {
   "nav.orders": "내 짐",
   "account.notice": "예약을 완료한 기기에서 주문 링크를 열어주세요. 주문을 찾을 수 없다면 고객지원으로 문의하세요.",
   "nav.help": "고객지원",
+  "nav.preview": "이용 미리보기",
   "nav.primary": "주 메뉴",
 
   "home.headline": "짐 없이, 제주를 더 멀리",
