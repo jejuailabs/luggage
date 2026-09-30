@@ -3,17 +3,16 @@ import { expect, test } from "@playwright/test";
 test.describe("hotel QR landing", () => {
   test("preselects the hotel and remembers the partner code", async ({ page, context }) => {
     await page.goto("/zh-CN/h/sample01");
-    await expect(page).toHaveURL(/\/zh-CN\/hotels\/sample-hotel-jeju-city$/);
+    await expect(page).toHaveURL(/\/zh-CN\/luggage\/book\?hotel=sample-hotel-jeju-city$/);
     const cookie = (await context.cookies()).find((c) => c.name === "luggage_attr");
     expect(cookie?.httpOnly).toBe(true);
     expect(JSON.parse(decodeURIComponent(cookie!.value))).toMatchObject({ partnerCode: "SAMPLE01", channel: "hotel_qr" });
-    // 판매 중인 노선마다 예약 버튼
-    await expect(page.getByTestId("hotel-book-hotel_to_airport")).toBeVisible();
+    await expect(page.getByTestId("hotel-directory-search")).toBeVisible();
   });
 
   test("an unknown code goes to hotel search without attribution", async ({ page, context }) => {
     await page.goto("/zh-CN/h/NOPE9999");
-    await expect(page).toHaveURL(/\/zh-CN\/hotels$/);
+    await expect(page).toHaveURL(/\/zh-CN\/luggage\/book$/);
     expect((await context.cookies()).find((c) => c.name === "luggage_attr")).toBeUndefined();
   });
 
@@ -41,7 +40,7 @@ test.describe("scenario content", () => {
     await page.goto("/zh-CN/guide/hotel-move");
     await expect(page.getByTestId("guide-cta")).toContainText("酒店 → 酒店");
     await page.getByTestId("guide-cta").click();
-    await expect(page).toHaveURL(/\/zh-CN\/hotels$/);
+    await expect(page).toHaveURL(/\/zh-CN\/luggage\/book\?route=hotel_to_hotel$/);
   });
 });
 

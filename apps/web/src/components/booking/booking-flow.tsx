@@ -1,5 +1,6 @@
 "use client";
 
+import { DemoEntry } from "@/components/demo/demo-entry";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { RouteType } from "@luggage/domain";
@@ -15,6 +16,7 @@ interface Slot {
 interface Quote {
   quoteId: string;
   lineItems: { size: "standard" | "large"; quantity: number; amountMinor: number }[];
+  discountMinor: number;
   totalMinor: number;
   taxIncludedMinor: number;
   currency: string;
@@ -73,6 +75,7 @@ export function BookingFlow({
   const [destination, setDestination] = useState(destinations[0]?.slug ?? "");
   const needsFlight = routeType !== "hotel_to_hotel";
   const [quote, setQuote] = useState<Quote | null>(null);
+  const [couponCode, setCouponCode] = useState("");
   const [idempotencyKey, setIdempotencyKey] = useState<string | null>(null);
   const [accepted, setAccepted] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
@@ -121,6 +124,13 @@ export function BookingFlow({
   }, [date, hotel.slug, routeType, destination]);
 
   const totalBags = bags.standard + bags.large;
+  const selectedSlot = slots?.find((slot) => slot.slotId === slotId);
+  const destinationName = destinations.find((item) => item.slug === destination)?.name;
+  const summaryCopy = {
+    ko: { title: "예약 내용", pickup: "수거지", delivery: "전달지", schedule: "배송 일정", bags: "짐 수량", amount: "예상 요금", pending: "정보 입력 후 계산", airport: "제주공항", unit: "개" },
+    "zh-CN": { title: "预约概要", pickup: "取件地点", delivery: "送达地点", schedule: "配送时间", bags: "行李数量", amount: "预计费用", pending: "填写后计算", airport: "济州机场", unit: "件" },
+    en: { title: "Booking summary", pickup: "Pickup", delivery: "Delivery", schedule: "Schedule", bags: "Bags", amount: "Estimated price", pending: "Calculate after details", airport: "Jeju Airport", unit: "" },
+  }[locale];
   const canQuote = Boolean(slotId) && totalBags > 0 && (!needsFlight || Boolean(flightTime)) && !busy;
 
   async function requestQuote() {
@@ -142,6 +152,21 @@ export function BookingFlow({
       flightDepartsAt: routeType === "hotel_to_airport" ? `${flightDate}T${flightTime}:00+09:00` : undefined,
       flightArrivesAt: routeType === "airport_to_hotel" ? `${flightDate}T${flightTime}:00+09:00` : undefined,
     });
+    setBusy(false);
+    if (!result.ok) {
+      setError(errorText(result.messageKey));
+      return;
+    }
+    setQuote(result.data);
+    setIdempotencyKey(newIdempotencyKey());
+  }
+
+  /** 쿠폰 적용·해제. 할인과 세액은 서버가 다시 계산한 견적으로 교체한다. */
+  async function applyCoupon(code: string) {
+    if (!quote) return;
+    setBusy(true);
+    setError(null);
+    const result = await postJson(`/api/v1/quotes/${quote.quoteId}/coupon`, { code });
     setBusy(false);
     if (!result.ok) {
       setError(errorText(result.messageKey));
@@ -178,7 +203,7 @@ export function BookingFlow({
   const input = "customer-input min-h-12 w-full px-3";
 
   return (
-    <div className="flex flex-col gap-5" data-testid="booking-flow">
+    <div className="booking-layout" data-testid="booking-flow"><div className="booking-layout__main">
       <section className={card} aria-labelledby="step-slot">
         <h2 id="step-slot" className="customer-section-heading">
           {t("booking.step.slot")}
@@ -359,18 +384,9 @@ export function BookingFlow({
           {error}
         </p>
       ) : null}
+      {error ? <DemoEntry locale={locale} kind="blocked" route={routeType} hotel={hotel.slug} /> : null}
 
-      {!quote ? (
-        <button
-          type="button"
-          disabled={!canQuote}
-          onClick={requestQuote}
-          data-testid="booking-get-quote"
-          className="customer-action min-h-12 px-5 font-semibold disabled:opacity-50"
-        >
-          {busy ? t("booking.working") : t("booking.getQuote")}
-        </button>
-      ) : (
+      {quote ? (
         <>
           <section className={card} aria-labelledby="step-quote" data-testid="booking-quote">
             <h2 id="step-quote" className="customer-section-heading">
@@ -386,6 +402,27 @@ export function BookingFlow({
                 </li>
               ))}
             </ul>
+            {quote.discountMinor > 0 ? (
+              <p className="flex justify-between text-sm font-semibold" data-testid="booking-discount">
+                <span>{t("booking.coupon.discount")}</span>
+                <span>−{money(quote.discountMinor, quote.currency)}</span>
+              </p>
+            ) : null}
+            <form
+              className="booking-coupon"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void applyCoupon(couponCode);
+              }}
+            >
+              <label className="booking-coupon__field">
+                <span>{t("booking.coupon.label")}</span>
+                <input value={couponCode} onChange={(event) => setCouponCode(event.target.value.toUpperCase())} maxLength={20} autoComplete="off" data-testid="booking-coupon-input" />
+              </label>
+              <button type="submit" className="pf-btn pf-btn--ghost" disabled={busy || !couponCode.trim()}>{t("booking.coupon.apply")}</button>
+              {quote.discountMinor > 0 ? <button type="button" className="booking-coupon__remove" disabled={busy} onClick={() => { setCouponCode(""); void applyCoupon(""); }}>{t("booking.coupon.remove")}</button> : null}
+            </form>
+            <p className="text-xs text-muted">{quote.discountMinor > 0 ? `✓ ${t("booking.coupon.applied")} · ` : ""}{t("booking.coupon.rule")}</p>
             <p className="flex justify-between border-t border-line pt-2 text-lg font-bold">
               <span>{t("booking.total")}</span>
               <span data-testid="booking-total">{money(quote.totalMinor, quote.currency)}</span>
@@ -461,7 +498,24 @@ export function BookingFlow({
             </button>
           </form>
         </>
-      )}
-    </div>
+      ) : null}
+      </div><aside className="booking-layout__summary" aria-label={summaryCopy.title}>
+        <span className="landing-kicker">YOUR JOURNEY</span>
+        <h2>{summaryCopy.title}</h2>
+        <dl>
+          <div><dt>{summaryCopy.pickup}</dt><dd>{routeType === "airport_to_hotel" ? summaryCopy.airport : hotel.name}</dd></div>
+          <div><dt>{summaryCopy.delivery}</dt><dd>{routeType === "hotel_to_airport" ? summaryCopy.airport : routeType === "hotel_to_hotel" ? destinationName ?? "—" : hotel.name}</dd></div>
+          <div><dt>{summaryCopy.schedule}</dt><dd>{selectedSlot ? `${date} · ${time(selectedSlot.pickup.startsAt)}–${time(selectedSlot.delivery.endsAt)}` : date}</dd></div>
+          <div><dt>{summaryCopy.bags}</dt><dd>{totalBags}{summaryCopy.unit}</dd></div>
+        </dl>
+        <div className="booking-layout__price"><small>{summaryCopy.amount}</small><strong>{quote ? money(quote.totalMinor, quote.currency) : summaryCopy.pending}</strong></div>
+        {!quote ? <button
+          type="button"
+          disabled={!canQuote}
+          onClick={requestQuote}
+          data-testid="booking-get-quote"
+          className="customer-action"
+        >{busy ? t("booking.working") : t("booking.getQuote")} ↗</button> : null}
+      </aside></div>
   );
 }

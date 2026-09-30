@@ -212,13 +212,10 @@ describe("handoff locations", () => {
     const rows = await asRole(client, "anon", async (c) =>
       (await c.query("select name_ko from public.handoff_locations where code = 'arrival-counter'")).rows,
     );
-    // 테스트 기준 시각(2026-09-29 이후 실행)에서 2026-10-01 이전이면 아직 유효하지 않다.
-    const now = new Date();
-    const expected = now < new Date("2026-10-01")
-      ? []
-      : now < new Date("2026-12-01")
-        ? [{ name_ko: "도착층 카운터" }]
-        : [{ name_ko: "도착층 카운터 v2" }];
+    // 정책의 now()와 같은 DB 시각으로 비교한다. 테스트 실행기의 시간대에 의존하지 않는다.
+    const now = new Date((await client.query<{ current_time: Date }>("select now() as current_time")).rows[0]!.current_time);
+    const versions = (await client.query<{ name_ko: string; valid_from: Date; valid_until: Date | null }>("select name_ko, valid_from, valid_until from public.handoff_locations where code = 'arrival-counter' order by valid_from")).rows;
+    const expected = versions.filter((version) => new Date(version.valid_from) <= now && (version.valid_until === null || new Date(version.valid_until) > now)).map((version) => ({ name_ko: version.name_ko }));
     expect(rows).toEqual(expected);
   });
 });

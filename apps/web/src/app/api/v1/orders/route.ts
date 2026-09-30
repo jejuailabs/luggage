@@ -4,6 +4,7 @@ import { LOCALES } from "@luggage/i18n";
 import { fail, failFromDb, isSameOrigin, newRequestId, ok } from "@/server/api";
 import { getAuthContext } from "@/server/auth";
 import { ATTRIBUTION_COOKIE, parseAttribution } from "@/server/attribution";
+import { HERO_EXPERIMENT_COOKIE, parseHeroExperiment } from "@/server/experiment";
 import { getOrderView } from "@/server/orders";
 
 export const dynamic = "force-dynamic";
@@ -45,7 +46,12 @@ export async function POST(request: Request) {
 
   const { contact, ...body } = parsed.data;
   // 유입 귀속은 주문 생성 트랜잭션에서 확정된다 (결제 후 URL·쿠키 변경으로 바뀌지 않음).
-  const attribution = parseAttribution((await cookies()).get(ATTRIBUTION_COOKIE)?.value);
+  const cookieStore = await cookies();
+  const experiment = parseHeroExperiment(cookieStore.get(HERO_EXPERIMENT_COOKIE)?.value);
+  const attribution = {
+    ...parseAttribution(cookieStore.get(ATTRIBUTION_COOKIE)?.value),
+    ...(experiment ? { heroVariant: experiment.variant, experimentSessionId: experiment.sessionId } : {}),
+  };
   const { data, error } = await auth.client
     .rpc("create_order_with_attribution", {
       p_quote_id: body.quoteId,

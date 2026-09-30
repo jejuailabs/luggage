@@ -26,7 +26,7 @@ async function attributedOrder(attribution: Record<string, unknown>, idem = key(
       "authenticated",
       customer,
       "select * from public.create_order_with_attribution($1, $2, $3, 'zh-CN', $4, $5)",
-      [quote.id, idem, JSON.stringify({ name: "王", email: "w@example.com" }), ["bag-size-rules", "prohibited-items"], JSON.stringify(attr)],
+      [quote.id, idem, JSON.stringify({ name: "王", email: "w@example.com" }), ["bag-size-rules", "prohibited-items", "cancellation-refund", "damage-compensation"], JSON.stringify(attr)],
     );
   return { order: await call(attribution), retry: call };
 }
@@ -94,6 +94,17 @@ describe("partner codes", () => {
 });
 
 describe("attribution", () => {
+  it("records the home experiment once and rejects forged variants", async () => {
+    const sessionId = "123e4567-e89b-42d3-a456-426614174000";
+    const { order, retry } = await attributedOrder({ heroVariant: "B", experimentSessionId: sessionId });
+    const read = async () => (await client.query("select experiment_key, experiment_variant, experiment_session_id from public.order_attributions where order_id = $1", [order.id])).rows[0];
+    expect(await read()).toEqual({ experiment_key: "home_hero_v1", experiment_variant: "B", experiment_session_id: sessionId });
+    await retry({ heroVariant: "A", experimentSessionId: "123e4567-e89b-42d3-a456-426614174001" });
+    expect((await read()).experiment_variant).toBe("B");
+    const forged = await attributedOrder({ heroVariant: "admin", experimentSessionId: sessionId });
+    expect((await client.query("select experiment_key from public.order_attributions where order_id = $1", [forged.order.id])).rows[0].experiment_key).toBeNull();
+  });
+
   it("is fixed when the order is created and cannot be changed later", async () => {
     const idem = key();
     const { order, retry } = await attributedOrder({ partnerCode: "SAMPLE01", landing: "/zh-CN/h/SAMPLE01" }, idem);

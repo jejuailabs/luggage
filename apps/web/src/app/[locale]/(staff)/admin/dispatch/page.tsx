@@ -86,6 +86,7 @@ async function Dispatch({ locale, date }: { locale: string; date: string }) {
                 <div className="flex flex-col gap-2">
                   <AssignDriver jobId={job.id} currentDriverId={current} drivers={driverList} />
                   {active ? <VehicleSelect jobId={job.id} current={active.vehicle_id} vehicles={vehicleList} /> : null}
+                  {viewer.roles.some((role) => role.role === "dispatcher") ? <Link href={`/${locale}/admin/dispatch/${job.id}`} className="text-sm font-semibold text-primary underline">반환 작업·짐별 상태 →</Link> : null}
                 </div>
               ) : null}
             </div>

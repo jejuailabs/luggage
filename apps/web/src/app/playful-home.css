@@ -1,0 +1,223 @@
+/* 홈 화면 트래블 앱 스타일 시안 (.playful-home 범위). 반응: 모바일 기준, 900px 이상 2열. */
+.playful-home {
+  --pf-bg: #fff7ec;
+  --pf-card: #ffffff;
+  --pf-ink: #1f2a44;
+  --pf-muted: #56617c;
+  --pf-line: #f0e4d2;
+  --pf-sky: #2f7bf5;
+  --pf-sky-soft: #e2edff;
+  --pf-coral: #ff6f4f;
+  --pf-coral-soft: #ffe5dc;
+  --pf-mint: #1fae8c;
+  --pf-mint-soft: #d9f5ec;
+  --pf-sun: #ffc93c;
+  --pf-sun-soft: #fff1c4;
+  --pf-lilac: #7d6cf2;
+  --pf-lilac-soft: #ebe7ff;
+  --pf-navy: #1d2a4d;
+  --pf-shadow: 0 10px 28px rgb(122 88 40 / 12%);
+  --pf-radius: 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  overflow: hidden;
+  padding: 20px 16px calc(112px + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at 12% 4%, rgb(255 201 60 / 22%), transparent 34%),
+    radial-gradient(circle at 92% 30%, rgb(47 123 245 / 12%), transparent 30%),
+    var(--pf-bg);
+  color: var(--pf-ink);
+}
+
+:root[data-theme="dark"] .playful-home {
+  --pf-bg: #151b2c;
+  --pf-card: #1f2740;
+  --pf-ink: #f5f1ea;
+  --pf-muted: #b7bfd4;
+  --pf-line: #2e3857;
+  --pf-sky: #7fb0ff;
+  --pf-sky-soft: #243a63;
+  --pf-coral: #ff8b70;
+  --pf-coral-soft: #4a2d2b;
+  --pf-mint: #5fdcb9;
+  --pf-mint-soft: #1d4440;
+  --pf-sun: #ffd666;
+  --pf-sun-soft: #4a3f1f;
+  --pf-lilac: #aa9dff;
+  --pf-lilac-soft: #332d5c;
+  --pf-navy: #0e1426;
+  --pf-shadow: 0 10px 28px rgb(0 0 0 / 30%);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .playful-home {
+    --pf-bg: #151b2c; --pf-card: #1f2740; --pf-ink: #f5f1ea; --pf-muted: #b7bfd4; --pf-line: #2e3857;
+    --pf-sky: #7fb0ff; --pf-sky-soft: #243a63; --pf-coral: #ff8b70; --pf-coral-soft: #4a2d2b;
+    --pf-mint: #5fdcb9; --pf-mint-soft: #1d4440; --pf-sun: #ffd666; --pf-sun-soft: #4a3f1f;
+    --pf-lilac: #aa9dff; --pf-lilac-soft: #332d5c; --pf-navy: #0e1426; --pf-shadow: 0 10px 28px rgb(0 0 0 / 30%);
+  }
+}
+
+/* 홈에서는 레이아웃 폭 제한을 풀고 헤더·하단 탭도 같은 톤으로 맞춘다. */
+.customer-main:has(.playful-home) { max-width: none; padding: 0; }
+
+.playful-home > * { position: relative; z-index: 1; width: 100%; max-width: 1120px; margin-inline: auto; }
+.playful-home h1, .playful-home h2 { color: var(--pf-ink); letter-spacing: -.035em; }
+
+/* 장식: 점선 비행 경로 */
+.playful-home > .pf-flightpath { position: absolute; z-index: 0; inset: 0; width: 100%; max-width: none; height: 100%; pointer-events: none; }
+.pf-flightpath path { fill: none; stroke: color-mix(in srgb, var(--pf-sky) 45%, transparent); stroke-width: 1.6; stroke-dasharray: 3 9; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+
+/* 공통 */
+.pf-card { border-radius: var(--pf-radius); background: var(--pf-card); box-shadow: var(--pf-shadow); }
+.pf-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 999px; font-size: 15px; font-weight: 800; transition: transform .15s ease; }
+.pf-btn:hover { transform: translateY(-2px); }
+.pf-btn--coral { background: var(--pf-coral-btn, #cc4424); color: var(--pf-on-coral, #fff); box-shadow: 0 8px 20px rgb(204 68 36 / 30%); }
+.pf-btn--ghost { border: 2px solid var(--pf-line); background: var(--pf-card); color: var(--pf-ink); }
+.pf-btn--white { background: #fff; color: #1d2a4d; }
+.pf-icon { display: grid; flex: 0 0 auto; place-items: center; width: 44px; height: 44px; border-radius: 14px; font-size: 21px; }
+.pf-icon--sky { background: var(--pf-sky-soft); }
+.pf-icon--mint { background: var(--pf-mint-soft); }
+.pf-icon--lilac { background: var(--pf-lilac-soft); }
+.pf-sticker { display: inline-grid; place-items: center; padding: 5px 10px; border: 2px solid #fff; border-radius: 999px; font-size: 11px; font-weight: 900; letter-spacing: .04em; box-shadow: 0 4px 10px rgb(0 0 0 / 14%); }
+.pf-sticker--sun { background: #ffc93c; color: #3b2a00; }
+.pf-sticker--coral { background: #cc4424; color: #fff; }
+.pf-sticker--inline { border-color: transparent; background: #fff; color: #d2462a; box-shadow: none; transform: rotate(-4deg); }
+.pf-chip { display: inline-flex; align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: rgb(255 255 255 / 70%); color: var(--pf-muted); font-size: 12px; font-weight: 800; }
+.pf-chip--open::before { content: ""; width: 7px; height: 7px; margin: auto 6px auto 0; border-radius: 50%; background: #1fae8c; }
+:root[data-theme="dark"] .pf-chip { background: rgb(0 0 0 / 22%); }
+
+/* 히어로 */
+.pf-hero { display: grid; gap: 18px; }
+.pf-hello { display: inline-block; margin-bottom: 10px; padding: 6px 12px; border-radius: 999px; background: var(--pf-sun-soft); color: var(--pf-ink); font-size: 13px; font-weight: 800; }
+.pf-hero h1 { font-size: clamp(30px, 8.4vw, 50px); font-weight: 900; line-height: 1.12; word-break: keep-all; }
+.pf-sub { margin-top: 10px; color: var(--pf-muted); font-size: 15px; line-height: 1.6; word-break: keep-all; }
+.pf-hero__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.pf-photo { position: relative; display: block; aspect-ratio: 4 / 3; overflow: hidden; border: 6px solid var(--pf-card); border-radius: 28px; box-shadow: var(--pf-shadow); transform: rotate(1.2deg); }
+.pf-photo img { width: 100%; height: 100%; object-fit: cover; }
+.pf-photo .pf-sticker--sun { position: absolute; top: 14px; left: 14px; transform: rotate(-10deg); }
+.pf-photo__badge { position: absolute; top: 14px; right: 14px; padding: 6px 12px; border-radius: 999px; background: #1f5fd6; color: #fff; font-size: 11px; font-weight: 900; letter-spacing: .08em; transform: rotate(6deg); }
+.pf-photo__label { position: absolute; left: 12px; right: 64px; bottom: 12px; display: flex; flex-direction: column; padding: 10px 14px; border-radius: 16px; background: rgb(255 255 255 / 92%); color: #1f2a44; }
+.pf-photo__label strong { font-size: 15px; font-weight: 900; }
+.pf-photo__label small { color: #65708c; font-size: 12px; }
+.pf-photo__go { position: absolute; right: 12px; bottom: 12px; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #cc4424; color: #fff; font-size: 20px; font-weight: 900; }
+
+/* 검색 */
+.pf-search { padding: 20px; border: 3px solid var(--pf-sky-soft); }
+.pf-search__head { display: flex; gap: 12px; align-items: flex-start; }
+.pf-search h2 { font-size: 19px; font-weight: 850; line-height: 1.3; word-break: keep-all; }
+.pf-search__head p { margin-top: 3px; color: var(--pf-muted); font-size: 13px; line-height: 1.5; }
+.pf-search .stay-search--compact { margin-top: 14px; }
+.pf-search .stay-search__field label { display: none; }
+.pf-search .stay-search__field input { height: 54px; padding: 0 20px; border: 2px solid var(--pf-line); border-radius: 999px; background: var(--pf-bg); color: var(--pf-ink); }
+.pf-search .stay-search__field input:focus { border-color: var(--pf-sky); box-shadow: 0 0 0 4px var(--pf-sky-soft); }
+.pf-search .stay-search__options { border-radius: 18px; border-color: var(--pf-line); }
+
+/* 섹션 머리 */
+.pf-section { display: flex; flex-direction: column; gap: 14px; }
+.pf-section__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pf-section__head h2 { font-size: 21px; font-weight: 900; }
+.pf-section__head a { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-primary); font-size: 13px; font-weight: 800; white-space: nowrap; }
+.pf-plane { display: inline-block; color: var(--pf-sky); transform: rotate(-20deg); }
+
+/* 노선 */
+.pf-routes { display: grid; gap: 12px; }
+.pf-route { position: relative; display: flex; flex-direction: column; gap: 8px; min-height: 150px; padding: 18px; border-radius: var(--pf-radius); box-shadow: var(--pf-shadow); transition: transform .15s ease; }
+.pf-route:hover { transform: translateY(-3px) rotate(-.5deg); }
+.pf-route--sky { background: var(--pf-sky-soft); }
+.pf-route--coral { background: var(--pf-coral-soft); }
+.pf-route--mint { background: var(--pf-mint-soft); }
+.pf-route__icons { display: flex; align-items: center; gap: 8px; font-size: 24px; }
+.pf-route__icons > span { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--pf-card); box-shadow: 0 4px 10px rgb(0 0 0 / 7%); }
+.pf-route__icons i { flex: 1; max-width: 70px; border-top: 2.5px dashed color-mix(in srgb, var(--pf-ink) 30%, transparent); }
+.pf-route strong { font-size: 19px; font-weight: 900; }
+.pf-route__cta { margin-top: auto; color: var(--pf-ink); font-size: 13px; font-weight: 800; opacity: .75; }
+
+/* 짐 여정 + 예약증 */
+.pf-duo { display: grid; gap: 18px; }
+.pf-journey { overflow: hidden; }
+.pf-journey__bar { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #0f7d63; color: #fff; }
+.pf-journey__bar h2 { color: #fff; font-size: 17px; font-weight: 900; }
+:root[data-theme="dark"] .pf-journey__bar { background: #17806a; }
+.pf-steps { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 20px 12px 8px; list-style: none; }
+.pf-steps::before { content: ""; position: absolute; top: 33px; left: 12.5%; right: 12.5%; border-top: 2.5px dashed color-mix(in srgb, var(--pf-mint) 60%, transparent); }
+.pf-steps li { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.pf-steps__day { z-index: 1; padding: 2px 8px; border-radius: 999px; background: #0f7d63; color: #fff; font-size: 11px; font-weight: 900; }
+.pf-steps__icon { display: grid; place-items: center; width: 50px; height: 50px; border-radius: 16px; background: var(--pf-mint-soft); font-size: 24px; }
+.pf-steps__label { color: var(--pf-ink); font-size: 12px; font-weight: 750; line-height: 1.35; word-break: keep-all; }
+.pf-journey__hint { margin: 8px 16px 16px; padding: 10px 12px; border-radius: 14px; background: var(--pf-bg); color: var(--pf-muted); font-size: 13px; }
+
+.pf-ticket { position: relative; display: flex; flex-direction: column; gap: 14px; padding: 18px; border-radius: var(--pf-radius); background: linear-gradient(135deg, #ff7a52, #ff5f6d); color: #fff; box-shadow: 0 12px 28px rgb(255 95 109 / 30%); }
+:root[data-theme="dark"] .pf-ticket { background: linear-gradient(135deg, #c6503a, #b83f55); }
+.pf-ticket__top { display: flex; align-items: center; justify-content: space-between; }
+.pf-ticket h2 { color: #fff; font-size: 17px; font-weight: 900; }
+.pf-ticket__route { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pf-ticket__route div { display: flex; flex-direction: column; }
+.pf-ticket__route small { font-size: 11px; font-weight: 800; opacity: .85; }
+.pf-ticket__route strong { font-size: 28px; font-weight: 900; letter-spacing: -.03em; }
+.pf-ticket__route span { font-size: 13px; font-weight: 700; }
+.pf-ticket__end { text-align: right; }
+.pf-ticket__plane { flex: 1; border-bottom: 2px dashed rgb(255 255 255 / 60%); padding-bottom: 4px; text-align: center; font-size: 16px; }
+.pf-ticket__stub { position: relative; display: flex; align-items: center; gap: 14px; padding-top: 14px; border-top: 2px dashed rgb(255 255 255 / 55%); font-size: 13px; font-weight: 800; }
+.pf-ticket__stub::before, .pf-ticket__stub::after { content: ""; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--pf-bg); }
+.pf-ticket__stub::before { left: -28px; }
+.pf-ticket__stub::after { right: -28px; }
+.pf-ticket__qr { width: 38px; height: 38px; margin-left: auto; border-radius: 8px; background:
+  conic-gradient(from 90deg at 50% 50%, #1f2a44 25%, transparent 0 50%, #1f2a44 0 75%, transparent 0) 0 0 / 12px 12px, #fff; border: 4px solid #fff; }
+.pf-ticket__note { font-size: 12px; opacity: .9; }
+
+/* 신뢰 */
+.pf-trust { display: grid; gap: 10px; list-style: none; }
+.pf-trust li { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 20px; color: var(--pf-ink); font-size: 14px; font-weight: 750; line-height: 1.45; word-break: keep-all; }
+.pf-trust li span { display: grid; flex: 0 0 auto; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--pf-card); font-size: 20px; }
+.pf-trust--sun { background: var(--pf-sun-soft); }
+.pf-trust--lilac { background: var(--pf-lilac-soft); }
+.pf-trust--mint { background: var(--pf-mint-soft); }
+.pf-notice { padding: 12px 14px; border: 2px dashed var(--pf-line); border-radius: 16px; color: var(--pf-muted); font-size: 13px; line-height: 1.55; }
+
+/* 위치·도움말 */
+.pf-track, .pf-help { display: flex; gap: 14px; align-items: flex-start; padding: 18px; transition: transform .15s ease; }
+.pf-track:hover, .pf-help:hover { transform: translateY(-2px); }
+.pf-track { flex-wrap: wrap; }
+.pf-track__body { flex: 1; min-width: 0; }
+.pf-track strong, .pf-help strong { color: var(--pf-ink); font-size: 16px; font-weight: 900; }
+.pf-track p, .pf-help p { margin-top: 4px; color: var(--pf-muted); font-size: 13px; line-height: 1.5; }
+.pf-track small { color: var(--pf-muted); font-size: 11px; font-weight: 800; }
+.pf-progress { height: 10px; margin: 12px 0 6px; overflow: hidden; border-radius: 999px; background: var(--pf-mint-soft); }
+.pf-progress span { display: block; width: 58%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #1fae8c, #2f7bf5); animation: pf-progress 3.5s ease-in-out infinite alternate; }
+@keyframes pf-progress { from { width: 22%; } to { width: 78%; } }
+@media (prefers-reduced-motion: reduce) { .pf-progress span { animation: none; } }
+.pf-track__go { width: 100%; padding: 10px; border-radius: 999px; background: var(--pf-navy); color: #fff; text-align: center; font-size: 13px; font-weight: 800; }
+.pf-help { align-items: center; }
+.pf-help > div { flex: 1; }
+.pf-help__go { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--pf-lilac-soft); color: #5a48d8; font-weight: 900; }
+:root[data-theme="dark"] .pf-help__go { color: var(--pf-lilac); }
+
+/* 배너 */
+.pf-banner { position: relative; overflow: hidden; min-height: 220px; border-radius: 28px; box-shadow: var(--pf-shadow); }
+.pf-banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pf-banner > div { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; min-height: 220px; justify-content: flex-end; padding: 22px; background: linear-gradient(0deg, rgb(10 30 60 / 70%), transparent 75%); }
+.pf-banner h2 { max-width: 16ch; color: #fff; font-size: 24px; font-weight: 900; line-height: 1.2; word-break: keep-all; }
+.pf-banner .pf-sticker { transform: rotate(-8deg); }
+
+.pf-settings { display: flex; justify-content: center; }
+
+@media (min-width: 640px) {
+  .pf-routes { grid-template-columns: repeat(3, 1fr); }
+  .pf-trust { grid-template-columns: repeat(3, 1fr); }
+  .pf-trust li { flex-direction: column; align-items: flex-start; }
+}
+
+@media (min-width: 900px) {
+  .playful-home { gap: 34px; padding: 40px 32px calc(112px + env(safe-area-inset-bottom)); }
+  .pf-hero { grid-template-columns: 1.05fr 1fr; align-items: center; gap: 44px; }
+  .pf-search { margin-top: -8px; }
+  .pf-search { display: grid; grid-template-columns: 1fr 1.3fr; align-items: center; gap: 24px; padding: 24px 28px; }
+  .pf-search .stay-search--compact { margin-top: 0; }
+  .pf-duo { grid-template-columns: 1.2fr 1fr; }
+  .pf-duo:last-of-type { grid-template-columns: 1.4fr 1fr; }
+  .pf-banner, .pf-banner > div { min-height: 280px; }
+  .pf-banner > div { padding: 36px; }
+  .pf-banner h2 { font-size: 34px; }
+}

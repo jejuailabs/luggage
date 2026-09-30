@@ -3,6 +3,8 @@ import type { Locale, MessageKey } from "@luggage/i18n";
 import { getRequestContext } from "@/lib/request-context";
 import { getViewer } from "@/server/auth";
 import { StaffLogin } from "./staff-login";
+import { StaffSimulation } from "./demo/staff-simulation";
+import { StaffMfa } from "./staff-mfa";
 
 const AREA_TITLE: Record<StaffArea, MessageKey> = {
   driver: "staff.driver",
@@ -29,6 +31,7 @@ export async function StaffGate({
 
   if (!auth.user || auth.user.isAnonymous) {
     return (
+      <>
       <section className="staff-login-panel customer-card">
         <div className="staff-login-panel__intro"><span>JEJU CONNECT · TEAM</span><h1>{title}</h1><p>{t("staff.loginRequired")}</p></div>
         <div className="staff-login-panel__form">
@@ -45,8 +48,12 @@ export async function StaffGate({
         />
         </div>
       </section>
+      <div className="mt-4"><StaffSimulation locale={locale} area={area} /></div>
+      </>
     );
   }
+
+  if (area === "admin" && auth.mfaRequired && !auth.mfaVerified) return <StaffMfa />;
 
   if (!canEnterStaffArea(area, auth.roles)) {
     return (

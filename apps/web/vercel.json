@@ -4,6 +4,8 @@
     { "path": "/api/v1/jobs/expire-holds", "schedule": "0 17 * * *" },
     { "path": "/api/v1/jobs/reconcile-payments", "schedule": "10 17 * * *" },
     { "path": "/api/v1/jobs/dispatch-outbox", "schedule": "20 17 * * *" },
-    { "path": "/api/v1/jobs/purge-locations", "schedule": "30 18 * * *" }
+    { "path": "/api/v1/jobs/purge-locations", "schedule": "30 18 * * *" },
+    { "path": "/api/v1/jobs/purge-evidence", "schedule": "45 18 * * *" },
+    { "path": "/api/v1/jobs/refresh-metrics", "schedule": "0 19 * * *" }
   ]
 }

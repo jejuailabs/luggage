@@ -62,6 +62,8 @@ export function planNotification(topic: string, payload: Record<string, unknown>
       };
     case "refund.requested":
       return { audience: { roles: ["finance", "admin"] }, title: "환불 요청", body: "고객 취소에 따른 환불 요청을 검토하세요.", url: "/ko/admin" };
+    case "handoff_location.changed":
+      return { audience: { roles: ["dispatcher", "support", "admin"] }, title: "공항 인계 장소 변경", body: "영향받는 예약의 고객 안내를 확인하세요.", url: "/ko/admin/handoffs" };
     default:
       return null;
   }

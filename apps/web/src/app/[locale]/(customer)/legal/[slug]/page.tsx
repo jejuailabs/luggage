@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PfHero } from "@/components/pf-hero";
 import { notFound } from "next/navigation";
 import { ContentView } from "@/components/content-view";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
@@ -26,6 +27,6 @@ export default async function Page({ params }: { params: Params }) {
   const { t } = await getRequestContext(locale);
   const result = await getContent(slug, locale);
   return (
-    <div className="editorial-page editorial-page--legal customer-inner-page"><div className="editorial-page__visual"><span>JEJU CONNECT · INFORMATION</span></div><section className="editorial-page__article customer-card"><ContentView result={result} t={t} headingLevel={1} testId="content-page" /></section><Link href={`/${locale}/luggage`} className="editorial-page__return">← {locale === "ko" ? "서비스 안내로 돌아가기" : locale === "zh-CN" ? "返回服务介绍" : "Back to service guide"}</Link></div>
+    <div className="editorial-page editorial-page--legal customer-inner-page"><PfHero chip={locale === "ko" ? "📋 이용 안내" : locale === "zh-CN" ? "📋 服务须知" : "📋 Good to know"} title={result.status === "ok" ? result.translation.title : slug} tone="sun" emoji="🧳" back={{ href: `/${locale}/luggage`, label: locale === "ko" ? "서비스 안내" : locale === "zh-CN" ? "服务介绍" : "Service guide" }} /><section className="editorial-page__article customer-card"><ContentView result={result} t={t} headingLevel={2} testId="content-page" /></section><Link href={`/${locale}/luggage`} className="editorial-page__return">← {locale === "ko" ? "서비스 안내로 돌아가기" : locale === "zh-CN" ? "返回服务介绍" : "Back to service guide"}</Link></div>
   );
 }

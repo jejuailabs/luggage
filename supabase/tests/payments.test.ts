@@ -45,8 +45,8 @@ async function heldOrder(userId = guest, bags = { standard: 1 }) {
   return as<{ id: string; total_minor: number; public_code: string; capacity_units: number }>(
     "authenticated",
     userId,
-    "select * from public.create_order($1, $2, $3, 'zh-CN', $4)",
-    [quote.id, `order-${quote.id}`, JSON.stringify({ name: "王", email: "w@example.com" }), ["bag-size-rules", "prohibited-items"]],
+    "select * from public.create_order_with_attribution($1, $2, $3, 'zh-CN', $4, null)",
+    [quote.id, `order-${quote.id}`, JSON.stringify({ name: "王", email: "w@example.com" }), ["bag-size-rules", "prohibited-items", "cancellation-refund", "damage-compensation"]],
   );
 }
 
@@ -101,7 +101,7 @@ beforeAll(async () => {
   slotId = slot.id;
   departs = new Date(new Date(slot.delivery_ends_at).getTime() + 3 * 3600_000);
   bucketId = (await client.query("insert into public.capacity_buckets (slot_id, max_units) values ($1, 100) returning id", [slotId])).rows[0].id;
-  for (const slug of ["bag-size-rules", "prohibited-items"]) {
+  for (const slug of ["bag-size-rules", "prohibited-items", "cancellation-refund", "damage-compensation"]) {
     const item = (
       await client.query(
         "insert into public.content_items (slug, kind, criticality) values ($1, 'legal', 'critical') on conflict (slug) do update set slug = excluded.slug returning id",
@@ -245,6 +245,18 @@ describe("cancellation and refunds", () => {
     await report(attempt.merchant_order_id, "succeeded", attempt.amount_minor);
     return { order, attempt };
   }
+
+  it("rejects a refund with an audited reason while preserving the paid order", async () => {
+    const { order } = await paidOrder();
+    const request = await as<{ id: string }>("authenticated", guest, "select * from public.request_cancellation($1, 'customer requested review')", [order.id]);
+    await expect(as("authenticated", guest, "select public.reject_refund($1, 'not eligible')", [request.id])).rejects.toThrow("LUGGAGE:FORBIDDEN");
+    const rejected = await as<{ status: string; review_note: string }>("authenticated", finance, "select * from public.reject_refund($1, 'After cutoff')", [request.id]);
+    expect(rejected).toMatchObject({ status: "rejected", review_note: "After cutoff" });
+    const again = await as<{ status: string }>("authenticated", finance, "select * from public.reject_refund($1, 'After cutoff')", [request.id]);
+    expect(again.status).toBe("rejected");
+    await expect(as("authenticated", finance, "select public.approve_refund($1)", [request.id])).rejects.toThrow("LUGGAGE:REFUND_NOT_APPROVABLE");
+    expect(await orderState(order.id)).toBe("confirmed");
+  });
 
   it("cancels an unpaid order immediately and releases the hold", async () => {
     const before = await bucket();

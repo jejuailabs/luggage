@@ -1,0 +1,128 @@
+/* 전체 과정 시뮬레이션 (/demo). 색 토큰은 playful-theme.css의 --pf-* 를 쓴다. */
+.sim { display: flex; flex-direction: column; gap: 18px; max-width: 1120px; margin: 0 auto; color: var(--pf-ink); }
+.sim h1 { margin-top: 10px; font-size: clamp(28px, 7vw, 42px); font-weight: 900; }
+.sim h2 { margin: 18px 0 8px; font-size: 18px; font-weight: 900; }
+.sim-head p { margin-top: 6px; color: var(--pf-muted); font-size: 14px; line-height: 1.6; word-break: keep-all; }
+.sim-head__actions, .sim-nav { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.sim-nav { justify-content: flex-end; }
+.sim .pf-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+.sim-card { padding: 20px; border-radius: 24px; background: var(--pf-card); box-shadow: var(--pf-shadow); }
+.sim-card > h2:first-child { margin-top: 0; }
+.sim-muted { color: var(--pf-muted); font-size: 13px; line-height: 1.5; }
+.sim-error { color: #d93b1f; font-size: 13px; font-weight: 700; }
+.sim-ok { color: var(--pf-mint); font-weight: 900; }
+:root[data-theme="dark"] .sim-error { color: #ff9c86; }
+.sim-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; list-style: none; }
+.sim-steps li { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--pf-muted); font-size: 12px; font-weight: 800; text-align: center; }
+.sim-steps span { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--pf-card); box-shadow: var(--pf-shadow); }
+.sim-steps .is-current { color: var(--pf-ink); }
+.sim-steps .is-current span { background: var(--pf-sun); color: #3b2a00; }
+.sim-steps .is-done span { background: var(--pf-mint); color: #fff; }
+.sim-routes, .sim-slots, .sim-methods, .sim-roles { display: flex; flex-wrap: wrap; gap: 8px; border: 0; padding: 0; margin: 0; }
+.sim-routes legend, .sim-slots legend { width: 100%; margin-bottom: 8px; font-size: 13px; font-weight: 900; }
+.sim-routes button, .sim-slots button, .sim-roles button { min-height: 44px; padding: 8px 16px; border: 2px solid var(--pf-line); border-radius: 999px; background: var(--pf-card); color: var(--pf-ink); font-size: 14px; font-weight: 800; }
+.sim-routes button[aria-pressed="true"], .sim-slots button[aria-pressed="true"] { border-color: var(--pf-coral); background: var(--pf-coral-soft); }
+.sim-slots { margin-top: 16px; }
+.sim-slots button { flex: 1 1 100%; text-align: left; }
+.sim-slots small { color: var(--pf-muted); font-size: 11px; }
+.sim-grid { display: grid; gap: 12px; margin-top: 16px; }
+.sim-field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 800; }
+.sim-field input, .sim-field select { width: 100%; min-height: 48px; padding: 0 14px; border: 2px solid var(--pf-line); border-radius: 14px; background: color-mix(in srgb, var(--pf-card) 70%, var(--pf-bg)); color: var(--pf-ink); font: inherit; font-weight: 600; }
+.sim-bags { display: grid; gap: 10px; margin-top: 18px; font-size: 14px; }
+.sim-bags > div { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 16px; background: var(--pf-bg); }
+.sim-bags > div span { flex: 1; font-weight: 700; }
+.sim-bags button { width: 40px; height: 40px; border: 2px solid var(--pf-line); border-radius: 50%; background: var(--pf-card); color: var(--pf-ink); font-size: 18px; font-weight: 900; }
+.sim-bags button:disabled { opacity: .35; }
+.sim-bags b { min-width: 20px; text-align: center; font-size: 17px; }
+.sim-summary { padding: 14px 16px; border-radius: 18px; background: var(--pf-sky-soft); font-size: 14px; line-height: 1.6; }
+.sim-price { display: grid; gap: 6px; font-size: 14px; }
+.sim-price div { display: flex; justify-content: space-between; gap: 10px; }
+.sim-price dt { color: var(--pf-muted); }
+.sim-price .is-discount dd { color: var(--pf-mint); font-weight: 800; }
+.sim-price .is-total { margin-top: 6px; padding-top: 10px; border-top: 2px dashed var(--pf-line); font-size: 18px; font-weight: 900; }
+.sim-price .is-total dt { color: var(--pf-ink); }
+.sim-coupon { display: flex; align-items: flex-end; gap: 8px; margin-top: 12px; }
+.sim-coupon .sim-field { flex: 1; }
+.sim-policies { display: grid; gap: 6px; padding: 14px 16px 14px 32px; border-radius: 16px; background: var(--pf-sun-soft); font-size: 13px; line-height: 1.5; list-style: disc; }
+.sim-check { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-weight: 800; }
+.sim-check input { width: 22px; height: 22px; accent-color: var(--pf-coral); }
+.sim-methods { display: grid; grid-template-columns: repeat(3, 1fr); }
+.sim-method { min-height: 64px; border: 3px solid transparent; border-radius: 18px; color: #fff; font-weight: 900; }
+.sim-method--wechat { background: #058a45; }
+.sim-method--alipay { background: #1463d6; }
+.sim-method--card { background: #1d2a4d; }
+.sim-method[aria-pressed="true"] { border-color: var(--pf-sun); box-shadow: 0 0 0 3px var(--pf-card), 0 8px 18px rgb(0 0 0 / 16%); }
+.sim-sheet { position: fixed; z-index: 60; inset: 0; display: flex; align-items: flex-end; justify-content: center; background: rgb(15 20 35 / 55%); }
+.sim-sheet__panel { display: flex; flex-direction: column; align-items: center; gap: 12px; width: min(460px, 100%); padding: 26px 22px calc(28px + env(safe-area-inset-bottom)); border-top: 8px solid #07c160; border-radius: 28px 28px 0 0; background: var(--pf-card); color: var(--pf-ink); text-align: center; }
+.sim-sheet__panel--alipay { border-top-color: #1677ff; }
+.sim-sheet__panel--card { border-top-color: #1d2a4d; }
+.sim-sheet__panel strong { font-size: 18px; }
+.sim-sheet__amount { font-size: 32px; font-weight: 900; }
+.sim-sheet__panel small { color: var(--pf-muted); }
+.sim-link { min-width: 44px; min-height: 44px; color: var(--pf-muted); font-size: 18px; }
+.sim-spinner { width: 42px; height: 42px; border: 4px solid var(--pf-line); border-top-color: var(--pf-coral); border-radius: 50%; animation: sim-spin .8s linear infinite; }
+@keyframes sim-spin { to { transform: rotate(360deg); } }
+.sim-roles { position: sticky; top: 64px; z-index: 5; flex-wrap: nowrap; padding: 6px; border-radius: 999px; background: var(--pf-card); box-shadow: var(--pf-shadow); }
+.sim-roles button { position: relative; flex: 1; min-width: 0; padding: 8px 6px; border: 0; }
+.sim-roles button[aria-pressed="true"] { background: var(--pf-navy); color: #fff; }
+.sim-roles i { position: absolute; top: 6px; right: 8px; width: 9px; height: 9px; border-radius: 50%; background: var(--pf-coral); animation: sim-pulse 1.2s ease-in-out infinite; }
+@keyframes sim-pulse { 50% { transform: scale(1.5); opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { .sim-roles i, .sim-spinner { animation-duration: 3s; } }
+.sim-layout { display: grid; gap: 18px; }
+.sim-main, .sim-side { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.sim-voucher { margin-top: 10px; padding: 18px; border-radius: 22px; background: linear-gradient(135deg, #e0532f, #d63d55); color: #fff; }
+.sim-voucher__top { display: flex; justify-content: space-between; font-weight: 900; }
+.sim-voucher__route { margin: 10px 0 4px; font-size: 18px; }
+.sim-voucher p { font-size: 13px; }
+.sim-voucher small { display: block; margin-top: 10px; font-size: 11px; }
+.sim-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 2px dashed rgb(255 255 255 / 55%); }
+.sim-tags figure { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px; border-radius: 14px; background: #fff; color: #1f2a44; font-size: 11px; font-weight: 800; }
+.sim-qr-ph { width: 96px; height: 96px; border-radius: 8px; background: #eee; }
+.sim-timeline { display: grid; margin: 18px 0 8px; padding: 0; list-style: none; }
+.sim-timeline li { position: relative; display: flex; align-items: center; gap: 12px; min-height: 40px; color: var(--pf-muted); font-size: 14px; font-weight: 700; }
+.sim-timeline li::before { content: ""; position: absolute; left: 13px; top: -12px; height: 24px; border-left: 2.5px dashed var(--pf-line); }
+.sim-timeline li:first-child::before { display: none; }
+.sim-timeline span { z-index: 1; display: grid; place-items: center; width: 28px; height: 28px; border: 2.5px solid var(--pf-line); border-radius: 50%; background: var(--pf-card); color: #fff; font-size: 13px; }
+.sim-timeline .is-done { color: var(--pf-ink); }
+.sim-timeline .is-done span { border-color: var(--pf-mint); background: var(--pf-mint); }
+.sim-timeline [aria-current="step"] span { border-color: var(--pf-coral); background: var(--pf-coral); box-shadow: 0 0 0 5px var(--pf-coral-soft); }
+.sim-code { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 10px 0; padding: 16px; border: 2px dashed var(--pf-mint); border-radius: 20px; background: var(--pf-mint-soft); text-align: center; }
+.sim-code b { font-size: 34px; font-weight: 900; letter-spacing: .25em; }
+.sim-code small { color: var(--pf-muted); font-size: 12px; }
+.sim-map { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; font-size: 13px; }
+.sim-map .tracking-map__canvas { overflow: hidden; border-radius: 20px; }
+.sim-recovery { margin-top: 16px; padding: 12px 14px; border-radius: 16px; background: var(--pf-bg); font-size: 14px; }
+.sim-recovery summary { min-height: 32px; cursor: pointer; font-weight: 800; }
+.sim-job { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 18px; background: var(--pf-bg); font-size: 14px; }
+.sim-job__role { align-self: flex-start; padding: 3px 10px; border-radius: 999px; background: var(--pf-sky-soft); font-size: 12px; font-weight: 900; }
+.sim-baglist { display: grid; gap: 8px; margin-top: 12px; list-style: none; }
+.sim-baglist li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; padding: 10px 14px; border: 2px solid var(--pf-line); border-radius: 14px; font-size: 13px; font-weight: 800; }
+.sim-baglist em { color: var(--pf-mint); font-style: normal; }
+.sim-action { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.sim-wait { margin-top: 12px; color: var(--pf-muted); font-size: 14px; font-weight: 700; }
+.sim-wait button { min-height: 44px; color: var(--pf-coral-ink); font-weight: 900; }
+.sim-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+.sim-metrics div { display: flex; flex-direction: column; padding: 14px; border-radius: 18px; background: var(--pf-lilac-soft); }
+.sim-metrics div:nth-child(2) { background: var(--pf-sky-soft); }
+.sim-metrics div:nth-child(3) { background: var(--pf-mint-soft); }
+.sim-metrics div:nth-child(4) { background: var(--pf-sun-soft); }
+.sim-metrics b { font-size: 24px; font-weight: 900; }
+.sim-metrics span { color: var(--pf-muted); font-size: 12px; font-weight: 800; }
+.sim-feed small { color: var(--pf-muted); font-size: 12px; }
+.sim-feed ul { display: grid; gap: 8px; max-height: 320px; margin-top: 10px; overflow-y: auto; list-style: none; }
+.sim-feed li { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 14px 14px 14px 4px; background: var(--pf-mint-soft); font-size: 13px; line-height: 1.45; }
+.sim-feed--events li { border-radius: 12px; background: var(--pf-bg); }
+.sim-feed time { color: var(--pf-muted); font-size: 11px; font-weight: 800; }
+.sim-entry { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 18px; border: 2px dashed var(--pf-coral); border-radius: 22px; background: var(--pf-coral-soft); color: var(--pf-ink); }
+.sim-entry p { flex: 1 1 220px; font-size: 14px; font-weight: 700; line-height: 1.5; word-break: keep-all; }
+@media (min-width: 640px) {
+  .sim-grid { grid-template-columns: repeat(2, 1fr); }
+  .sim-slots button { flex: 1 1 0; }
+  .sim-metrics { grid-template-columns: repeat(4, 1fr); }
+}
+@media (min-width: 960px) {
+  .sim-layout { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: start; }
+  .sim-side { position: sticky; top: 130px; }
+  .sim-sheet { align-items: center; }
+  .sim-sheet__panel { border-radius: 28px; }
+}

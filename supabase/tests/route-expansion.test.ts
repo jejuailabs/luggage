@@ -43,8 +43,8 @@ async function confirm(quoteId: string) {
   const order = await as<{ id: string; flight_arrives_at: Date | null }>(
     "authenticated",
     customer,
-    "select * from public.create_order($1, $2, $3, 'zh-CN', $4)",
-    [quoteId, key(), JSON.stringify({ name: "王", email: "w@example.com" }), ["bag-size-rules", "prohibited-items"]],
+    "select * from public.create_order_with_attribution($1, $2, $3, 'zh-CN', $4, null)",
+    [quoteId, key(), JSON.stringify({ name: "王", email: "w@example.com" }), ["bag-size-rules", "prohibited-items", "cancellation-refund", "damage-compensation"]],
   );
   const attempt = await as<{ merchant_order_id: string; amount_minor: number }>(
     "authenticated",
@@ -81,7 +81,7 @@ beforeAll(async () => {
   seogwipoHotel = (await client.query("select id from public.hotels where slug = 'sample-hotel-seogwipo'")).rows[0].id;
   cityStaff = await createUser(client, { role: "hotel_staff", hotelId: cityHotel });
   seogwipoStaff = await createUser(client, { role: "hotel_staff", hotelId: seogwipoHotel });
-  for (const slug of ["bag-size-rules", "prohibited-items"]) {
+  for (const slug of ["bag-size-rules", "prohibited-items", "cancellation-refund", "damage-compensation"]) {
     const item = (
       await client.query(
         "insert into public.content_items (slug, kind, criticality) values ($1, 'legal', 'critical') on conflict (slug) do update set slug = excluded.slug returning id",

@@ -66,7 +66,7 @@ export async function setupBookingFixture(client: pg.Client, offsetMinutes: numb
     )
   ).rows[0];
   await client.query("insert into public.capacity_buckets (slot_id, max_units) values ($1, 100)", [slot.id]);
-  for (const slug of ["bag-size-rules", "prohibited-items"]) {
+  for (const slug of ["bag-size-rules", "prohibited-items", "cancellation-refund", "damage-compensation"]) {
     const item = (
       await client.query(
         "insert into public.content_items (slug, kind, criticality) values ($1, 'legal', 'critical') on conflict (slug) do update set slug = excluded.slug returning id",
@@ -98,11 +98,11 @@ export async function confirmedOrder(
     JSON.stringify(bags),
     fixture.departs,
   ]);
-  const order = await as<{ id: string }>("authenticated", customer, "select * from public.create_order($1, $2, $3, 'zh-CN', $4)", [
+  const order = await as<{ id: string }>("authenticated", customer, "select * from public.create_order_with_attribution($1, $2, $3, 'zh-CN', $4, null)", [
     quote.id,
     `ord-${quote.id}`,
     JSON.stringify({ name: "王", email: "w@example.com", phone: "+8613800138000" }),
-    ["bag-size-rules", "prohibited-items"],
+    ["bag-size-rules", "prohibited-items", "cancellation-refund", "damage-compensation"],
   ]);
   const attempt = await as<{ merchant_order_id: string; amount_minor: number }>(
     "authenticated",

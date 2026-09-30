@@ -1,4 +1,5 @@
 import { CreateSettlementForm, SettlementBatchActions } from "@/components/admin/settlement-actions";
+import Link from "next/link";
 import { StaffGate } from "@/components/staff-gate";
 import { resolveLocale } from "@/lib/request-context";
 import { getViewer } from "@/server/auth";
@@ -62,6 +63,7 @@ async function Settlements() {
                       {batch.payout_reference ? ` · 증빙 ${batch.payout_reference}` : ""}
                     </span>
                     <SettlementBatchActions batchId={batch.id} status={batch.status} />
+                    <Link href={`/api/v1/settlements/${batch.id}/statement`} target="_blank" className="inline-flex min-h-10 items-center text-sm font-semibold text-primary underline">PDF 내역서 ↓</Link>
                   </li>
                 ))}
             </ul>

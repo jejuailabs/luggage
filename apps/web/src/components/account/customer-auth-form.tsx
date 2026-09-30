@@ -64,7 +64,7 @@ export function CustomerAuthForm({ locale, mode, isAnonymous }: { locale: Locale
   }
 
   return <div className="customer-auth">
-    <div className="customer-auth__intro"><span>JEJU CONNECT · ACCOUNT</span><h1>{mode === "login" ? t.login : t.signup}</h1>{isAnonymous && mode === "signup" ? <p>{t.anonNotice}</p> : null}</div>
+    <div className="customer-auth__intro"><span className="customer-auth__emoji" aria-hidden="true">{mode === "login" ? "🔐" : "✨"}</span><h1>{mode === "login" ? t.login : t.signup}</h1>{isAnonymous && mode === "signup" ? <p>{t.anonNotice}</p> : null}</div>
     <form onSubmit={submit} data-testid="customer-auth-form">
       <label htmlFor="customer-auth-email">{t.email}</label>
       <input id="customer-auth-email" name="email" type="email" autoComplete="email" required />

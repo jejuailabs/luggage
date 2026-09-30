@@ -58,6 +58,7 @@ async function PartnerDesk({ locale, hotelParam }: { locale: string; hotelParam:
         <Link href={`/${locale}/partner/qr?hotel=${hotel.id}`} className="inline-flex min-h-11 items-center text-sm text-primary underline">
           QR·실적
         </Link>
+        <Link href={`/${locale}/partner/tags?hotel=${hotel.id}`} className="inline-flex min-h-11 items-center text-sm text-primary underline">짐 태그 인쇄</Link>
       </div>
       {allowed.length > 1 ? (
         <nav className="flex flex-wrap gap-2 text-sm" aria-label="지점 선택">

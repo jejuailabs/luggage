@@ -1,0 +1,38 @@
+"use client";
+/* eslint-disable @next/next/no-img-element -- Short-lived signed private Storage URLs are not image optimizer inputs. */
+
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { compressPhoto } from "@/lib/field-client";
+import { adminFetch } from "./admin-fetch";
+
+type Zone = { id: string; name_ko: string };
+type Translation = { locale: string; name: string; directions: string | null };
+export type LocationRow = { id: string; code: string; type: string; zone_id: string; name_ko: string; floor: string | null; landmark_ko: string | null; valid_from: string; valid_until: string | null; status: string; photoUrl: string | null; handoff_location_translations: Translation[] };
+const input = "min-h-11 w-full rounded-[var(--radius-button)] border border-line bg-bg px-3 text-sm";
+const utc = (local: string) => new Date(`${local}:00+09:00`).toISOString();
+const localTime = (iso: string | null) => iso ? new Date(iso).toLocaleString("sv-SE", { timeZone: "Asia/Seoul" }).replace(" ", "T").slice(0, 16) : "";
+
+export function HandoffLocationManager({ zones, locations }: { zones: Zone[]; locations: LocationRow[] }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const send = async (body: unknown) => { setBusy(true); setMessage(""); const result = await adminFetch("/api/v1/admin/handoff-locations", "POST", body); setBusy(false); setMessage(result.ok ? "저장했습니다." : result.code === "CONFLICT" ? "같은 코드의 유효기간이 겹칩니다. 기존 버전의 종료 시각을 먼저 정하세요." : "저장하지 못했습니다. 값과 권한을 확인해 주세요."); if (result.ok) router.refresh(); };
+  const v = (f: FormData, name: string) => String(f.get(name) ?? "").trim();
+  async function upload(id: string, file: File | null) {
+    if (!file) return;
+    setBusy(true); setMessage("");
+    try {
+      const jpeg = await compressPhoto(file);
+      const form = new FormData(); form.set("photo", new File([jpeg], "handoff.jpg", { type: "image/jpeg" }));
+      const response = await fetch(`/api/v1/admin/handoff-locations/${id}/photo`, { method: "POST", body: form });
+      setMessage(response.ok ? "사진을 비공개 저장소에 저장했습니다." : "사진 저장에 실패했습니다.");
+      if (response.ok) router.refresh();
+    } catch { setMessage("사진을 처리하지 못했습니다."); }
+    setBusy(false);
+  }
+  return <div className="grid gap-5">{message ? <p role="status" className="rounded-xl border border-line bg-card p-3 text-sm">{message}</p> : null}
+    <form className="grid gap-3 rounded-[var(--radius-card)] border border-line bg-card p-5 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); try { void send({ kind: "create", code: v(f, "code"), type: v(f, "type"), zoneId: v(f, "zone"), nameKo: v(f, "name"), floor: v(f, "floor") || null, landmarkKo: v(f, "landmark") || null, validFrom: utc(v(f, "from")), validUntil: v(f, "until") ? utc(v(f, "until")) : null }); } catch { setMessage("시각을 확인해 주세요."); } }}><div className="sm:col-span-2"><h2 className="text-lg font-bold">새 공항 인계 장소 버전</h2><p className="text-sm text-muted">장소를 초안으로 만든 뒤 사진·언어별 안내를 입력하고 운영 상태로 전환하세요.</p></div><label className="text-sm">코드<input name="code" required pattern="[a-z0-9][a-z0-9-]*" className={input} /></label><label className="text-sm">공항 권역<select name="zone" required className={input}>{zones.map((z) => <option key={z.id} value={z.id}>{z.name_ko}</option>)}</select></label><label className="text-sm">종류<select name="type" className={input}><option value="airport_counter">공항 카운터</option><option value="airport_meeting_point">공항 만남 장소</option></select></label><label className="text-sm">장소명<input name="name" required className={input} /></label><label className="text-sm">층·출구<input name="floor" maxLength={80} className={input} /></label><label className="text-sm">랜드마크<input name="landmark" maxLength={200} className={input} /></label><label className="text-sm">유효 시작 · 한국 시간<input name="from" type="datetime-local" required className={input} /></label><label className="text-sm">유효 종료 · 선택<input name="until" type="datetime-local" className={input} /></label><button disabled={busy || zones.length === 0} className="min-h-11 rounded-[var(--radius-button)] bg-primary px-4 font-semibold text-on-primary sm:col-span-2">장소 초안 만들기</button></form>
+    <div className="grid gap-4">{locations.map((row) => <article key={row.id} className="rounded-[var(--radius-card)] border border-line bg-card p-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><span className="text-xs font-bold tracking-widest text-primary">{row.code} · {row.type === "airport_counter" ? "카운터" : "만남 장소"}</span><h2 className="text-lg font-bold">{row.name_ko}</h2><p className="text-sm text-muted">{row.floor || "층 미입력"} · {row.landmark_ko || "랜드마크 미입력"}</p></div><select aria-label="장소 상태" value={row.status} disabled={busy} className={`${input} w-auto`} onChange={(e) => void send({ kind: "status", id: row.id, status: e.target.value })}><option value="draft">초안</option><option value="active">운영</option><option value="suspended">중지</option><option value="archived">보관</option></select></div><div className="mt-4 grid gap-4 lg:grid-cols-3"><form className="grid gap-2" onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); void send({ kind: "details", id: row.id, nameKo: v(f, "name"), floor: v(f, "floor") || null, landmarkKo: v(f, "landmark") || null, validFrom: utc(v(f, "from")), validUntil: v(f, "until") ? utc(v(f, "until")) : null }); }}><label className="text-sm">장소명<input name="name" required defaultValue={row.name_ko} className={input} /></label><label className="text-sm">층·출구<input name="floor" defaultValue={row.floor ?? ""} className={input} /></label><label className="text-sm">랜드마크<input name="landmark" defaultValue={row.landmark_ko ?? ""} className={input} /></label><label className="text-sm">시작<input name="from" required type="datetime-local" defaultValue={localTime(row.valid_from)} className={input} /></label><label className="text-sm">종료<input name="until" type="datetime-local" defaultValue={localTime(row.valid_until)} className={input} /></label><button disabled={busy} className="min-h-11 rounded-lg border border-line px-3 text-sm">장소·기간 저장</button></form><div className="grid content-start gap-3"><h3 className="font-semibold">현장 사진</h3>{row.photoUrl ? <img src={row.photoUrl} alt={`${row.name_ko} 인계 장소`} className="aspect-video w-full rounded-xl object-cover" /> : <p className="text-sm text-muted">사진 미등록</p>}<label className="text-sm">사진 교체<input type="file" accept="image/*" disabled={busy} className="mt-1 w-full text-sm" onChange={(e) => void upload(row.id, e.target.files?.[0] ?? null)} /></label><p className="text-xs text-muted">사진은 위치정보를 제거한 JPEG로 비공개 저장합니다.</p></div><div className="grid content-start gap-3">{(["zh-CN", "en"] as const).map((locale) => { const t = row.handoff_location_translations?.find((entry) => entry.locale === locale); return <form key={locale} className="grid gap-2 rounded-xl border border-line p-3" onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); void send({ kind: "translation", id: row.id, locale, name: v(f, "name"), directions: v(f, "directions") || null }); }}><h3 className="font-semibold">{locale === "zh-CN" ? "简体中文" : "English"}</h3><input name="name" required lang={locale} aria-label={`${locale} 장소명`} defaultValue={t?.name ?? ""} className={input} /><textarea name="directions" lang={locale} aria-label={`${locale} 찾아오는 방법`} defaultValue={t?.directions ?? ""} rows={2} maxLength={1000} className={`${input} py-2`} /><button disabled={busy} className="min-h-10 rounded-lg border border-line px-3 text-sm">번역 저장</button></form>; })}</div></div></article>)}</div>
+  </div>;
+}

@@ -1,0 +1,239 @@
+/* 고객 내부 페이지별 트래블 앱 스타일 (playful-theme.css 토큰 사용). */
+
+/* ── 공통 머리 영역 ── */
+.pf-hero2 { position: relative; display: grid; gap: 18px; align-items: center; overflow: hidden; margin-bottom: 22px; padding: 22px 20px; border-radius: 28px; background: var(--pf-sky-soft); color: var(--pf-ink); }
+.pf-hero2--coral { background: var(--pf-coral-soft); }
+.pf-hero2--mint { background: var(--pf-mint-soft); }
+.pf-hero2--sun { background: var(--pf-sun-soft); }
+.pf-hero2--lilac { background: var(--pf-lilac-soft); }
+.pf-hero2::after { content: ""; position: absolute; right: -40px; top: -40px; width: 160px; height: 160px; border-radius: 50%; background: rgb(255 255 255 / 35%); pointer-events: none; }
+:root[data-theme="dark"] .pf-hero2::after { background: rgb(255 255 255 / 5%); }
+.pf-hero2__copy { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.pf-hero2__back { display: inline-flex; align-items: center; min-height: 44px; color: var(--pf-ink); font-size: 13px; font-weight: 800; opacity: .8; }
+.pf-hero2__chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: var(--pf-card); color: var(--pf-ink); font-size: 12px; font-weight: 900; box-shadow: 0 3px 10px rgb(0 0 0 / 6%); }
+.pf-hero2 h1 { margin: 0; color: var(--pf-ink); font-size: clamp(27px, 7.4vw, 44px); font-weight: 900; line-height: 1.15; letter-spacing: -.04em; word-break: keep-all; }
+.pf-hero2 p { margin: 0; color: var(--pf-muted); font-size: 15px; line-height: 1.6; word-break: keep-all; }
+.pf-hero2__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.pf-hero2__emoji { position: absolute; right: 16px; bottom: 12px; z-index: 0; font-size: 64px; line-height: 1; opacity: .9; transform: rotate(-8deg); }
+.pf-hero2__photo { position: relative; z-index: 1; margin: 0; overflow: hidden; aspect-ratio: 16 / 10; border: 5px solid var(--pf-card); border-radius: 24px; box-shadow: var(--pf-shadow); transform: rotate(1.5deg); }
+.pf-hero2__photo img { width: 100%; height: 100%; object-fit: cover; }
+.pf-hero2__photo figcaption { position: absolute; left: 10px; bottom: 10px; padding: 4px 10px; border-radius: 999px; background: rgb(255 255 255 / 92%); color: #1f2a44; font-size: 11px; font-weight: 800; }
+.pf-hero2:has(.pf-hero2__emoji) .pf-hero2__copy { padding-right: 70px; }
+@media (min-width: 760px) {
+  .pf-hero2 { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); padding: 34px 38px; }
+  .pf-hero2:not(:has(.pf-hero2__photo)) { grid-template-columns: 1fr; }
+  .pf-hero2__emoji { right: 40px; bottom: 50%; font-size: 96px; transform: translateY(50%) rotate(-8deg); }
+  .pf-hero2:has(.pf-hero2__emoji) .pf-hero2__copy { padding-right: 140px; }
+}
+
+/* 섹션 제목의 영문 키커는 내부 페이지에서 숨기지 않고 작은 칩으로 유지 */
+.customer-shell .landing-section__heading h2 { font-weight: 900; }
+
+/* ── 서비스 안내 ── */
+.customer-shell .service-page__scenario-grid { display: grid; gap: 12px; }
+.customer-shell .service-page__scenario-card { position: relative; display: flex; align-items: center; gap: 12px; min-height: 76px; padding: 16px 18px; border: 0; border-radius: 22px; background: var(--pf-card); color: var(--pf-ink); box-shadow: var(--pf-shadow); }
+.customer-shell .service-page__scenario-card:nth-child(1) { background: var(--pf-sky-soft); }
+.customer-shell .service-page__scenario-card:nth-child(2) { background: var(--pf-coral-soft); }
+.customer-shell .service-page__scenario-card:nth-child(3) { background: var(--pf-mint-soft); }
+.service-page__scenario-emoji { display: grid; flex: 0 0 auto; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--pf-card); font-size: 22px; }
+.customer-shell .service-page__scenario-card > span:not(.service-page__scenario-emoji) { display: none; }
+.customer-shell .service-page__scenario-card strong { flex: 1; font-size: 15px; font-weight: 850; line-height: 1.4; word-break: keep-all; }
+.customer-shell .service-page__how { overflow: hidden; border-radius: 28px; }
+.customer-shell .service-page__how-photo { position: relative; }
+.customer-shell .service-page__how-photo .pf-sticker { position: absolute; top: 14px; left: 14px; transform: rotate(-8deg); }
+.customer-shell .service-page__how-steps li { border-radius: 18px; }
+.customer-shell .service-page__how-number { border-radius: 50%; background: #0f7d63; color: #fff; }
+.customer-shell .service-page__rules-grid > div { position: relative; border-radius: 24px; }
+.customer-shell .service-page__rules-grid > div:nth-child(1) { background: var(--pf-sun-soft); }
+.customer-shell .service-page__rules-grid > div:nth-child(2) { background: var(--pf-coral-soft); }
+.service-page__rule-icon { display: inline-grid; place-items: center; width: 42px; height: 42px; margin-bottom: 6px; border-radius: 14px; background: var(--pf-card); font-size: 20px; }
+@media (min-width: 760px) { .customer-shell .service-page__scenario-grid { grid-template-columns: repeat(3, 1fr); } }
+
+/* 노선 목록 (서비스·숙소 공통) */
+.customer-shell [data-testid="route-list"] > li { border: 0; border-radius: 22px; box-shadow: var(--pf-shadow); }
+.customer-shell [data-testid="route-list"] > li:nth-child(1) { background: var(--pf-sky-soft); }
+.customer-shell [data-testid="route-list"] > li:nth-child(2) { background: var(--pf-coral-soft); }
+.customer-shell [data-testid="route-list"] > li:nth-child(3) { background: var(--pf-mint-soft); }
+
+/* ── 숙소 상세 ── */
+.customer-shell .hotel-detail-facts { display: grid; grid-template-columns: 1fr; gap: 10px; width: 100%; margin: 0 0 22px; padding: 0; border: 0; background: none; box-shadow: none; }
+.customer-shell .hotel-detail-facts > div { display: grid; grid-template-columns: 42px 1fr; border-right: 0; column-gap: 12px; align-items: center; padding: 14px 16px; border: 0; border-radius: 20px; background: var(--pf-card); box-shadow: var(--pf-shadow); }
+.customer-shell .hotel-detail-facts > div > span { grid-row: span 2; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 14px; background: var(--pf-mint-soft); color: #0a6450; font-size: 18px; }
+.customer-shell .hotel-detail-facts dt { color: var(--pf-muted); font-size: 12px; font-weight: 800; }
+.customer-shell .hotel-detail-facts dd { color: var(--pf-ink); font-weight: 800; }
+.customer-shell .hotel-detail-routes__grid { display: grid; gap: 12px; }
+.customer-shell .hotel-detail-route { display: flex; align-items: center; gap: 14px; padding: 18px; border: 0; border-radius: 22px; box-shadow: var(--pf-shadow); color: var(--pf-ink); }
+.customer-shell .hotel-detail-route:nth-child(1) { background: var(--pf-sky-soft); }
+.customer-shell .hotel-detail-route:nth-child(2) { background: var(--pf-coral-soft); }
+.customer-shell .hotel-detail-route:nth-child(3) { background: var(--pf-mint-soft); }
+.customer-shell .hotel-detail-route__number { position: static; order: -1; flex: 0 0 auto; white-space: nowrap; display: grid; place-items: center; min-width: 84px; height: 48px; padding: 0 8px; border-radius: 999px; background: var(--pf-card); color: var(--pf-ink); font-size: 18px; letter-spacing: 0; }
+.customer-shell .hotel-detail-route__content { display: flex; flex-direction: column; gap: 2px; }
+.customer-shell .hotel-detail-route__content small { color: #0a6450; font-weight: 900; }
+.customer-shell .hotel-detail-route__content strong { font-size: 18px; font-weight: 900; }
+.customer-shell .hotel-detail-note { border-radius: 24px; background: var(--pf-sun-soft); }
+@media (min-width: 760px) {
+  .customer-shell .hotel-detail-facts { grid-template-columns: repeat(3, 1fr); }
+  .customer-shell .hotel-detail-routes__grid { grid-template-columns: repeat(3, 1fr); }
+  .customer-shell .hotel-detail-route { flex-direction: column; align-items: flex-start; }
+}
+
+/* ── 고객지원 ── */
+.customer-shell .help-page__faq-grid { display: grid; gap: 12px; }
+.customer-shell .help-page__faq-card { display: flex; gap: 14px; align-items: flex-start; padding: 18px; border-radius: 22px; }
+.customer-shell .help-page__faq-card:nth-child(3n+1) { background: var(--pf-sky-soft); }
+.customer-shell .help-page__faq-card:nth-child(3n+2) { background: var(--pf-sun-soft); }
+.customer-shell .help-page__faq-card:nth-child(3n) { background: var(--pf-mint-soft); }
+.customer-shell .help-page__faq-icon { display: grid; flex: 0 0 auto; place-items: center; width: 42px; height: 42px; border-radius: 14px; background: var(--pf-card); color: inherit; font-size: 20px; }
+.customer-shell .help-page__support { scroll-margin-top: 90px; }
+.customer-shell .help-page__support > * { border: 0; border-radius: 26px; box-shadow: var(--pf-shadow); }
+
+/* ── 마이페이지 ── */
+.account-page__icon { display: inline-grid; place-items: center; width: 44px; height: 44px; margin-bottom: 6px; border-radius: 14px; background: var(--pf-sky-soft); font-size: 21px; }
+.customer-shell .account-tracker { border: 0; border-radius: 26px; background: var(--pf-mint-soft); box-shadow: var(--pf-shadow); color: var(--pf-ink); }
+.customer-shell .account-tracker h2, .customer-shell .account-tracker p { color: var(--pf-ink); }
+.customer-shell .account-tracker .account-page__icon { background: var(--pf-card); }
+.customer-shell .account-tracker__link { border-radius: 999px; background: var(--pf-navy); color: #fff; }
+.customer-shell .account-page__join { border: 0; border-radius: 26px; background: var(--pf-lilac-soft); color: var(--pf-ink); }
+.customer-shell .account-page__join h2, .customer-shell .account-page__join p { color: var(--pf-ink); }
+.customer-shell .account-page__join .account-page__icon { background: var(--pf-card); }
+.customer-shell .account-page__join a { border-radius: 999px; }
+.customer-shell .account-page__list a { border-radius: 16px; }
+.customer-shell .account-page__empty { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.sim-booking-card { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; padding: 16px; border: 2px dashed var(--pf-coral); border-radius: 20px; background: var(--pf-coral-soft); color: var(--pf-ink); }
+.sim-booking-card strong { font-size: 18px; font-weight: 900; }
+.sim-booking-card span { font-size: 13px; }
+.sim-booking-card__status { align-self: flex-start; padding: 3px 10px; border-radius: 999px; background: var(--pf-card); font-weight: 900; }
+.sim-booking-card .pf-progress { height: 8px; margin: 4px 0 0; }
+
+/* ── 로그인 · 가입 ── */
+.customer-auth__emoji { display: inline-grid; place-items: center; width: 56px; height: 56px; margin-bottom: 8px; border-radius: 18px; background: var(--pf-sun-soft); font-size: 28px; }
+.customer-shell .customer-auth form > button[type="submit"] { min-height: 50px; border-radius: 999px; background: var(--pf-coral-btn); color: var(--pf-on-coral); font-weight: 900; }
+
+/* ── 추적 ── */
+.customer-shell .tracking-page__order-link, .customer-shell .tracking-page__notice { border-radius: 18px; }
+
+/* ── 안내 가이드 ── */
+.customer-shell .guide-page__hero { overflow: hidden; border-radius: 28px; background: var(--pf-sky-soft); }
+.customer-shell .guide-page__photo { position: relative; overflow: hidden; border: 5px solid var(--pf-card); border-radius: 24px; transform: rotate(1.2deg); }
+.customer-shell .guide-page__photo .pf-sticker { position: absolute; top: 12px; left: 12px; z-index: 1; transform: rotate(-8deg); }
+.customer-shell .guide-page__journey, .customer-shell .guide-page__action { border: 0; border-radius: 26px; box-shadow: var(--pf-shadow); }
+.customer-shell .guide-page__journey { background: var(--pf-card); }
+.customer-shell .guide-page__action { background: var(--pf-coral-soft); color: var(--pf-ink); }
+.customer-shell .guide-page__action h2, .customer-shell .guide-page__action p { color: var(--pf-ink); }
+.guide-page__action-emoji { font-size: 32px; }
+.customer-shell .guide-page__path > div { border-radius: 20px; background: var(--pf-bg); }
+.customer-shell .guide-page__related-card { border: 0; border-radius: 22px; background: var(--pf-card); box-shadow: var(--pf-shadow); }
+.customer-shell .guide-page__cta { border-radius: 999px; background: var(--pf-coral-btn); color: var(--pf-on-coral); }
+
+/* ── 약관 ── */
+.customer-shell .editorial-page--legal .editorial-page__article { border: 0; border-radius: 26px; box-shadow: var(--pf-shadow); }
+
+/* ── 예약 ── */
+.customer-shell .reservation-page__notice { padding: 14px 16px; border: 2px dashed var(--pf-coral); border-radius: 18px; background: var(--pf-coral-soft); color: var(--pf-ink); font-weight: 700; line-height: 1.55; }
+.reservation-page__inquiry-title { margin: 30px 0 4px; font-size: 18px; font-weight: 900; }
+.customer-shell .reservation-page__inquiry > .sim { margin: 18px 0; }
+.customer-shell .booking-layout__summary { border: 0; border-radius: 24px; box-shadow: var(--pf-shadow); }
+
+/* ── 주문·예약증 (실주문) ── */
+.customer-shell .order-page section, .customer-shell .order-page > div > section { border-radius: 24px; }
+.customer-shell [data-testid="voucher"] { border: 0; border-radius: 24px; background: linear-gradient(135deg, #e0532f, #d63d55); color: #fff; }
+
+/* ── 시뮬레이션: 검색 카드 · 티켓 요약 ── */
+.sim-head--embedded { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.sim-head--embedded .sim-head__actions { margin-top: 0; }
+.sim-booking { display: grid; gap: 18px; }
+.sim-booking__main { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.sim-search { background: var(--pf-navy); color: #fff; }
+.sim-search .sim-field, .sim-search legend, .sim-search .sim-bags strong { color: #fff; }
+.sim-search .sim-field input, .sim-search .sim-picker input { border-color: rgb(255 255 255 / 20%); background: rgb(255 255 255 / 10%); color: #fff; }
+.sim-search input::placeholder { color: rgb(255 255 255 / 60%); }
+.sim-search .sim-routes button, .sim-search .sim-slots button { border-color: rgb(255 255 255 / 22%); background: rgb(255 255 255 / 8%); color: #fff; }
+.sim-search .sim-routes button[aria-pressed="true"], .sim-search .sim-slots button[aria-pressed="true"] { border-color: #ffc93c; background: #ffc93c; color: #2a1f00; }
+.sim-search .sim-slots small { color: inherit; opacity: .8; }
+.sim-search .sim-bags > div { background: rgb(255 255 255 / 8%); }
+.sim-search .sim-bags button { border-color: rgb(255 255 255 / 30%); background: transparent; color: #fff; }
+.sim-search .sim-nav .pf-btn--coral { background: #ff7a57; color: #2a120c; }
+.sim-fromto { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; margin-bottom: 18px; padding: 14px; border-radius: 20px; background: rgb(255 255 255 / 8%); }
+.sim-fromto div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sim-fromto div:last-child { align-items: flex-end; text-align: right; }
+.sim-fromto small { color: #ffc93c; font-size: 11px; font-weight: 900; letter-spacing: .1em; }
+.sim-fromto b { font-size: 22px; }
+.sim-fromto span { overflow: hidden; font-size: 15px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+.sim-fromto i { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: #ff7a57; color: #2a120c; font-style: normal; font-weight: 900; }
+.sim-picker { position: relative; }
+.sim-picker input { width: 100%; min-height: 48px; padding: 0 14px; border: 2px solid var(--pf-line); border-radius: 14px; background: color-mix(in srgb, var(--pf-card) 70%, var(--pf-bg)); color: var(--pf-ink); font: inherit; font-weight: 700; }
+.sim-picker ul { position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 6px); max-height: 300px; overflow-y: auto; padding: 6px; border-radius: 16px; background: var(--pf-card); box-shadow: 0 16px 36px rgb(0 0 0 / 22%); list-style: none; }
+.sim-picker li button { width: 100%; min-height: 44px; padding: 8px 12px; border-radius: 12px; color: var(--pf-ink); text-align: left; font-size: 14px; font-weight: 700; }
+.sim-picker li button:hover, .sim-picker li button[aria-selected="true"] { background: var(--pf-sky-soft); }
+.sim-ticket { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 24px; background: var(--pf-card); box-shadow: var(--pf-shadow); }
+.sim-ticket::before, .sim-ticket::after { content: ""; position: absolute; top: 112px; width: 22px; height: 22px; border-radius: 50%; background: var(--pf-bg); }
+.sim-ticket::before { left: -11px; }
+.sim-ticket::after { right: -11px; }
+.sim-ticket__head { display: flex; justify-content: space-between; align-items: center; font-weight: 900; }
+.sim-ticket__route { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding-bottom: 16px; border-bottom: 2px dashed var(--pf-line); }
+.sim-ticket__route b { overflow: hidden; font-size: 15px; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
+.sim-ticket__route b:last-child { text-align: right; }
+.sim-ticket__route i { color: var(--pf-coral-ink); font-style: normal; }
+.sim-ticket dl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sim-ticket dt { color: var(--pf-muted); font-size: 11px; font-weight: 800; }
+.sim-ticket dd { font-size: 14px; font-weight: 800; }
+.sim-ticket__total { display: flex; align-items: baseline; justify-content: space-between; padding: 12px 14px; border-radius: 16px; background: var(--pf-sun-soft); }
+.sim-ticket__total strong { font-size: 24px; font-weight: 900; }
+.sim-ticket small { color: var(--pf-muted); font-size: 11px; }
+@media (min-width: 960px) {
+  .sim-booking { grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); align-items: start; }
+  .sim-ticket { position: sticky; top: 90px; }
+}
+
+/* ── 업무 화면 시뮬레이션 ── */
+.staff-sim { display: flex; flex-direction: column; gap: 16px; margin-top: 8px; color: var(--pf-ink); }
+.staff-sim__head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.staff-sim__head p { color: var(--pf-muted); font-size: 14px; }
+.staff-sim__panel { padding: 18px; border-radius: 22px; background: var(--pf-card); box-shadow: var(--pf-shadow); }
+.staff-sim__panel h2 { margin: 0 0 12px; font-size: 18px; font-weight: 900; }
+.staff-sim__panel h2:not(:first-child) { margin-top: 18px; }
+.staff-sim__panel h3 { margin: 14px 0 8px; color: var(--pf-muted); font-size: 13px; font-weight: 900; }
+.staff-sim__grid { display: grid; gap: 16px; }
+.staff-sim__list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.staff-sim__job { display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 18px; background: var(--pf-bg); }
+.staff-sim__job p { font-size: 14px; font-weight: 800; }
+.staff-sim__job small { color: var(--pf-muted); font-size: 12px; line-height: 1.5; }
+.staff-sim__job-top { display: flex; justify-content: space-between; gap: 8px; }
+.staff-sim__status { padding: 2px 10px; border-radius: 999px; background: var(--pf-sky-soft); font-size: 12px; font-weight: 900; white-space: nowrap; }
+.staff-sim__status--1 { background: var(--pf-sun-soft); }
+.staff-sim__status--2, .staff-sim__status--3 { background: var(--pf-coral-soft); }
+.staff-sim__status--4 { background: var(--pf-lilac-soft); }
+.staff-sim__status--5 { background: var(--pf-mint-soft); }
+.staff-sim__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
+.staff-sim__actions .pf-btn { min-height: 44px; padding: 0 16px; font-size: 13px; }
+.staff-sim__tags { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+.staff-sim__tags code { padding: 3px 8px; border-radius: 8px; background: var(--pf-card); font-size: 11px; }
+.staff-sim__select { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; }
+.staff-sim__select select { min-height: 44px; padding: 0 10px; border: 2px solid var(--pf-line); border-radius: 12px; background: var(--pf-card); color: var(--pf-ink); }
+.staff-sim__qr { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.staff-sim__qr img { padding: 10px; border-radius: 18px; background: #fff; }
+.staff-sim__qr p { color: var(--pf-muted); font-size: 13px; line-height: 1.5; }
+@media (min-width: 900px) { .staff-sim__grid { grid-template-columns: 1.4fr 1fr; } }
+
+/* 사진 위 스티커: 예전 사진 오버레이 글자 규칙을 덮어쓴다 */
+.customer-shell .service-page__how-photo .pf-sticker, .customer-shell .guide-page__photo .pf-sticker {
+  inset: 14px auto auto 14px; width: auto; height: auto; max-width: none; padding: 5px 10px; background: #ffc93c; color: #3b2a00; font-size: 11px; line-height: 1.2; letter-spacing: .06em; text-shadow: none;
+}
+:root[data-theme="dark"] .customer-shell .hotel-detail-route__content small { color: var(--pf-mint); }
+:root[data-theme="dark"] .customer-shell .hotel-detail-facts > div > span { color: var(--pf-mint); }
+
+/* 숙소 상세 노선 카드: 예전 사진 카드의 절대 위치 배치를 해제 */
+.customer-shell .hotel-detail-routes { padding: 8px 0 24px; }
+.customer-shell .hotel-detail-route { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; min-height: 0; overflow: visible; }
+.customer-shell .hotel-detail-route__number { position: static; width: auto; height: 46px; border: 0; }
+.customer-shell .hotel-detail-route__content { position: static; width: 100%; }
+.customer-shell .hotel-detail-route__content small { background: var(--pf-card); }
+.customer-shell .hotel-detail-route__content strong { margin-top: 6px; font-size: 21px; }
+.customer-shell .hotel-detail-route__content > span { margin-top: 10px; padding-top: 10px; border-top: 2px dashed color-mix(in srgb, var(--pf-ink) 18%, transparent); }
+
+/* 실예약 견적의 쿠폰 입력 */
+.booking-coupon { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; margin: 10px 0 4px; }
+.booking-coupon__field { display: flex; flex: 1 1 160px; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 800; }
+.booking-coupon__field input { min-height: 44px; padding: 0 12px; letter-spacing: .06em; }
+.booking-coupon .pf-btn { min-height: 44px; }
+.booking-coupon__remove { min-height: 44px; padding: 0 8px; color: var(--color-primary); font-size: 13px; font-weight: 800; }

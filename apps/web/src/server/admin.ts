@@ -20,6 +20,16 @@ export async function requireAdmin(request: Request, requestId: string): Promise
   return { ok: true, auth: { ...auth, client: auth.client } };
 }
 
+/** 재무 도구는 finance·admin에게만 허용한다. DB RLS가 최종 권한을 다시 확인한다. */
+export async function requireFinance(request: Request, requestId: string): Promise<AdminResult> {
+  const authorization = request.headers.get("authorization");
+  if (!authorization && !isSameOrigin(request)) return { ok: false, response: fail("FORBIDDEN", requestId) };
+  const auth = await getAuthContext({ authorization });
+  if (!auth.user || !auth.client) return { ok: false, response: fail("SESSION_REQUIRED", requestId) };
+  if (!auth.roles.some((role) => role.role === "finance" || role.role === "admin")) return { ok: false, response: fail("FORBIDDEN", requestId) };
+  return { ok: true, auth: { ...auth, client: auth.client } };
+}
+
 /** Postgres 오류 코드를 API 오류로 바꾼다. 내부 메시지는 노출하지 않는다. */
 export function dbErrorCode(error: { code?: string } | null): "CONFLICT" | "VALIDATION_FAILED" | "FORBIDDEN" | "PROVIDER_UNAVAILABLE" {
   switch (error?.code) {

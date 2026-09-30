@@ -7,18 +7,26 @@ import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 import "../globals.css";
 import "../editorial-theme.css";
+import "../playful-home.css";
+import "../playful-theme.css";
+import "../demo.css";
+import "../pages.css";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
-  const { t } = await getRequestContext(await resolveLocale(params));
+  const locale = await resolveLocale(params);
+  const { t } = await getRequestContext(locale);
   return {
+    metadataBase: new URL(getServerConfig().appUrl),
     title: { default: `${t("brand.name")} · ${t("brand.tagline")}`, template: `%s · ${t("brand.name")}` },
     description: t("home.subheadline"),
     icons: { icon: "/icons/icon.svg", apple: "/icons/apple-touch-icon.png" },
     appleWebApp: { capable: true, title: t("brand.name"), statusBarStyle: "default" },
+    openGraph: { type: "website", title: `${t("brand.name")} · ${t("brand.tagline")}`, description: t("home.subheadline"), locale: locale === "zh-CN" ? "zh_CN" : locale === "ko" ? "ko_KR" : "en_US", images: [{ url: `/images/og-${locale}.png`, width: 1200, height: 630 }] },
+    twitter: { card: "summary_large_image", images: [`/images/og-${locale}.png`] },
   };
 }
 

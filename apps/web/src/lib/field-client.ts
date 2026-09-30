@@ -95,6 +95,7 @@ export async function flushQueue(): Promise<{ sent: number; rejected: { event: P
 export async function clearFieldStorage(): Promise<void> {
   try {
     await clearAll();
+    localStorage.removeItem("luggage-active-driver-id");
   } catch {
     // 무시
   }

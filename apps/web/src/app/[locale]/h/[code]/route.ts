@@ -14,7 +14,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ loca
   const { locale: rawLocale, code } = await params;
   const locale = isLocale(rawLocale) ? rawLocale : "zh-CN";
   const hotelSlug = await resolvePartnerCode(code);
-  const target = new URL(hotelSlug ? `/${locale}/hotels/${hotelSlug}` : `/${locale}/hotels`, request.url);
+  const target = new URL(hotelSlug ? `/${locale}/luggage/book?hotel=${encodeURIComponent(hotelSlug)}` : `/${locale}/luggage/book`, request.url);
   const response = NextResponse.redirect(target, 302);
   if (hotelSlug) {
     response.cookies.set(

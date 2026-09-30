@@ -4,7 +4,7 @@ import { resolveLocale } from "@/lib/request-context";
 import { getViewer } from "@/server/auth";
 
 const items = [
-  ["", "대시보드"], ["orders", "예약"], ["dispatch", "배송·배차"], ["hotels", "숙소"], ["partners", "고객사·제휴"], ["members", "회원·권한"], ["support", "고객지원"], ["routes", "노선"], ["settlements", "정산"], ["campaigns", "캠페인"], ["metrics", "분석"],
+  ["", "대시보드"], ["orders", "예약"], ["dispatch", "배송·배차"], ["hotels", "숙소"], ["handoffs", "공항 인계 장소"], ["partners", "고객사·제휴"], ["partner-rules", "제휴 코드·수수료"], ["members", "회원·권한"], ["support", "고객지원"], ["routes", "노선"], ["operations", "권역·요금·슬롯"], ["content", "콘텐츠"], ["payment-reviews", "결제 확인"], ["refunds", "환불"], ["settlements", "정산"], ["campaigns", "캠페인"], ["metrics", "분석"],
 ] as const;
 
 export default async function AdminLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {

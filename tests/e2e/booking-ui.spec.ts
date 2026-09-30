@@ -1,9 +1,11 @@
 import { expect, test } from "@playwright/test";
 
 // fixture 모드: 영어 필수 안내는 모두 게시, 중국어는 금지 품목 안내가 없다.
-test("asks for a hotel before booking", async ({ page }) => {
+test("shows stay selection inside the booking flow", async ({ page }) => {
   await page.goto("/zh-CN/luggage/book");
-  await expect(page.getByRole("link", { name: "选择酒店" })).toBeVisible();
+  await expect(page.getByTestId("hotel-directory-search")).toBeVisible();
+  await expect(page.locator(".reservation-progress li.is-current")).toHaveCount(1);
+  await expect(page.locator(".customer-header").getByRole("link", { name: "住宿" })).toHaveCount(0);
 });
 
 test("blocks booking when a required notice is not approved in the customer's language", async ({ page }) => {
@@ -15,6 +17,7 @@ test("blocks booking when a required notice is not approved in the customer's la
 test("walks through slot, bags and flight before a price can be requested", async ({ page }) => {
   await page.goto("/en/luggage/book?hotel=sample-hotel-jeju-city");
   await expect(page.getByTestId("booking-flow")).toBeVisible();
+  await expect(page.locator(".booking-layout__summary")).toContainText("Booking summary");
   // 내일 슬롯은 한국 시간 20시에 마감되므로 실행 시각과 무관하게 이틀 뒤를 고른다.
   const inTwoDays = new Date(Date.now() + 9 * 3600_000 + 2 * 86_400_000).toISOString().slice(0, 10);
   await page.getByTestId("booking-date").fill(inTwoDays);

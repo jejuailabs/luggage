@@ -97,3 +97,8 @@ select p.id, 'percent_of_total', 1000, current_date - 30
 from public.hotel_partners p
 where p.name = '예시 제휴사'
   and not exists (select 1 from public.commission_rules r where r.partner_id = p.id);
+
+-- 합성 개발 데이터: 첫 이용 쿠폰 예시 (10%, 최대 5,000원, 1인 1회). 운영 쿠폰은 관리자가 별도로 만든다.
+insert into public.coupons (code, kind, value, max_discount_minor, per_user_limit, note)
+values ('WELCOME10', 'percent', 10, 5000, 1, '개발용 합성 쿠폰')
+on conflict (code) do nothing;

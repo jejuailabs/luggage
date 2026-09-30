@@ -16,11 +16,11 @@ async function miniprogramAttempt(owner = customer) {
     fixture.cityHotel,
     fixture.departs,
   ]);
-  const order = await as<{ id: string }>("authenticated", owner, "select * from public.create_order($1, $2, $3, 'zh-CN', $4)", [
+  const order = await as<{ id: string }>("authenticated", owner, "select * from public.create_order_with_attribution($1, $2, $3, 'zh-CN', $4, null)", [
     quote.id,
     key(),
     JSON.stringify({ name: "王", wechat: "wxid_test" }),
-    ["bag-size-rules", "prohibited-items"],
+    ["bag-size-rules", "prohibited-items", "cancellation-refund", "damage-compensation"],
   ]);
   return as<{ id: string; merchant_order_id: string }>("authenticated", owner, "select * from public.start_payment($1, 'mock', 'wechat_pay_miniprogram', $2)", [
     order.id,
@@ -78,11 +78,11 @@ describe("mini program pay tickets", () => {
       fixture.cityHotel,
       fixture.departs,
     ]);
-    const order = await as<{ id: string }>("authenticated", customer, "select * from public.create_order($1, $2, $3, 'zh-CN', $4)", [
+    const order = await as<{ id: string }>("authenticated", customer, "select * from public.create_order_with_attribution($1, $2, $3, 'zh-CN', $4, null)", [
       quote.id,
       key(),
       JSON.stringify({ name: "王", wechat: "wxid_test" }),
-      ["bag-size-rules", "prohibited-items"],
+      ["bag-size-rules", "prohibited-items", "cancellation-refund", "damage-compensation"],
     ]);
     const attempt = await as<{ id: string }>("authenticated", customer, "select * from public.start_payment($1, 'mock', 'alipay', $2)", [order.id, key()]);
     await expect(as("authenticated", customer, "select public.create_miniprogram_pay_ticket($1)", [attempt.id])).rejects.toThrow("LUGGAGE:ORDER_NOT_PAYABLE");

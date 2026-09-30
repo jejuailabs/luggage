@@ -6,9 +6,10 @@
     <meta name="robots" content="noindex" />
     <title>离线 · 오프라인 · Offline</title>
     <style>
+      @font-face { font-family: Pretendard; src: url('/fonts/PretendardVariable.woff2') format('woff2'); font-weight: 100 900; }
       :root { color-scheme: light dark; --bg: #f8fafc; --card: #fff; --text: #0f172a; --muted: #475569; --line: #cbd5e1; --brand: #0f766e; }
       @media (prefers-color-scheme: dark) { :root { --bg: #0b1220; --card: #111c2e; --text: #f1f5f9; --muted: #cbd5e1; --line: #475569; --brand: #5eead4; } }
-      body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; line-height: 1.6; }
+      body { margin: 0; background: var(--bg); color: var(--text); font-family: Pretendard, sans-serif; line-height: 1.6; }
       main { max-width: 480px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
       section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
       h1 { font-size: 22px; margin: 0; color: var(--brand); }
@@ -30,6 +31,7 @@
         <p lang="ko">이 기기에 서버 전송을 기다리는 현장 기록 <strong id="pending-count">0</strong>건이 있습니다. 연결되면 자동으로 다시 보냅니다. (아직 확정 아님)</p>
       </section>
       <div id="vouchers"></div>
+      <div id="jobs"></div>
     </main>
     <script>
       // IndexedDB에 저장된 예약증 사본과 대기 기록 수를 보여 준다 (마지막 서버 확인 시각과 함께).
@@ -44,7 +46,7 @@
         };
         open.onsuccess = function () {
           var db = open.result;
-          var tx = db.transaction(["queue", "vouchers"], "readonly");
+          var tx = db.transaction(["queue", "vouchers", "jobs"], "readonly");
           var countReq = tx.objectStore("queue").count();
           countReq.onsuccess = function () {
             if (countReq.result > 0) {
@@ -70,6 +72,27 @@
               checked.textContent = "最后确认 / 마지막 서버 확인: " + v.checkedAtKst + " (KST) — 最新状态请联网查看";
               [title, code, lines, checked].forEach(function (n) { s.appendChild(n); });
               box.appendChild(s);
+            });
+          };
+          var savedJobs = tx.objectStore("jobs").getAll();
+          savedJobs.onsuccess = function () {
+            var owner = localStorage.getItem("luggage-active-driver-id");
+            if (!owner) return;
+            var box = document.getElementById("jobs");
+            (savedJobs.result || []).filter(function (job) { return job.driverId === owner; }).forEach(function (job) {
+              var card = document.createElement("section");
+              var heading = document.createElement("strong");
+              heading.textContent = "기사 배정 사본 · " + job.orderCode;
+              var route = document.createElement("p");
+              route.textContent = job.origin + " → " + job.destination + " · 짐 " + job.bagCount + "개";
+              var windowLine = document.createElement("p");
+              windowLine.className = "muted";
+              windowLine.textContent = "수거 " + job.pickupWindow + " · 인계 " + job.deliveryWindow;
+              var warning = document.createElement("p");
+              warning.className = "muted";
+              warning.textContent = "마지막 서버 확인 " + new Date(job.checkedAt).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }) + " KST · 배정 해제 여부는 연결 후 확인하세요. 오프라인 사본으로 최종 인계하지 마세요.";
+              [heading, route, windowLine, warning].forEach(function (node) { card.appendChild(node); });
+              box.appendChild(card);
             });
           };
         };

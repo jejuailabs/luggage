@@ -14,7 +14,8 @@ function trackGoogleRequests(page: Page): string[] {
 test.describe("zh-CN customer home", () => {
   test.use({ locale: "zh-CN" });
 
-  test("redirects to simplified Chinese and shows the booking entry", async ({ page }) => {
+  test("redirects to simplified Chinese and shows the booking entry", async ({ page, baseURL }) => {
+    await page.context().addCookies([{ name: "jc_home_hero_v1", value: "A.123e4567-e89b-42d3-a456-426614174000", url: baseURL! }]);
     await page.route("**/api/v1/tour-stays", (route) => route.fulfill({ contentType: "application/json", body: JSON.stringify({ data: { stays: [], count: 0 } }) }));
     const googleHits = trackGoogleRequests(page);
     await page.goto("/");

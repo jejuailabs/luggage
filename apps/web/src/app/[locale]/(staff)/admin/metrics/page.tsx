@@ -44,7 +44,12 @@ function Ratio({ numerator, denominator }: { numerator: number; denominator: num
 
 async function Metrics({ from, to, dimension }: { from: string; to: string; dimension: string }) {
   const viewer = await getViewer();
-  const { data, error } = await viewer.client!.rpc("ops_metrics", { p_from: from, p_to: to, p_dimension: dimension });
+  const [main, quality, notifications] = await Promise.all([
+    viewer.client!.rpc("ops_metrics", { p_from: from, p_to: to, p_dimension: dimension }),
+    viewer.client!.rpc("ops_field_quality", { p_from: from, p_to: to }),
+    viewer.client!.rpc("ops_notification_failures", { p_from: from, p_to: to }),
+  ]);
+  const { data, error } = main;
   const rows = ((data ?? []) as MetricRow[]).map((row) =>
     Object.fromEntries(Object.entries(row).map(([k, v]) => [k, k === "dimension_value" ? v : Number(v)])),
   ) as unknown as MetricRow[];
@@ -127,6 +132,10 @@ async function Metrics({ from, to, dimension }: { from: string; to: string; dime
           </tbody>
         </table>
       </div>
+      <section className="grid gap-4 lg:grid-cols-2">
+        <div className="overflow-x-auto rounded-[var(--radius-card)] border border-line bg-card p-4"><h2 className="text-lg font-bold">현장 누락·사진 증빙</h2><p className="mt-1 text-xs text-muted">수거 창이 지난 짐 중 수거 기록이 없는 건수와 수거 시 사진 증빙이 있는 건수를 표시합니다. 기사 기준은 현재 배정 기준입니다.</p>{quality.error ? <p role="alert" className="mt-3 text-sm">최대 93일 범위에서만 현장 품질을 조회할 수 있습니다.</p> : <table className="mt-3 w-full min-w-[480px] text-left text-sm"><thead><tr><th className="p-2">기준</th><th className="p-2">짐</th><th className="p-2">미수거</th><th className="p-2">사진/수거</th></tr></thead><tbody>{((quality.data ?? []) as { dimension: string; subject: string; total_bags: number; missing_after_cutoff: number; collected_with_evidence: number; collected_total: number }[]).map((row) => <tr key={`${row.dimension}-${row.subject}`} className="border-t border-line"><td className="p-2">{row.dimension === "driver" ? "기사" : "숙소"} · {row.subject}</td><td className="p-2">{row.total_bags}</td><td className="p-2">{row.missing_after_cutoff}</td><td className="p-2"><Ratio numerator={Number(row.collected_with_evidence)} denominator={Number(row.collected_total)} /></td></tr>)}</tbody></table>}</div>
+        <div className="rounded-[var(--radius-card)] border border-line bg-card p-4"><h2 className="text-lg font-bold">알림 처리 상태</h2><p className="mt-1 text-xs text-muted">선택 기간의 처리 불가 이벤트와 1시간 넘게 대기 중인 이벤트, 현재 푸시 전송 오류가 있는 구독입니다.</p>{notifications.error ? <p role="alert" className="mt-3 text-sm">알림 지표를 조회할 수 없습니다.</p> : <div className="mt-4 grid grid-cols-3 gap-2 text-center">{(() => { const row = (notifications.data ?? [])[0] as { dead_events: number; pending_over_hour: number; push_subscriptions_failing: number } | undefined; return [["처리 불가", row?.dead_events ?? 0], ["지연 대기", row?.pending_over_hour ?? 0], ["푸시 오류", row?.push_subscriptions_failing ?? 0]].map(([label, value]) => <div key={String(label)} className="rounded-xl bg-sea p-3"><strong className="block text-xl">{value}</strong><span className="text-xs text-muted">{label}</span></div>); })()}</div>}</div>
+      </section>
       <p className="text-xs text-muted">
         호텔 QR 유입(채널 hotel_qr)과 호텔이 실제 인계한 건수는 다른 지표입니다. 중국망 접속 품질은 실측 전까지 미검증입니다.
       </p>

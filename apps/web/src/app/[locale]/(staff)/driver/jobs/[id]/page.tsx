@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { DriverJobConsole } from "@/components/field/driver-job-console";
 import { LocationShare } from "@/components/field/location-share";
+import { DriverLocationMap } from "@/components/field/driver-location-map";
 import { JOB_STATUS_KO } from "@/components/field/labels";
 import { StaffGate } from "@/components/staff-gate";
 import { resolveLocale } from "@/lib/request-context";
 import { getViewer } from "@/server/auth";
 import { kstDate, kstTime, loadFieldJob } from "@/server/field";
+import { createSupabaseServiceClient } from "@/server/service-client";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -23,6 +25,9 @@ async function JobDetail({ locale, id }: { locale: string; id: string }) {
       </section>
     );
   }
+  const service = createSupabaseServiceClient();
+  const { data: positions } = service ? await service.from("vehicle_locations").select("latitude, longitude, observed_at").eq("job_id", job.id).order("observed_at", { ascending: false }).limit(30) : { data: null };
+  const points = (positions ?? []).slice().reverse().map((row) => ({ latitude: Number(row.latitude), longitude: Number(row.longitude) }));
   return (
     <div className="flex flex-col gap-4" lang="ko">
       <section className="rounded-[var(--radius-card)] bg-sea px-4 py-4">
@@ -37,6 +42,7 @@ async function JobDetail({ locale, id }: { locale: string; id: string }) {
         </p>
       </section>
       {["assigned", "picking_up", "transporting", "ready"].includes(job.status) ? <LocationShare jobId={job.id} /> : null}
+      {points.length > 0 ? <DriverLocationMap points={points} observedAt={positions![0]!.observed_at} /> : <p className="rounded-[var(--radius-card)] border border-line bg-card p-4 text-sm text-muted">아직 차량 위치 기록이 없습니다. 위치 공유를 시작하면 최근 이동 기록이 지도에 표시됩니다.</p>}
       <DriverJobConsole jobId={job.id} bags={job.bags} destination={job.destinationHotel ? "hotel" : "airport"} />
     </div>
   );

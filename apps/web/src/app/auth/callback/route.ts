@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const { error } = await client.auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(new URL(destination, request.url));
   }
-  if (client && tokenHash && (type === "email" || type === "signup" || type === "recovery" || type === "email_change")) {
+  if (client && tokenHash && (type === "email" || type === "signup" || type === "invite" || type === "recovery" || type === "email_change")) {
     const { error } = await client.auth.verifyOtp({ token_hash: tokenHash, type });
     if (!error) return NextResponse.redirect(new URL(destination, request.url));
   }

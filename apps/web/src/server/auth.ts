@@ -10,6 +10,8 @@ export interface AuthContext {
   user: { id: string; isAnonymous: boolean } | null;
   roles: RoleGrant[];
   client: SupabaseClient | null;
+  mfaRequired: boolean;
+  mfaVerified: boolean;
 }
 
 function bearerToken(authorization: string | null | undefined): string | null {
@@ -24,22 +26,25 @@ function bearerToken(authorization: string | null | undefined): string | null {
 export async function getAuthContext(options: { authorization?: string | null } = {}): Promise<AuthContext> {
   const token = bearerToken(options.authorization);
   const client = token ? createSupabaseTokenClient(token) : await createSupabaseServerClient();
-  if (!client) return { available: false, user: null, roles: [], client: null };
+  if (!client) return { available: false, user: null, roles: [], client: null, mfaRequired: false, mfaVerified: false };
 
   const { data, error } = token ? await client.auth.getUser(token) : await client.auth.getUser();
-  if (error || !data.user) return { available: true, user: null, roles: [], client };
+  if (error || !data.user) return { available: true, user: null, roles: [], client, mfaRequired: false, mfaVerified: false };
 
   const user = { id: data.user.id, isAnonymous: Boolean(data.user.is_anonymous) };
-  if (user.isAnonymous) return { available: true, user, roles: [], client };
+  if (user.isAnonymous) return { available: true, user, roles: [], client, mfaRequired: false, mfaVerified: false };
 
   // RLS가 본인 행만 돌려준다.
   const { data: rows } = await client.from("role_assignments").select("role, scope_type, scope_id");
+  const sensitive = (rows ?? []).some((row) => ["admin", "finance", "dispatcher"].includes(row.role));
+  const { data: assurance } = sensitive ? await client.auth.mfa.getAuthenticatorAssuranceLevel(token ?? undefined) : { data: null };
+  const mfaVerified = !sensitive || assurance?.currentLevel === "aal2";
   const roles: RoleGrant[] = (rows ?? [])
     .filter((row): row is { role: StaffRole; scope_type: "global" | "hotel"; scope_id: string | null } =>
-      (STAFF_ROLES as readonly string[]).includes(row.role),
+      (STAFF_ROLES as readonly string[]).includes(row.role) && (mfaVerified || !["admin", "finance", "dispatcher"].includes(row.role)),
     )
     .map((row) => ({ role: row.role, scopeType: row.scope_type, scopeId: row.scope_id }));
-  return { available: true, user, roles, client };
+  return { available: true, user, roles, client, mfaRequired: sensitive, mfaVerified };
 }
 
 /** 한 요청 안에서 쿠키 세션 사용자를 한 번만 확인한다 (레이아웃·페이지 공용). */

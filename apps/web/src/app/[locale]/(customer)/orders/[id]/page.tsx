@@ -10,6 +10,7 @@ import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { NO_INDEX } from "@/lib/seo";
 import { getViewer } from "@/server/auth";
 import { getOrderView } from "@/server/orders";
+import { createSupabaseServiceClient } from "@/server/service-client";
 
 export const metadata: Metadata = { robots: NO_INDEX };
 
@@ -47,6 +48,26 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
     return (
       <div className="order-page customer-inner-page"><section className="order-page__empty customer-card" data-testid="order-not-found"><span className="landing-kicker">JEJU · YOUR JOURNEY</span><h1>{t("order.title")}</h1><p>{t("order.notFound")}</p><div className="empty-page-actions"><Link href={`/${locale}/account`}>{locale === "ko" ? "내 짐 확인" : locale === "zh-CN" ? "查看我的行李" : "My bags"} ↗</Link><Link href={`/${locale}/help`}>{t("nav.help")} ↗</Link></div></section></div>
     );
+  }
+
+  const handoffAt = order.routeType === "airport_to_hotel" ? order.slot.pickupStartsAt : order.slot.deliveryStartsAt;
+  const airportHandoffs: { id: string; name: string; floor: string | null; directions: string | null; photoUrl: string | null }[] = [];
+  if (order.reservationStatus === "confirmed" && order.routeType !== "hotel_to_hotel" && viewer.client) {
+    const { data: owned } = await viewer.client.from("orders").select("route_offering_id").eq("id", order.id).maybeSingle();
+    const service = createSupabaseServiceClient();
+    if (owned && service) {
+      const { data: offering } = await service.from("route_offerings").select("origin_zone_id, destination_zone_id").eq("id", owned.route_offering_id).maybeSingle();
+      const zoneId = order.routeType === "airport_to_hotel" ? offering?.origin_zone_id : offering?.destination_zone_id;
+      if (zoneId) {
+        const { data: places } = await service.from("handoff_locations").select("id, name_ko, floor, photo_path, valid_from, valid_until, handoff_location_translations(locale, name, directions)").eq("zone_id", zoneId).eq("status", "active").in("type", ["airport_counter", "airport_meeting_point"]);
+        for (const place of places ?? []) {
+          if (Date.parse(place.valid_from) > Date.parse(handoffAt) || place.valid_until && Date.parse(place.valid_until) <= Date.parse(handoffAt)) continue;
+          const translation = place.handoff_location_translations?.find((row) => row.locale === locale);
+          const signed = place.photo_path ? await service.storage.from("evidence").createSignedUrl(place.photo_path, 600) : null;
+          airportHandoffs.push({ id: place.id, name: translation?.name ?? place.name_ko, floor: place.floor, directions: translation?.directions ?? null, photoUrl: signed?.data?.signedUrl ?? null });
+        }
+      }
+    }
   }
 
   const time = (iso: string) => formatKst(new Date(iso), locale, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
@@ -97,6 +118,8 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
       {order.reservationStatus === "confirmed" && bags.length > 0 ? (
         <Voucher order={order} bags={bags} locale={locale} t={t} checkedAt={new Date()} />
       ) : null}
+
+      {airportHandoffs.length > 0 ? <section className={`${panel} grid gap-3`} data-testid="airport-handoff-location"><h2 className="customer-section-heading">{locale === "ko" ? "공항 인계 장소" : locale === "zh-CN" ? "机场行李交接地点" : "Airport luggage handoff"}</h2>{airportHandoffs.map((place) => <div key={place.id} className="grid gap-2 rounded-xl border border-line bg-bg p-4"><strong>{place.name}{place.floor ? ` · ${place.floor}` : ""}</strong>{place.directions ? <p className="text-sm text-muted">{place.directions}</p> : null}{place.photoUrl ? <a href={place.photoUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-primary underline">{locale === "ko" ? "장소 사진 보기" : locale === "zh-CN" ? "查看地点照片" : "View location photo"}</a> : null}</div>)}</section> : null}
 
       {bags.length > 0 ? (
         <section className={`${panel} flex flex-col gap-3`} data-testid="delivery-status">

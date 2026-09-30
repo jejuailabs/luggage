@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { PfHero } from "@/components/pf-hero";
 import { ContentView } from "@/components/content-view";
 import { RouteList } from "@/components/route-list";
 import { PageView } from "@/components/page-view";
@@ -10,7 +11,7 @@ import { loadPublicCatalog, openRouteTypes } from "@/server/catalog";
 import { getContent, listContent } from "@/server/content";
 
 /** 결제 전에 반드시 보여 줘야 하는 필수 안내 (01 문서 4절). */
-const REQUIRED_NOTICES = ["bag-size-rules", "prohibited-items"] as const;
+const REQUIRED_NOTICES = ["bag-size-rules", "prohibited-items", "cancellation-refund", "damage-compensation"] as const;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const locale = await resolveLocale(params);
@@ -29,26 +30,22 @@ export default async function LuggagePage({ params }: { params: Promise<{ locale
   ]);
   // 필수 안내가 이 언어로 승인되지 않았거나 불러오지 못하면 예약 진입을 막는다.
   const bookingAllowed = notices.every((notice) => notice.status === "ok");
+  const howLines = howItWorks.status === "ok" ? howItWorks.translation.body.split(/\r?\n/).map((line) => line.trim()).filter(Boolean) : [];
+  const howSteps = howLines.map((line) => line.replace(/^(?:\[예시\]|【示例】|\[Sample\])\s*/i, "").match(/^(\d{1,2})[.)]\s*(.+)$/));
+  const structuredHow = howSteps.length >= 2 && howSteps.every((step) => step !== null);
+  const howCopy = {
+    ko: { label: "예약부터 수령까지", steps: "단계별 이용 안내", sample: "이용 예시", step: "단계", cta: "짐 배송 예약하기", chip: "✈️ 서비스 안내" },
+    "zh-CN": { label: "从预约到领取", steps: "服务流程", sample: "服务示例", step: "步骤", cta: "预约行李配送", chip: "✈️ 服务介绍" },
+    en: { label: "From booking to collection", steps: "How it works", sample: "Example journey", step: "Step", cta: "Book luggage delivery", chip: "✈️ Service guide" },
+  }[locale];
+  const isSample = howItWorks.status === "ok" && /^(?:\[예시\]|【示例】|\[Sample\])/i.test(howItWorks.translation.body);
 
   return (
     <div className="service-page customer-inner-page">
       <PageView locale={locale} />
-      <section className="photo-hero service-page__hero">
-        <Image
-          src="/images/editorial-airport.jpg"
-          alt=""
-          width={1800}
-          height={1200}
-          loading="eager"
-          sizes="(min-width: 768px) 50vw, 100vw"
-          className="photo-hero__image object-[65%_center]"
-        />
-        <div className="photo-hero__content">
-          <span className="photo-hero__eyebrow">JEJU · SERVICE GUIDE</span>
-          <h1>{t("luggage.title")}</h1>
-          <p>{t("luggage.intro")}</p>
-        </div>
-      </section>
+      <PfHero chip={howCopy.chip} title={t("luggage.title")} subtitle={t("luggage.intro")} tone="sky" image="/images/editorial-airport.jpg">
+        <Link href={`/${locale}/luggage/book`} className="pf-btn pf-btn--coral">{howCopy.cta} →</Link>
+      </PfHero>
 
       <section aria-labelledby="routes-title" className="service-page__routes">
         <div className="landing-section__heading"><div><span className="landing-kicker">CHOOSE YOUR JOURNEY</span><h2 id="routes-title">{t("home.routes.title")}</h2></div></div>
@@ -66,7 +63,7 @@ export default async function LuggagePage({ params }: { params: Promise<{ locale
                 data-testid="scenario-link"
                 className="service-page__scenario-card"
               >
-                
+                <span className="service-page__scenario-emoji" aria-hidden="true">{["🧳", "🛬", "🏨"][index]}</span>
                 <span>0{index + 1}</span><strong>{guide.result.translation.title}</strong><b aria-hidden="true">↗</b>
               </Link>
             ) : null,
@@ -74,10 +71,16 @@ export default async function LuggagePage({ params }: { params: Promise<{ locale
         </section>
       ) : null}
 
-      <section className="service-page__how customer-card">
-        <div className="service-page__how-photo"><Image src="/images/editorial-luggage.jpg" alt="" width={1200} height={1600} sizes="(min-width: 768px) 40vw, 100vw" /></div>
+      <section className="service-page__how customer-card" aria-labelledby="how-title">
+        <div className="service-page__how-photo"><Image src="/images/editorial-luggage.jpg" alt="" width={1200} height={1600} sizes="(min-width: 768px) 40vw, 100vw" /><span className="pf-sticker pf-sticker--sun" aria-hidden="true">HOW TO</span></div>
         <div className="service-page__how-text"><span className="landing-kicker">HOW IT WORKS</span>
-        <ContentView result={howItWorks!} t={t} testId="content-how-it-works" />
+          {structuredHow && howItWorks.status === "ok" ? <article data-testid="content-how-it-works" data-content-status={howItWorks.fallback ? "fallback" : "ok"} lang={howItWorks.translation.locale}>
+            {howItWorks.fallback ? <p className="service-page__how-fallback" data-testid="content-fallback-notice">{t("content.fallbackNotice", { language: howItWorks.translation.locale })}</p> : null}
+            <div className="service-page__how-heading"><div><span>{howCopy.label}</span><h2 id="how-title">{howItWorks.translation.title}</h2><p>{howCopy.steps}</p></div><b>{String(howSteps.length).padStart(2, "0")} {locale === "ko" ? "단계" : locale === "zh-CN" ? "个步骤" : "STEPS"}</b></div>
+            {isSample ? <span className="service-page__how-sample">{howCopy.sample}</span> : null}
+            <ol className="service-page__how-steps">{howSteps.map((step, index) => <li key={`${step![1]}-${index}`}><span className="service-page__how-number">{String(index + 1).padStart(2, "0")}</span><div><small>{howCopy.step} {index + 1}</small><strong>{step![2]}</strong></div></li>)}</ol>
+            {bookingAllowed ? <Link href={`/${locale}/luggage/book`} className="service-page__how-link">{howCopy.cta} <span aria-hidden="true">↗</span></Link> : null}
+          </article> : <div id="how-title"><ContentView result={howItWorks} t={t} testId="content-how-it-works" /></div>}
         </div>
       </section>
 
@@ -86,7 +89,7 @@ export default async function LuggagePage({ params }: { params: Promise<{ locale
         <div className="service-page__rules-grid">
         {notices.map((notice, index) => (
           <div key={REQUIRED_NOTICES[index]} className="customer-card p-5">
-            <span className="landing-kicker">0{index + 1} / IMPORTANT</span>
+            <span className="service-page__rule-icon" aria-hidden="true">{["📏", "🚫", "↩️", "🛡️"][index] ?? "📌"}</span>
             <ContentView result={notice} t={t} headingLevel={3} testId={`content-${REQUIRED_NOTICES[index]}`} />
           </div>
         ))}

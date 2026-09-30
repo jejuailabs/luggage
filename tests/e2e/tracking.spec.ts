@@ -53,7 +53,10 @@ test("my bags map clearly labels the moving route as a demonstration", async ({ 
   await page.goto("/ko/account/track");
   const map = page.getByTestId("tracking-map");
   await expect(map).toHaveAttribute("data-mode", "demo");
-  await expect(page.getByText("실제 주문·차량의 위치를 나타내지 않습니다.").first()).toBeVisible();
+  await expect(page.getByText(/실제 제주 지도 위의 시연용 경로/).first()).toBeVisible();
+  await expect(map.getByTestId("tracking-real-map")).toBeVisible();
+  await expect(map.locator('img[src^="https://tile.openstreetmap.org/"]')).not.toHaveCount(0);
+  await expect(map.getByRole("link", { name: "© OpenStreetMap contributors" })).toBeVisible();
   await expect(map.getByRole("slider")).toBeVisible();
   await map.getByRole("button", { name: "일시 정지" }).click();
   await expect(map.getByRole("button", { name: "재생" })).toBeVisible();

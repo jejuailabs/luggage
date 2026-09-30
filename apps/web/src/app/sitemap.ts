@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { LOCALES } from "@luggage/i18n";
 import { getServerConfig } from "@/lib/env";
 
-const PUBLIC_PATHS = ["", "/luggage", "/hotels", "/help"];
+const PUBLIC_PATHS = ["", "/luggage", "/help"];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const { appUrl } = getServerConfig();

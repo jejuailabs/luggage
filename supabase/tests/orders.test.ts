@@ -12,7 +12,7 @@ let bucketId: string;
 let departs: Date;
 
 const CONTACT = { name: "王小明", email: "wang@example.com", phone: "+86 138 0013 8000" };
-const POLICIES = ["bag-size-rules", "prohibited-items"];
+const POLICIES = ["bag-size-rules", "prohibited-items", "cancellation-refund", "damage-compensation"];
 
 async function createUser(isAnonymous = true): Promise<string> {
   const { rows } = await client.query<{ id: string }>("insert into auth.users (is_anonymous) values ($1) returning id", [isAnonymous]);
@@ -47,7 +47,7 @@ async function newQuote(userId: string, bags: Record<string, number> = { standar
 }
 
 function orderCall(userId: string, quoteId: string, key: string, overrides: Partial<{ contact: unknown; locale: string; policies: string[] }> = {}) {
-  return committed<Record<string, unknown>>(userId, "select * from public.create_order($1, $2, $3, $4, $5)", [
+  return committed<Record<string, unknown>>(userId, "select * from public.create_order_with_attribution($1, $2, $3, $4, $5, null)", [
     quoteId,
     key,
     JSON.stringify(overrides.contact ?? CONTACT),
@@ -139,6 +139,8 @@ describe("create_order", () => {
     const policies = (await client.query("select policy_slug, locale from public.policy_acceptances where order_id = $1 order by policy_slug", [order.id])).rows;
     expect(policies).toEqual([
       { policy_slug: "bag-size-rules", locale: "zh-CN" },
+      { policy_slug: "cancellation-refund", locale: "zh-CN" },
+      { policy_slug: "damage-compensation", locale: "zh-CN" },
       { policy_slug: "prohibited-items", locale: "zh-CN" },
     ]);
     const outbox = (await client.query("select topic from public.outbox_events where aggregate_id = $1", [order.id])).rows;
@@ -196,8 +198,16 @@ describe("create_order", () => {
     await expect(orderCall(guest, quote.id, "key-policy-missing", { policies: ["bag-size-rules"] })).rejects.toThrow(
       "LUGGAGE:POLICY_ACCEPTANCE_REQUIRED",
     );
-    // 영어 게시본이 없으므로 영어 주문은 막힌다.
-    await expect(orderCall(guest, quote.id, "key-policy-english", { locale: "en" })).rejects.toThrow("LUGGAGE:POLICY_ACCEPTANCE_REQUIRED");
+    // 영어 게시본 하나를 내리면 영어 주문은 막힌다.
+    const unpublish = `update public.content_translations set status = 'archived', published_at = null
+      where locale = 'en' and content_id = (select id from public.content_items where slug = 'bag-size-rules')`;
+    await client.query(unpublish);
+    try {
+      await expect(orderCall(guest, quote.id, "key-policy-english", { locale: "en" })).rejects.toThrow("LUGGAGE:POLICY_ACCEPTANCE_REQUIRED");
+    } finally {
+      await client.query(`update public.content_translations set status = 'published', published_at = now()
+        where locale = 'en' and content_id = (select id from public.content_items where slug = 'bag-size-rules')`);
+    }
   });
 
   it("leaves no trace when it fails (idempotency key is reusable)", async () => {

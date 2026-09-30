@@ -7,7 +7,7 @@
  */
 const VERSION = "v1";
 const STATIC_CACHE = `static-${VERSION}`;
-const PRECACHE = ["/offline.html", "/icons/icon-192.png", "/icons/icon-512.png"];
+const PRECACHE = ["/offline.html", "/icons/icon-192.png", "/icons/icon-512.png", "/fonts/PretendardVariable.woff2"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(STATIC_CACHE).then((cache) => cache.addAll(PRECACHE)));
@@ -23,7 +23,7 @@ self.addEventListener("activate", (event) => {
 });
 
 function isCacheableStatic(url) {
-  return url.origin === self.location.origin && (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/icons/"));
+  return url.origin === self.location.origin && (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/icons/") || url.pathname.startsWith("/fonts/"));
 }
 
 self.addEventListener("fetch", (event) => {

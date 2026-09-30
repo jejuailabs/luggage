@@ -26,13 +26,14 @@ export async function asRole<T>(
   client: pg.Client,
   role: DbRole,
   run: (client: pg.Client) => Promise<T>,
-  options: { userId?: string } = {},
+  options: { userId?: string; aal?: "aal1" | "aal2" } = {},
 ): Promise<T> {
   await client.query("begin");
   try {
     await client.query(`set local role ${role}`);
     if (options.userId) {
       await client.query("select set_config('request.jwt.claim.sub', $1, true)", [options.userId]);
+      await client.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ sub: options.userId, aal: options.aal ?? "aal2" })]);
     }
     return await run(client);
   } finally {

@@ -1,6 +1,7 @@
 import { HotelCreateForm } from "@/components/admin/hotel-create-form";
 import { HotelStatusSelect } from "@/components/admin/hotel-status-select";
 import { HotelPartnerSelect } from "@/components/admin/hotel-partner-select";
+import { HotelEditForm } from "@/components/admin/hotel-edit-form";
 import { ADMIN_LABELS } from "@/components/admin/labels";
 import { StaffGate } from "@/components/staff-gate";
 import { resolveLocale } from "@/lib/request-context";
@@ -13,6 +14,10 @@ interface HotelRow {
   address_ko: string;
   status: "draft" | "active" | "suspended" | "archived";
   partner_id: string | null;
+  zone_id: string;
+  front_desk_opens_at: string | null;
+  front_desk_closes_at: string | null;
+  hotel_translations: { locale: string; name: string; aliases: string[]; handoff_note: string | null }[];
   service_zones: { name_ko: string } | null;
 }
 
@@ -22,7 +27,7 @@ async function HotelAdmin() {
   const isAdmin = viewer.roles.some((r) => r.role === "admin");
   // 업무자 세션으로 조회한다. RLS가 역할에 맞는 범위(비활성 포함)를 돌려준다.
   const [hotels, zones, partners] = await Promise.all([
-    client.from("hotels").select("id, slug, name_ko, address_ko, status, partner_id, service_zones(name_ko)").order("name_ko"),
+    client.from("hotels").select("id, slug, name_ko, address_ko, status, partner_id, zone_id, front_desk_opens_at, front_desk_closes_at, hotel_translations(locale, name, aliases, handoff_note), service_zones(name_ko)").order("name_ko"),
     client.from("service_zones").select("id, name_ko, kind").eq("kind", "area").order("sort_order"),
     client.from("hotel_partners").select("id, name").order("name"),
   ]);
@@ -40,8 +45,9 @@ async function HotelAdmin() {
           {(hotels.data as unknown as HotelRow[]).map((hotel) => (
             <li
               key={hotel.id}
-              className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-line bg-card p-4 md:flex-row md:items-center md:justify-between"
+              className="rounded-[var(--radius-card)] border border-line bg-card p-4"
             >
+              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="font-semibold">{hotel.name_ko}</p>
                 <p className="text-sm text-muted">
@@ -53,6 +59,8 @@ async function HotelAdmin() {
               ) : (
                 <span className="text-sm">{ADMIN_LABELS.status[hotel.status]}</span>
               )}
+              </div>
+              {isAdmin ? <HotelEditForm hotel={hotel} zones={zones.data ?? []} /> : null}
             </li>
           ))}
         </ul>

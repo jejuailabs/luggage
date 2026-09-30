@@ -2,6 +2,7 @@ import { z } from "zod";
 import { fail, failFromDb, isSameOrigin, newRequestId, ok } from "@/server/api";
 import { getAuthContext } from "@/server/auth";
 import { loadPublicCatalog } from "@/server/catalog";
+import { toQuoteDto, type QuoteRow } from "@/server/quote-dto";
 
 export const dynamic = "force-dynamic";
 
@@ -19,18 +20,6 @@ const bodySchema = z
   })
   .strict();
 
-interface QuoteRow {
-  id: string;
-  route_type: string;
-  bag_counts: { standard: number; large: number };
-  line_items: { size: string; quantity: number; unit_amount_minor: number; amount_minor: number }[];
-  subtotal_minor: number;
-  discount_minor: number;
-  total_minor: number;
-  tax_minor: number;
-  currency: string;
-  expires_at: string;
-}
 
 /** 서버 견적. 금액은 DB 요금 규칙에서 계산하며 클라이언트 금액을 받지 않는다. */
 export async function POST(request: Request) {
@@ -68,23 +57,7 @@ export async function POST(request: Request) {
   if (error || !data) return failFromDb(error, requestId);
 
   return ok(
-    {
-      quoteId: data.id,
-      routeType: data.route_type,
-      bags: data.bag_counts,
-      lineItems: data.line_items.map((item) => ({
-        size: item.size,
-        quantity: item.quantity,
-        unitAmountMinor: item.unit_amount_minor,
-        amountMinor: item.amount_minor,
-      })),
-      subtotalMinor: data.subtotal_minor,
-      discountMinor: data.discount_minor,
-      totalMinor: data.total_minor,
-      taxIncludedMinor: data.tax_minor,
-      currency: data.currency,
-      expiresAt: data.expires_at,
-    },
+    toQuoteDto(data),
     requestId,
     { status: 201 },
   );

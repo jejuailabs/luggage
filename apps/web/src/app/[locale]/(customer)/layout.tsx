@@ -31,7 +31,7 @@ export default async function CustomerLayout({
         <nav aria-label={t("nav.primary")} className="hidden items-center gap-7 lg:flex">
           <Link className="flex min-h-11 items-center text-sm font-semibold text-muted hover:text-primary" href={`/${locale}`}>{t("nav.home")}</Link>
           <Link className="flex min-h-11 items-center text-sm font-semibold text-muted hover:text-primary" href={`/${locale}/luggage`}>{t("home.routes.title")}</Link>
-          <Link className="flex min-h-11 items-center text-sm font-semibold text-muted hover:text-primary" href={`/${locale}/hotels`}>{t("home.search.hotel")}</Link>
+          <Link className="flex min-h-11 items-center text-sm font-semibold text-muted hover:text-primary" href={`/${locale}/luggage/book`}>{t("nav.book")}</Link>
           <Link className="flex min-h-11 items-center text-sm font-semibold text-muted hover:text-primary" href={`/${locale}/account`}>{t("nav.orders")}</Link>
           <Link className="flex min-h-11 items-center text-sm font-semibold text-muted hover:text-primary" href={`/${locale}/help`}>{t("nav.help")}</Link>
         </nav>

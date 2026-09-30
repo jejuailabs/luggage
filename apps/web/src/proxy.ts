@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isLocale, LOCALE_COOKIE, negotiateLocale } from "@luggage/i18n";
 import { ATTRIBUTION_COOKIE, ATTRIBUTION_MAX_AGE_SECONDS, parseAttribution, serializeAttribution } from "@/server/attribution";
+import { HERO_EXPERIMENT_COOKIE, parseHeroExperiment } from "@/server/experiment";
 
 /**
  * 1) 언어 접두어가 없는 요청을 쿠키 → Accept-Language → zh-CN 순으로 보낸다.
@@ -20,7 +21,13 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  let experiment = parseHeroExperiment(request.cookies.get(HERO_EXPERIMENT_COOKIE)?.value);
+  if (!experiment) {
+    experiment = { variant: Math.random() < 0.5 ? "A" : "B", sessionId: crypto.randomUUID() };
+    request.cookies.set(HERO_EXPERIMENT_COOKIE, `${experiment.variant}.${experiment.sessionId}`);
+  }
   const response = await refreshSupabaseSession(request);
+  if (!response.cookies.has(HERO_EXPERIMENT_COOKIE)) response.cookies.set(HERO_EXPERIMENT_COOKIE, `${experiment.variant}.${experiment.sessionId}`, { path: "/", sameSite: "lax", httpOnly: true, secure: request.nextUrl.protocol === "https:" });
   captureCampaign(request, response);
   return response;
 }

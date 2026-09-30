@@ -82,15 +82,24 @@ function getSource(): ContentSource | null {
   return supabaseSource(config.supabase.url, config.supabase.publishableKey);
 }
 
-/** undefined: 조회 실패, null: 없음 */
-export async function getContentRecord(slug: string): Promise<ContentRecord | null | undefined> {
-  const source = getSource();
-  if (!source) return undefined;
-  return source.getBySlug(slug);
+/** 운영이 아닌 환경에서 DB에 게시본이 없으면 '[예시]' 합성 콘텐츠를 대신 보여 준다(시뮬레이션). */
+function simulationFallbackAllowed() {
+  const config = getServerConfig();
+  return config.appEnv !== "production" && config.publicDataSource !== "fixture";
 }
 
-export async function getContent(slug: string, locale: Locale): Promise<ContentResult> {
-  const record = await getContentRecord(slug);
+/** undefined: 조회 실패, null: 없음. strict면 예시 대체 없이 실제 게시본만 본다(예약 필수 안내 판정용). */
+export async function getContentRecord(slug: string, options: { strict?: boolean } = {}): Promise<ContentRecord | null | undefined> {
+  const source = getSource();
+  const record = source ? await source.getBySlug(slug) : undefined;
+  if (!options.strict && simulationFallbackAllowed() && (!record || record.translations.length === 0)) {
+    return (await fixtureSource.getBySlug(slug)) ?? record;
+  }
+  return record;
+}
+
+export async function getContent(slug: string, locale: Locale, options: { strict?: boolean } = {}): Promise<ContentResult> {
+  const record = await getContentRecord(slug, options);
   if (record === undefined) return { status: "unavailable" };
   if (record === null) return { status: "missing" };
   return resolveContent(record.translations, locale, record.criticality);
@@ -98,7 +107,8 @@ export async function getContent(slug: string, locale: Locale): Promise<ContentR
 
 export async function listContent(kind: ContentKind, locale: Locale) {
   const source = getSource();
-  const records = source ? await source.listByKind(kind) : null;
+  let records = source ? await source.listByKind(kind) : null;
+  if (simulationFallbackAllowed() && !records?.some((record) => record.translations.length > 0)) records = await fixtureSource.listByKind(kind);
   if (!records) return null;
   return records
     .map((record) => ({ slug: record.slug, result: resolveContent(record.translations, locale, record.criticality) }))

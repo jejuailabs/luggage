@@ -56,7 +56,7 @@ afterAll(async () => {
 describe("public visibility", () => {
   it("shows only published translations to visitors", async () => {
     const rows = await asRole(client, "anon", async (c) =>
-      (await c.query("select locale from public.content_translations order by locale")).rows,
+      (await c.query("select locale from public.content_translations where content_id = $1 order by locale", [contentId])).rows,
     );
     expect(rows.map((r) => r.locale)).toEqual(["ko", "zh-CN"]);
   });

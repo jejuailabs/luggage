@@ -1,0 +1,139 @@
+/* 고객 화면 전체 트래블 앱 스타일 레이어 (editorial-theme 위에 덮어쓴다).
+   업무 화면(.staff-shell)은 색만 맞추고 장식은 넣지 않는다. */
+.customer-shell, .pf-scope {
+  --pf-bg: #fff7ec;
+  --pf-card: #ffffff;
+  --pf-ink: #1f2a44;
+  --pf-muted: #56617c;
+  --pf-coral-btn: #cc4424;
+  --pf-on-coral: #ffffff;
+  --pf-line: #f0e4d2;
+  --pf-sky: #2f7bf5;
+  --pf-sky-soft: #e2edff;
+  --pf-coral: #ff6f4f;
+  --pf-coral-ink: #c9432a;
+  --pf-coral-soft: #ffe5dc;
+  --pf-mint: #1fae8c;
+  --pf-mint-soft: #d9f5ec;
+  --pf-sun: #ffc93c;
+  --pf-sun-soft: #fff1c4;
+  --pf-lilac: #7d6cf2;
+  --pf-lilac-soft: #ebe7ff;
+  --pf-navy: #1d2a4d;
+  --pf-shadow: 0 10px 28px rgb(122 88 40 / 12%);
+  --color-brand: #ff6f4f;
+  --color-primary: #1f5fd6;
+  --color-bg: #fff7ec;
+  --color-card: #ffffff;
+  --color-sea: #e2edff;
+  --color-text: #1f2a44;
+  --color-text-muted: #56617c;
+  --color-border: #ecdcc6;
+  --color-soft-border: #f3e8d8;
+}
+:root[data-theme="dark"] .customer-shell, :root[data-theme="dark"] .pf-scope {
+  --pf-bg: #151b2c; --pf-card: #1f2740; --pf-ink: #f5f1ea; --pf-muted: #b7bfd4; --pf-line: #2e3857;
+  --pf-sky: #7fb0ff; --pf-sky-soft: #243a63; --pf-coral: #ff8b70; --pf-coral-btn: #ff8b70; --pf-on-coral: #2a120c; --pf-coral-ink: #ffb09c; --pf-coral-soft: #4a2d2b;
+  --pf-mint: #5fdcb9; --pf-mint-soft: #1d4440; --pf-sun: #ffd666; --pf-sun-soft: #4a3f1f;
+  --pf-lilac: #aa9dff; --pf-lilac-soft: #332d5c; --pf-navy: #0e1426; --pf-shadow: 0 10px 28px rgb(0 0 0 / 30%);
+  --color-brand: #ff8b70; --color-primary: #8fb8ff; --color-bg: #151b2c; --color-card: #1f2740; --color-sea: #243a63;
+  --color-text: #f5f1ea; --color-text-muted: #b7bfd4; --color-border: #3a4566; --color-soft-border: #2e3857;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .customer-shell, :root:not([data-theme]) .pf-scope {
+    --pf-bg: #151b2c; --pf-card: #1f2740; --pf-ink: #f5f1ea; --pf-muted: #b7bfd4; --pf-line: #2e3857;
+    --pf-sky: #7fb0ff; --pf-sky-soft: #243a63; --pf-coral: #ff8b70; --pf-coral-btn: #ff8b70; --pf-on-coral: #2a120c; --pf-coral-ink: #ffb09c; --pf-coral-soft: #4a2d2b;
+    --pf-mint: #5fdcb9; --pf-mint-soft: #1d4440; --pf-sun: #ffd666; --pf-sun-soft: #4a3f1f;
+    --pf-lilac: #aa9dff; --pf-lilac-soft: #332d5c; --pf-navy: #0e1426; --pf-shadow: 0 10px 28px rgb(0 0 0 / 30%);
+    --color-brand: #ff8b70; --color-primary: #8fb8ff; --color-bg: #151b2c; --color-card: #1f2740; --color-sea: #243a63;
+    --color-text: #f5f1ea; --color-text-muted: #b7bfd4; --color-border: #3a4566; --color-soft-border: #2e3857;
+  }
+}
+
+body:has(.customer-shell) { background: var(--color-bg); }
+.customer-shell { background: var(--pf-bg); color: var(--pf-ink); }
+.customer-shell .customer-main:not(:has(.playful-home)) {
+  background:
+    radial-gradient(circle at 8% 0%, rgb(255 201 60 / 16%), transparent 28%),
+    radial-gradient(circle at 96% 18%, rgb(47 123 245 / 9%), transparent 26%);
+  padding-top: 22px;
+}
+
+/* 헤더 · 하단 탭 */
+.customer-shell .customer-header { background: color-mix(in srgb, var(--pf-card) 90%, var(--pf-bg)); border-bottom: 0; box-shadow: 0 4px 18px rgb(122 88 40 / 8%); }
+.customer-shell .customer-header__brand { color: var(--pf-coral-ink) !important; letter-spacing: -.03em; }
+.customer-shell .customer-header nav a:hover { color: var(--pf-coral); }
+.customer-shell .customer-header button, .customer-shell .customer-header select { border-radius: 999px; }
+.customer-shell .customer-bottom-nav { left: 10px; right: 10px; bottom: 8px; border: 0; border-radius: 22px; background: var(--pf-card); box-shadow: 0 10px 30px rgb(31 42 68 / 16%); }
+.customer-shell .customer-bottom-nav a[aria-current="page"] { color: var(--pf-coral-ink); }
+.customer-shell .customer-bottom-nav a[aria-current="page"]::before { background: var(--pf-coral); border-radius: 0 0 4px 4px; }
+
+/* 제목 · 영문 소제목(키커)은 스티커 칩으로 */
+.customer-shell h1, .customer-shell h2 { letter-spacing: -.035em; }
+.customer-shell .landing-kicker, .customer-shell .landing-hero__eyebrow, .customer-shell [class*="__eyebrow"] {
+  display: inline-block; padding: 4px 10px; border-radius: 999px; background: var(--pf-sun-soft); color: var(--pf-ink) !important;
+  font-size: 10px; letter-spacing: .1em;
+}
+
+/* 카드 · 입력 · 버튼 */
+.customer-shell .customer-card { border: 0; border-radius: 22px; background: var(--pf-card); box-shadow: var(--pf-shadow); }
+.customer-shell .customer-input, .customer-shell .customer-main input:not([type=radio]):not([type=checkbox]):not([type=range]),
+.customer-shell .customer-main select, .customer-shell .customer-main textarea {
+  border-radius: 16px; border-color: var(--pf-line); background: color-mix(in srgb, var(--pf-card) 70%, var(--pf-bg)); color: var(--pf-ink);
+}
+.customer-shell .customer-main input:focus-visible, .customer-shell .customer-main select:focus-visible, .customer-shell .customer-main textarea:focus-visible {
+  border-color: var(--pf-sky); box-shadow: 0 0 0 4px var(--pf-sky-soft); outline: none;
+}
+.customer-shell .customer-action, .customer-shell .guide-page__action, .customer-shell .empty-page-actions a:first-child {
+  border-radius: 999px; background: var(--pf-coral-btn); color: var(--pf-on-coral); font-weight: 800; box-shadow: 0 8px 20px rgb(204 68 36 / 28%);
+}
+.customer-shell .customer-action:hover:not(:disabled) { background: color-mix(in srgb, var(--pf-coral-btn) 88%, #000); transform: translateY(-2px); }
+.customer-shell .customer-action:disabled { background: color-mix(in srgb, var(--pf-coral) 40%, var(--pf-line)); box-shadow: none; }
+.customer-shell .landing-pill { border-radius: 999px; }
+.customer-shell .landing-pill--white { color: #b63c22; }
+.customer-shell .customer-auth__intro > span { color: var(--pf-muted); }
+/* 본문 속 텍스트 링크도 44px 터치 영역 */
+.customer-shell .customer-auth form a, .customer-shell .customer-auth form > button[type="button"], .customer-shell .customer-auth > p a,
+.customer-shell .customer-auth a, .customer-shell [class*="__back"], .customer-shell .tracking-page > a:first-child {
+  display: inline-flex; align-items: center; min-height: 44px;
+}
+.customer-shell .tracking-map input[type=range] { height: 32px; }
+.customer-shell .tracking-map__disclaimer, .customer-shell .tracking-map p { color: var(--pf-muted); }
+.customer-shell .customer-auth a, .customer-shell .customer-auth button:not([type="submit"]) { color: var(--color-primary); }
+.customer-shell .tracking-map { border-color: var(--pf-line); background: var(--pf-card); color: var(--pf-ink); }
+
+/* 사진 머리 영역 */
+.customer-shell .photo-hero, .customer-shell .hotel-detail-hero, .customer-shell .booking-visual-header, .customer-shell .editorial-page__visual {
+  border: 5px solid var(--pf-card); border-radius: 28px; box-shadow: var(--pf-shadow);
+}
+.customer-shell .hotel-detail-hero { background: var(--pf-sky); }
+.customer-shell .hotel-detail-hero > img { filter: none; }
+
+/* 예약 단계 · 노선 선택 */
+.customer-shell .reservation-progress li { border: 0; border-radius: 999px; background: var(--pf-card); box-shadow: var(--pf-shadow); }
+.customer-shell .reservation-progress li.is-current { background: var(--pf-sun-soft); color: var(--pf-ink); }
+.customer-shell .reservation-progress li.is-current span { background: var(--pf-sun); color: #3b2a00; }
+.customer-shell .booking-route-choices a, .customer-shell .booking-route-choices > a { border-radius: 999px; }
+.customer-shell .booking-route-choices a[aria-current="page"], .customer-shell .booking-route-choices a.is-active { background: var(--pf-coral-soft); border-color: var(--pf-coral); color: var(--pf-ink); }
+
+/* 로그인 · 안내 · 주문 패널 */
+.customer-shell .customer-auth { border: 0; border-radius: 28px; background: var(--pf-card); box-shadow: var(--pf-shadow); }
+.customer-shell .customer-auth input { border-color: var(--pf-line); border-radius: 16px; background: color-mix(in srgb, var(--pf-card) 70%, var(--pf-bg)); }
+.customer-shell .customer-auth small { color: var(--pf-muted); }
+.customer-shell .order-page__summary, .customer-shell .support-thread__header,
+.customer-shell .order-page__empty, .customer-shell .support-thread__empty { border-radius: 24px; }
+.customer-shell .account-page .account-page__panel { border-radius: 26px; box-shadow: var(--pf-shadow); }
+.customer-shell .stay-search { border: 0; border-radius: 26px; box-shadow: var(--pf-shadow); }
+.customer-shell .stay-search__field input { border-radius: 999px; }
+.customer-shell .stay-search__options { border-radius: 18px; }
+.customer-shell .tracking-map { border-radius: 26px; overflow: hidden; }
+
+/* 업무 화면: 색 톤만 통일 */
+.staff-shell .staff-shell__header { background: #1d2a4d; }
+.staff-login-panel .staff-login-panel__intro { background: #1d2a4d; }
+.staff-login-panel .staff-login-panel__intro span { color: #ffd666; }
+.staff-shell .customer-action, .staff-login-panel button[type="submit"] { border-radius: 12px; background: #1f5fd6; color: #fff; }
+
+/* 시뮬레이션 배지 */
+.pf-sim-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 2px dashed var(--pf-coral); border-radius: 999px; background: var(--pf-coral-soft); color: #a8361c; font-size: 12px; font-weight: 900; }
+:root[data-theme="dark"] .pf-sim-badge { color: var(--pf-coral-ink); }

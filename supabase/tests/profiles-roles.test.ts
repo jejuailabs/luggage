@@ -176,6 +176,17 @@ describe("role_assignments", () => {
 });
 
 describe("has_role", () => {
+  it("requires AAL2 for admin, finance and dispatcher while preserving ordinary roles", async () => {
+    await client.query("insert into public.role_assignments(user_id, role) values ($1,'admin'),($2,'driver')", [bob, alice]);
+    try {
+      const lowAdmin = await asRole(client, "authenticated", async (c) => (await c.query("select public.has_role('admin') as allowed")).rows[0]!.allowed, { userId: bob, aal: "aal1" });
+      const highAdmin = await asRole(client, "authenticated", async (c) => (await c.query("select public.has_role('admin') as allowed")).rows[0]!.allowed, { userId: bob, aal: "aal2" });
+      const lowDriver = await asRole(client, "authenticated", async (c) => (await c.query("select public.has_role('driver') as allowed")).rows[0]!.allowed, { userId: alice, aal: "aal1" });
+      expect([lowAdmin, highAdmin, lowDriver]).toEqual([false, true, true]);
+    } finally {
+      await client.query("delete from public.role_assignments where user_id=any($1::uuid[]) and role in ('admin','driver')", [[bob, alice]]);
+    }
+  });
   it("checks only the caller's own roles, with admin implying all", async () => {
     const result = await asRole(client, "service_role", async (c) => {
       await c.query("insert into public.role_assignments (user_id, role) values ($1, 'admin')", [bob]);

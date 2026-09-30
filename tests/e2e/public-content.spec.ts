@@ -2,6 +2,14 @@ import { expect, test } from "@playwright/test";
 
 // PUBLIC_DATA_SOURCE=fixture 합성 콘텐츠 기준 (apps/web/src/server/content-fixtures.ts).
 test.describe("luggage service page", () => {
+  test("shows the published usage guide as four readable steps", async ({ page }) => {
+    await page.goto("/ko/luggage");
+    const guide = page.getByTestId("content-how-it-works");
+    await expect(guide.locator(".service-page__how-steps li")).toHaveCount(4);
+    await expect(guide.locator(".service-page__how-steps li").first()).toContainText("온라인 예약·결제");
+    await expect(guide).toContainText("이용 예시");
+  });
+
   test("blocks booking when a critical notice lacks an approved Chinese version", async ({ page }) => {
     await page.goto("/zh-CN/luggage");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("济州行李配送服务");
@@ -31,6 +39,15 @@ test.describe("luggage service page", () => {
 });
 
 test.describe("guides and legal pages", () => {
+  test("an arrival guide shows its route and related journeys", async ({ page }) => {
+    await page.goto("/ko/guide/arrival-day");
+    await expect(page.getByTestId("content-page")).toContainText("제주 도착 직후");
+    await expect(page.locator(".guide-page__path")).toContainText("제주공항");
+    await expect(page.locator(".guide-page__path")).toContainText("숙소");
+    await expect(page.locator(".guide-page__related-card")).toHaveCount(2);
+    await expect(page.getByTestId("guide-cta")).toHaveAttribute("href", "/ko/luggage/book?route=airport_to_hotel");
+  });
+
   test("marks a general guide shown in a fallback language", async ({ page }) => {
     await page.goto("/zh-CN/guide/airport-pickup-point");
     await expect(page.getByTestId("content-fallback-notice")).toContainText("English");

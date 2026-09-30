@@ -35,7 +35,7 @@ function onRoute(progress: number): Point {
   return { latitude: a.latitude + (b.latitude - a.latitude) * portion, longitude: a.longitude + (b.longitude - a.longitude) * portion };
 }
 
-export function RealMap({ demo, location, progress, labels }: { demo: boolean; location?: Point | null; progress: number; labels: { pickup: string; airport: string; demo: string; live: string; unavailable: string } }) {
+export function RealMap({ demo, location, progress, labels, trail = [] }: { demo: boolean; location?: Point | null; progress: number; labels: { pickup: string; airport: string; demo: string; live: string; unavailable: string }; trail?: Point[] }) {
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(390);
   const [tileError, setTileError] = useState(false);
@@ -70,6 +70,7 @@ export function RealMap({ demo, location, progress, labels }: { demo: boolean; l
   const marker = project(demo ? onRoute(progress) : location ?? demoCenter);
   const allPoints = projectedRoute.map((point) => `${point.x},${point.y}`).join(" ");
   const traversedPoints = [...route.slice(0, Math.floor(progress * (route.length - 1)) + 1), onRoute(progress)].map(project).map((point) => `${point.x},${point.y}`).join(" ");
+  const trailPoints = trail.map(project).map((point) => `${point.x},${point.y}`).join(" ");
 
   return <div ref={ref} className="tracking-map__real" style={{ height }} data-testid="tracking-real-map" role="img" aria-label={demo ? labels.demo : labels.live}>
     <div className="tracking-map__tiles" aria-hidden="true">{tiles.map((tile) => <img
@@ -82,6 +83,7 @@ export function RealMap({ demo, location, progress, labels }: { demo: boolean; l
       onError={() => setTileError(true)}
     />)}</div>
     {tileError ? <div className="tracking-map__tile-error" role="status">{labels.unavailable}</div> : null}
+    {!demo && trail.length > 1 ? <svg className="tracking-map__overlay" viewBox={`0 0 ${width} ${height}`} aria-hidden="true"><polyline points={trailPoints} fill="none" stroke="#fff" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" /><polyline points={trailPoints} fill="none" stroke="#006457" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" /></svg> : null}
     {demo ? <svg className="tracking-map__overlay" viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
       <polyline points={allPoints} fill="none" stroke="#fff" strokeOpacity=".95" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" />
       <polyline points={allPoints} fill="none" stroke="#176750" strokeOpacity=".65" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="7 9" />

@@ -22,7 +22,7 @@ async function deliveredOrder() {
     quote.id,
     key(),
     JSON.stringify({ name: "王小明", email: "wang@example.com", phone: "+8613800138000" }),
-    ["bag-size-rules", "prohibited-items"],
+    ["bag-size-rules", "prohibited-items", "cancellation-refund", "damage-compensation"],
     JSON.stringify({ partnerCode: "SAMPLE01", campaign: "xhs_test" }),
   ]);
   const attempt = await as<{ merchant_order_id: string; amount_minor: number }>("authenticated", customer, "select * from public.start_payment($1, 'mock', 'alipay', $2)", [
@@ -101,6 +101,23 @@ describe("server-side analytics events", () => {
 });
 
 describe("ops_metrics", () => {
+  it("refreshes historical daily summaries without exposing raw events", async () => {
+    await client.query("insert into public.analytics_events(event_type, service_day, locale) values ('landing_viewed', '2025-01-01', 'zh-CN')");
+    await expect(as("authenticated", dispatcher, "select public.refresh_analytics_daily_summary('2025-01-01', '2025-01-01')")).rejects.toThrow(/permission denied/);
+    await as("service_role", null, "select public.refresh_analytics_daily_summary('2025-01-01', '2025-01-01')");
+    const summary = await as<{ landing_views: string }>("authenticated", dispatcher, "select * from public.ops_metrics('2025-01-01', '2025-01-01', 'locale') where dimension_value='zh-CN'");
+    expect(Number(summary.landing_views)).toBe(1);
+    await expect(asRole(client, "authenticated", (c) => c.query("select * from public.analytics_daily_summary"), { userId: customer })).rejects.toThrow(/permission denied/);
+  });
+  it("shows field evidence and notification failure counts only to staff", async () => {
+    await deliveredOrder();
+    const serviceDate = (await client.query<{ service_date: string }>("select service_date from public.service_slots where id=$1", [fixture.slotId])).rows[0]!.service_date;
+    const quality = await as<{ collected_total: string }>("authenticated", dispatcher, "select * from public.ops_field_quality($1, $1) where dimension='hotel' limit 1", [serviceDate]);
+    expect(Number(quality.collected_total)).toBeGreaterThanOrEqual(1);
+    const failures = await as<{ dead_events: string }>("authenticated", dispatcher, "select * from public.ops_notification_failures($1, $1)", [today()]);
+    expect(Number(failures.dead_events)).toBeGreaterThanOrEqual(0);
+    await expect(as("authenticated", customer, "select * from public.ops_field_quality($1, $1)", [serviceDate])).rejects.toThrow("LUGGAGE:FORBIDDEN");
+  });
   it("aggregates counts per dimension for operations staff", async () => {
     await deliveredOrder();
     const overall = await as<Record<string, string>>("authenticated", dispatcher, "select * from public.ops_metrics($1, $1, 'overall')", [today()]);

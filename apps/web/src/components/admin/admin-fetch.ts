@@ -1,7 +1,7 @@
 export type AdminFetchResult = { ok: true; data: unknown } | { ok: false; code: string };
 
 /** 관리 API 호출. 쿠키 세션과 동일 출처로 보낸다. */
-export async function adminFetch(url: string, method: "POST" | "PATCH", body: unknown): Promise<AdminFetchResult> {
+export async function adminFetch(url: string, method: "POST" | "PATCH" | "PUT", body: unknown): Promise<AdminFetchResult> {
   try {
     const response = await fetch(url, {
       method,

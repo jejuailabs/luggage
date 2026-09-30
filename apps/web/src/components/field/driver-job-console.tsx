@@ -20,6 +20,7 @@ const NEXT_ACTION: Record<string, { event: string; label: string } | undefined> 
   at_origin: { event: "collected", label: "수거" },
   collected: { event: "loaded", label: "차량 적재" },
   in_transit: { event: "ready_for_handoff", label: "도착지 인계 준비" },
+  return_in_progress: { event: "returned", label: "반환 완료" },
 };
 
 export function DriverJobConsole({
@@ -81,7 +82,7 @@ export function DriverJobConsole({
 
   async function attachPhoto(tag: string, file: File) {
     setBusy(true);
-    const result = await uploadEvidence({ jobId, tagId: tag, purpose: "collection_photo", file });
+    const result = await uploadEvidence({ jobId, tagId: tag, purpose: bags.find((bag) => bag.tagId === tag)?.status === "return_in_progress" ? "return_photo" : "collection_photo", file });
     setBusy(false);
     if (!result.ok) {
       setMessage({ tone: "warn", text: fieldErrorText(result.code) });
@@ -148,7 +149,7 @@ export function DriverJobConsole({
         {bags.map((bag) => {
           const next = NEXT_ACTION[bag.status];
           const isPending = pending.includes(bag.tagId);
-          const needsEvidence = next?.event === "collected";
+          const needsEvidence = next?.event === "collected" || next?.event === "returned";
           return (
             <li
               key={bag.tagId}
@@ -168,7 +169,7 @@ export function DriverJobConsole({
                   {needsEvidence ? (
                     <>
                       <label className="flex flex-col gap-1 text-sm">
-                        <span>외관 사진 {photos[bag.tagId]?.length ? `(${photos[bag.tagId]!.length}장 첨부)` : ""}</span>
+                        <span>{next?.event === "returned" ? "반환 현장 사진" : "외관 사진"} {photos[bag.tagId]?.length ? `(${photos[bag.tagId]!.length}장 첨부)` : ""}</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -182,7 +183,7 @@ export function DriverJobConsole({
                         />
                       </label>
                       <label className="flex flex-col gap-1 text-sm">
-                        <span>사진을 못 찍는 경우 사유</span>
+                        <span>{next?.event === "returned" ? "수령자 확인 내용 또는 사진을 못 찍은 사유" : "사진을 못 찍는 경우 사유"}</span>
                         <input
                           value={reason}
                           onChange={(e) => setReason(e.target.value)}
