@@ -1,5 +1,6 @@
 import "server-only";
 import { getServerConfig } from "@/lib/env";
+import staySnapshot from "./tour-stays-snapshot.json";
 
 export interface TourStay {
   id: string;
@@ -28,6 +29,9 @@ type TourResponse = {
 
 const ENDPOINT = "https://apis.data.go.kr/B551011/KorService2/searchStay2";
 const PAGE_SIZE = 300;
+// Public Korea Tourism Organization stay names fetched on 2026-09-30.
+// Keep autocomplete usable when the upstream API or outbound network is unavailable.
+const fallbackStays: TourStay[] = staySnapshot;
 
 function numberOrNull(value: string | undefined): number | null {
   const parsed = Number(value);
@@ -59,7 +63,7 @@ export function parseTourStays(payload: TourResponse): { total: number; stays: T
 /** 제주 법정동 시도 코드 50. 목록 전체를 서버 캐시에 보관하고 브라우저에는 키를 보내지 않는다. */
 export async function listJejuTourStays(): Promise<TourStay[] | null> {
   const key = getServerConfig().tourApiServiceKey;
-  if (!key) return null;
+  if (!key) return fallbackStays;
   const all: TourStay[] = [];
   for (let page = 1; page <= 10; page += 1) {
     const url = new URL(ENDPOINT);
@@ -72,12 +76,12 @@ export async function listJejuTourStays(): Promise<TourStay[] | null> {
     url.searchParams.set("pageNo", String(page));
     try {
       const response = await fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(15000) });
-      if (!response.ok) return null;
+      if (!response.ok) return fallbackStays;
       const result = parseTourStays(await response.json() as TourResponse);
       all.push(...result.stays);
       if (all.length >= result.total || result.stays.length < PAGE_SIZE) break;
     } catch {
-      return null;
+      return fallbackStays;
     }
   }
   return [...new Map(all.map((stay) => [stay.id, stay])).values()];
