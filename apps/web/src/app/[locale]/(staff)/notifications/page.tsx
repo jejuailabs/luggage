@@ -9,7 +9,9 @@ export default async function NotificationsPage({ params }: { params: Promise<{ 
   const viewer = await getViewer();
   if (!viewer.user || viewer.user.isAnonymous || !viewer.client) {
     return (
-      <section lang="ko" className="rounded-[var(--radius-card)] border border-line bg-card p-4">
+      <section lang="ko" className="staff-login-panel customer-card">
+        <div className="staff-login-panel__intro"><span>JEJU CONNECT · TEAM</span><h1>알림함</h1><p>업무 알림을 확인하려면 로그인하세요.</p></div>
+        <div className="staff-login-panel__form">
         <StaffLogin
           locale={locale}
           labels={{
@@ -21,6 +23,7 @@ export default async function NotificationsPage({ params }: { params: Promise<{ 
             unavailable: "로그인 설정이 아직 없습니다.",
           }}
         />
+        </div>
       </section>
     );
   }

@@ -79,7 +79,7 @@ try {
   await client.end();
 
   exitCode = await new Promise((resolve) => {
-    const child = spawn("pnpm", ["exec", "vitest", "run", "-c", "supabase/tests/vitest.config.ts"], {
+    const child = spawn("pnpm", ["exec", "vitest", "run", "-c", "supabase/tests/vitest.config.ts", ...(process.env.DB_TEST_FILTER ? [process.env.DB_TEST_FILTER] : [])], {
       cwd: root,
       stdio: "inherit",
       shell: process.platform === "win32",

@@ -30,8 +30,9 @@ export default async function MockPayPage({ params, searchParams }: Props) {
   const returnUrl = requested.startsWith(`${config.appUrl}/`) ? requested : fallback;
 
   return (
-    <section className="flex flex-col gap-4 rounded-[var(--radius-card)] border-2 border-dashed border-warm bg-card p-4">
-      <h1 className="text-xl font-bold">{t("mockpay.title")}</h1>
+    <section className="mock-checkout-page customer-card">
+      <span className="landing-kicker">JEJU · TEST CHECKOUT</span>
+      <h1>{t("mockpay.title")}</h1>
       <p className="text-sm text-muted">{t("mockpay.notice")}</p>
       <p className="text-2xl font-bold" data-testid="mock-pay-amount">
         {formatMoney(attempt.amount_minor, attempt.currency, locale)}

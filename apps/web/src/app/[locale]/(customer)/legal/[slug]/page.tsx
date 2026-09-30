@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ContentView } from "@/components/content-view";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
@@ -25,8 +26,6 @@ export default async function Page({ params }: { params: Params }) {
   const { t } = await getRequestContext(locale);
   const result = await getContent(slug, locale);
   return (
-    <section className="rounded-[var(--radius-card)] border border-line bg-card p-4">
-      <ContentView result={result} t={t} headingLevel={1} testId="content-page" />
-    </section>
+    <div className="editorial-page editorial-page--legal customer-inner-page"><div className="editorial-page__visual"><span>JEJU CONNECT · INFORMATION</span></div><section className="editorial-page__article customer-card"><ContentView result={result} t={t} headingLevel={1} testId="content-page" /></section><Link href={`/${locale}/luggage`} className="editorial-page__return">← {locale === "ko" ? "서비스 안내로 돌아가기" : locale === "zh-CN" ? "返回服务介绍" : "Back to service guide"}</Link></div>
   );
 }

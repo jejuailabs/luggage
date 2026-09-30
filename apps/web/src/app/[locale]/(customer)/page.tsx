@@ -1,116 +1,85 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
-import { RouteList } from "@/components/route-list";
 import { PageView } from "@/components/page-view";
 import { ThemePreferencePicker } from "@/components/theme-controls";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { getViewer } from "@/server/auth";
 import { localizedAlternates } from "@/lib/seo";
 import { loadPublicCatalog, openRouteTypes } from "@/server/catalog";
+import { searchHotels } from "@/server/catalog";
+import { StaySearch } from "@/components/stay-search";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   return { alternates: localizedAlternates(await resolveLocale(params), "") };
 }
+
+const routes = ["hotel_to_airport", "airport_to_hotel", "hotel_to_hotel"] as const;
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const locale = await resolveLocale(params);
   const { t, themePreference } = await getRequestContext(locale);
   const signedIn = Boolean((await getViewer()).user);
   const catalog = await loadPublicCatalog();
+  const open = openRouteTypes(catalog);
+  const hotels = catalog ? searchHotels(catalog, "", locale, 1000) : [];
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="landing-page">
       <PageView locale={locale} />
-      <section className="rounded-[var(--radius-card)] bg-sea px-4 py-6">
-        <h1 className="text-[26px] font-bold leading-tight">{t("home.headline")}</h1>
-        <p className="mt-2 text-muted">{t("home.subheadline")}</p>
-      </section>
-
-      <section aria-labelledby="search-title" className="rounded-[var(--radius-card)] border border-line bg-card p-4">
-        <h2 id="search-title" className="text-lg font-semibold">
-          {t("home.search.title")}
-        </h2>
-        <form action={`/${locale}/hotels`} method="get" className="mt-3 flex flex-col gap-3" role="search">
-          <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium">{t("home.search.hotel")}</span>
-            <input
-              name="q"
-              type="search"
-              enterKeyHint="search"
-              placeholder={t("home.search.hotelPlaceholder")}
-              data-testid="home-hotel-search"
-              className="min-h-11 rounded-[var(--radius-button)] border border-line bg-bg px-3"
-            />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium">
-              {t("home.search.date")} <span className="text-muted">({t("time.kstLabel")})</span>
-            </span>
-            <input
-              name="date"
-              type="date"
-              disabled
-              aria-describedby="search-unavailable"
-              className="min-h-11 rounded-[var(--radius-button)] border border-line bg-bg px-3 disabled:opacity-60"
-            />
-          </label>
-          <button
-            type="submit"
-            className="min-h-12 rounded-[var(--radius-button)] bg-primary px-4 font-semibold text-on-primary"
-          >
-            {t("hotels.search.submit")}
-          </button>
-          <p id="search-unavailable" className="text-center text-sm text-muted">
-            {t("home.search.unavailable")}
-          </p>
-        </form>
-      </section>
-
-      <section aria-labelledby="routes-title">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 id="routes-title" className="text-lg font-semibold">
-            {t("home.routes.title")}
-          </h2>
-          <Link href={`/${locale}/luggage`} className="inline-flex min-h-11 items-center text-sm font-medium text-primary">
-            {t("luggage.howItWorks")} →
-          </Link>
+      <section className="landing-hero" aria-labelledby="home-title">
+        <Image src="/images/editorial-island.jpg" alt="" width={1800} height={1200} priority sizes="100vw" className="landing-hero__image" />
+        <div className="landing-hero__shade" />
+        <div className="landing-hero__copy">
+          <span className="landing-hero__eyebrow">JEJU CONNECT · TRAVEL LIGHT</span>
+          <h1 id="home-title">{t("home.headline")}</h1>
+          <p>{t("home.subheadline")}</p>
+          <div className="landing-hero__actions">
+            <Link href={`/${locale}/hotels`} className="landing-pill landing-pill--white">{t("nav.book")} <span aria-hidden="true">↗</span></Link>
+            <Link href={`/${locale}/luggage`} className="landing-pill landing-pill--glass">{t("luggage.howItWorks")} <span aria-hidden="true">↗</span></Link>
+          </div>
         </div>
-        <RouteList t={t} open={openRouteTypes(catalog)} />
+        <span className="landing-hero__caption">01 / A LIGHTER WAY TO TRAVEL</span>
       </section>
 
-      <section
-        aria-labelledby="notice-title"
-        className="rounded-[var(--radius-card)] border border-line border-l-4 border-l-warm bg-card p-4"
-      >
-        <h2 id="notice-title" className="font-semibold">
-          {t("home.notice.title")}
-        </h2>
-        <p className="mt-1 text-sm text-muted">{t("home.notice.body")}</p>
+      <section className="landing-search" aria-labelledby="search-title">
+        <div><span className="landing-kicker">BEGIN YOUR JOURNEY</span><h2 id="search-title">{t("home.search.title")}</h2></div>
+        <StaySearch locale={locale} hotels={hotels} compact />
       </section>
 
-      <section aria-labelledby="trust-title" className="rounded-[var(--radius-card)] border border-line bg-card p-4">
-        <h2 id="trust-title" className="font-semibold">
-          {t("home.trust.title")}
-        </h2>
-        <ul className="mt-2 flex list-disc flex-col gap-1 pl-5 text-sm">
-          <li>{t("home.trust.perBag")}</li>
-          <li>{t("home.trust.noKoreanPhone")}</li>
-          <li>{t("home.trust.support")}</li>
-        </ul>
+      <section className="landing-section landing-destinations" aria-labelledby="routes-title">
+        <div className="landing-section__heading"><div><span className="landing-kicker">MAKE ROOM FOR THE JOURNEY</span><h2 id="routes-title">{t("home.routes.title")}</h2></div><Link href={`/${locale}/luggage`}>{t("luggage.howItWorks")} ↗</Link></div>
+        <div className="editorial-routes">
+          {routes.map((route, index) => (
+            <Link key={route} href={`/${locale}/hotels?route=${route}`} className="editorial-route">
+              <span className="editorial-route__index">0{index + 1}</span>
+              <strong>{t(`route.${route}`)}</strong>
+              <small>{open.has(route) ? t("route.status.open") : locale === "ko" ? "견적 문의 가능" : locale === "zh-CN" ? "可咨询报价" : "Quote inquiry"}</small>
+              <span className="editorial-route__arrow" aria-hidden="true">↗</span>
+            </Link>
+          ))}
+        </div>
       </section>
 
-      <section className="rounded-[var(--radius-card)] border border-line bg-card p-4">
-        <ThemePreferencePicker
-          initial={themePreference}
-          syncToAccount={signedIn}
-          labels={{
-            label: t("theme.label"),
-            light: t("theme.light"),
-            dark: t("theme.dark"),
-            system: t("theme.system"),
-          }}
-        />
+      <section className="editorial-feature" aria-labelledby="trust-title">
+        <div className="editorial-feature__image"><Image src="/images/editorial-luggage.jpg" alt="" width={1200} height={1600} sizes="(min-width: 768px) 48vw, 100vw" /></div>
+        <div className="editorial-feature__copy"><span className="landing-kicker">TRAVEL WITH CONFIDENCE</span><h2 id="trust-title">{t("home.trust.title")}</h2><p>{t("home.notice.body")}</p>
+          <ol><li><span>01</span>{t("home.trust.noKoreanPhone")}</li><li><span>02</span>{t("home.trust.perBag")}</li><li><span>03</span>{t("home.trust.support")}</li></ol>
+          <Link href={`/${locale}/luggage`} className="landing-text-link">{t("luggage.howItWorks")} ↗</Link>
+        </div>
       </section>
+
+      <section className="landing-section editorial-process" aria-labelledby="steps-title">
+        <div className="landing-section__heading"><div><span className="landing-kicker">A SIMPLE, CONSIDERED SERVICE</span><h2 id="steps-title">{t("home.steps.title")}</h2></div></div>
+        <div className="editorial-process__grid">
+          <div><span>01 / RESERVE</span><strong>{t("home.trust.noKoreanPhone")}</strong><p>{t("nav.book")}</p></div>
+          <div><span>02 / HAND OVER</span><strong>{t("home.trust.perBag")}</strong><p>{t("home.routes.title")}</p></div>
+          <div><span>03 / ARRIVE</span><strong>{t("home.trust.support")}</strong><p>{t("nav.orders")}</p></div>
+        </div>
+      </section>
+
+      <section className="landing-banner"><Image src="/images/editorial-lagoon.jpg" alt="" width={1800} height={1200} sizes="100vw" /><div><span className="landing-kicker">YOUR DAY, UNBURDENED</span><h2>{t("home.headline")}</h2><p>{t("home.subheadline")}</p><Link href={`/${locale}/hotels`} className="landing-pill landing-pill--white">{t("nav.book")} ↗</Link></div></section>
+      <section className="landing-settings"><ThemePreferencePicker initial={themePreference} syncToAccount={signedIn} labels={{ label: t("theme.label"), light: t("theme.light"), dark: t("theme.dark"), system: t("theme.system") }} /></section>
     </div>
   );
 }

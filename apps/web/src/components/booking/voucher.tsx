@@ -61,7 +61,7 @@ export async function Voucher({
 
   return (
     <section
-      className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-line bg-card p-4 print:border-0"
+      className="customer-card flex flex-col gap-4 p-5 print:border-0"
       aria-labelledby="voucher-title"
       data-testid="voucher"
     >

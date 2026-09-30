@@ -23,15 +23,15 @@ export default async function StaffLayout({
     : { count: 0 };
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col md:max-w-5xl">
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3 print:hidden">
+    <div className="staff-shell mx-auto flex min-h-dvh w-full max-w-[480px] flex-col md:max-w-5xl">
+      <header className="staff-shell__header flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3 print:hidden">
         <div>
-          <p className="text-sm text-muted">{t("brand.name")}</p>
+          <p className="text-sm">{t("brand.name")}</p>
           <p className="font-semibold">{t("staff.title")}</p>
         </div>
         {signedInStaff ? <StaffToolbar locale={locale} unread={count ?? 0} /> : null}
       </header>
-      <main className="flex-1 px-4 py-4">{children}</main>
+      <main className="staff-shell__main flex-1 px-4 py-4">{children}</main>
     </div>
   );
 }

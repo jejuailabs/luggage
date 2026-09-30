@@ -4,7 +4,7 @@ import { dbErrorCode, requireAdmin } from "@/server/admin";
 
 export const dynamic = "force-dynamic";
 
-const bodySchema = z.object({ status: z.enum(["draft", "active", "suspended", "archived"]) }).strict();
+const bodySchema = z.object({ status: z.enum(["draft", "active", "suspended", "archived"]).optional(), partnerId: z.string().uuid().nullable().optional() }).strict().refine((value) => value.status !== undefined || value.partnerId !== undefined);
 
 /** 호텔 상태 변경 (판매 노출·중지·보관). 변경은 audit_events에 자동 기록된다. */
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -19,9 +19,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const { data, error } = await gate.auth.client
     .from("hotels")
-    .update({ status: parsed.data.status })
+    .update({ ...(parsed.data.status !== undefined ? { status: parsed.data.status } : {}), ...(parsed.data.partnerId !== undefined ? { partner_id: parsed.data.partnerId } : {}) })
     .eq("id", id)
-    .select("id, status")
+    .select("id, status, partner_id")
     .maybeSingle();
   if (error) return fail(dbErrorCode(error), requestId);
   if (!data) return fail("NOT_FOUND", requestId);

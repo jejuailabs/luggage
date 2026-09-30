@@ -14,7 +14,7 @@ export function SupportForm({ locale, orderId }: { locale: Locale; orderId?: str
 
   return (
     <form
-      className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-line bg-card p-4"
+      className="customer-card flex flex-col gap-4 p-5"
       data-testid="support-form"
       onSubmit={async (event) => {
         event.preventDefault();
@@ -42,16 +42,16 @@ export function SupportForm({ locale, orderId }: { locale: Locale; orderId?: str
         router.push(`/${locale}/help/requests/${json.data.ticketId}`);
       }}
     >
-      <h2 className="font-semibold">{t("support.title")}</h2>
+      <h2 className="customer-section-heading">{t("support.title")}</h2>
       <label className="flex flex-col gap-1">
         <span className="text-sm font-medium">{t("support.subject")}</span>
-        <input name="subject" required maxLength={200} className="min-h-11 rounded-[var(--radius-button)] border border-line bg-bg px-3" />
+        <input name="subject" required maxLength={200} className="customer-input min-h-12 px-3" />
       </label>
       <label className="flex flex-col gap-1">
         <span className="text-sm font-medium">{t("support.body")}</span>
-        <textarea name="body" required maxLength={4000} rows={4} className="rounded-[var(--radius-button)] border border-line bg-bg p-3" />
+        <textarea name="body" required maxLength={4000} rows={4} className="customer-input p-3" />
       </label>
-      <button type="submit" disabled={busy} className="min-h-12 rounded-[var(--radius-button)] bg-primary px-4 font-semibold text-on-primary disabled:opacity-50">
+      <button type="submit" disabled={busy} className="customer-action min-h-12 px-5 font-semibold disabled:opacity-50">
         {t("support.send")}
       </button>
       {failed ? (

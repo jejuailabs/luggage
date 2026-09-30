@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { HotelCard } from "@/components/hotel-card";
+import Image from "next/image";
+import { StaySearch } from "@/components/stay-search";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { localizedAlternates } from "@/lib/seo";
 import { loadPublicCatalog, searchHotels } from "@/server/catalog";
+import { listJejuTourStays } from "@/server/tour-stays";
 
-type Props = { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string | string[] }> };
+type Props = { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string | string[]; stay?: string | string[]; route?: string | string[] }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await resolveLocale(params);
@@ -15,50 +17,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function HotelsPage({ params, searchParams }: Props) {
   const locale = await resolveLocale(params);
   const { t } = await getRequestContext(locale);
-  const raw = (await searchParams).q;
+  const search = await searchParams;
+  const raw = search.q;
   const query = (Array.isArray(raw) ? raw[0] : raw)?.slice(0, 80) ?? "";
-  const catalog = await loadPublicCatalog();
-  const results = catalog ? searchHotels(catalog, query, locale) : null;
+  const selectedStay = Array.isArray(search.stay) ? search.stay[0] : search.stay;
+  const selectedRoute = Array.isArray(search.route) ? search.route[0] : search.route;
+  const [catalog, stays] = await Promise.all([loadPublicCatalog(), listJejuTourStays()]);
+  const hotels = catalog ? searchHotels(catalog, "", locale, 1000) : [];
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold">{t("hotels.title")}</h1>
-      <form method="get" role="search" className="flex gap-2">
-        <label className="flex-1">
-          <span className="sr-only">{t("home.search.hotel")}</span>
-          <input
-            name="q"
-            type="search"
-            defaultValue={query}
-            enterKeyHint="search"
-            placeholder={t("home.search.hotelPlaceholder")}
-            className="min-h-11 w-full rounded-[var(--radius-button)] border border-line bg-card px-3"
-          />
-        </label>
-        <button type="submit" className="min-h-11 rounded-[var(--radius-button)] bg-primary px-4 font-semibold text-on-primary">
-          {t("hotels.search.submit")}
-        </button>
-      </form>
-      {results === null ? (
-        <p className="text-muted">{t("content.unavailable")}</p>
-      ) : (
-        <>
-          <p className="text-sm text-muted" aria-live="polite" data-testid="hotel-result-count">
-            {t("hotels.search.resultCount", { count: results.length })}
-          </p>
-          {results.length === 0 ? (
-            <p className="text-muted">{t("hotels.search.noResult")}</p>
-          ) : (
-            <ul className="flex flex-col gap-3">
-              {results.map((hotel) => (
-                <li key={hotel.slug}>
-                  <HotelCard hotel={hotel} locale={locale} t={t} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </>
-      )}
+    <div className="hotel-search-page customer-inner-page">
+      <header className="photo-hero hotel-search-hero">
+        <Image
+          src="/images/editorial-hotel.jpg"
+          alt=""
+          width={1800}
+          height={1200}
+          loading="eager"
+          sizes="(min-width: 768px) 50vw, 100vw"
+          className="photo-hero__image"
+        />
+        <div className="photo-hero__content">
+          <span className="photo-hero__eyebrow">JEJU · HOTELS</span>
+          <h1>{t("hotels.title")}</h1>
+        </div>
+      </header>
+      <StaySearch locale={locale} hotels={hotels} initialStays={stays} initialQuery={query} initialStayId={selectedStay} initialRoute={selectedRoute} />
     </div>
   );
 }

@@ -29,9 +29,9 @@ export async function StaffGate({
 
   if (!auth.user || auth.user.isAnonymous) {
     return (
-      <section className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-line bg-card p-4">
-        <h1 className="text-xl font-bold">{title}</h1>
-        <p className="text-muted">{t("staff.loginRequired")}</p>
+      <section className="staff-login-panel customer-card">
+        <div className="staff-login-panel__intro"><span>JEJU CONNECT · TEAM</span><h1>{title}</h1><p>{t("staff.loginRequired")}</p></div>
+        <div className="staff-login-panel__form">
         <StaffLogin
           locale={locale}
           labels={{
@@ -43,6 +43,7 @@ export async function StaffGate({
             unavailable: t("staff.login.unavailable"),
           }}
         />
+        </div>
       </section>
     );
   }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { formatKst } from "@luggage/i18n";
 import { MessageForm } from "@/components/support/message-form";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
@@ -23,9 +24,10 @@ export default async function RequestPage({ params }: { params: Promise<{ locale
   const panel = "rounded-[var(--radius-card)] border border-line bg-card p-4";
   if (!ticket || !client) {
     return (
-      <section className={panel} data-testid="request-not-found">
+      <section className={`${panel} support-thread__empty`} data-testid="request-not-found">
         <h1 className="text-xl font-bold">{t("support.threadTitle")}</h1>
         <p className="mt-2 text-muted">{t("support.notFound")}</p>
+        <div className="empty-page-actions"><Link href={`/${locale}/account`}>{locale === "ko" ? "내 문의 확인" : locale === "zh-CN" ? "查看我的咨询" : "My requests"} ↗</Link><Link href={`/${locale}/help`}>{t("nav.help")} ↗</Link></div>
       </section>
     );
   }
@@ -36,16 +38,17 @@ export default async function RequestPage({ params }: { params: Promise<{ locale
     .order("created_at");
 
   return (
-    <div className="flex flex-col gap-4">
-      <section className="rounded-[var(--radius-card)] bg-sea p-4">
+    <div className="support-thread customer-inner-page">
+      <section className="support-thread__header">
+        <span className="landing-kicker">JEJU · SUPPORT</span>
         <p className="text-sm text-muted">{t("support.threadTitle")}</p>
-        <h1 className="text-xl font-bold">{ticket.subject}</h1>
+        <h1>{ticket.subject}</h1>
       </section>
       <ol className="flex flex-col gap-2">
         {(messages ?? []).map((message) => (
           <li
             key={message.id}
-            className={message.author_role === "staff" ? `${panel} border-primary text-sm` : `${panel} text-sm`}
+            className={message.author_role === "staff" ? `${panel} support-thread__message support-thread__message--staff text-sm` : `${panel} support-thread__message text-sm`}
           >
             <p className="mb-1 text-xs text-muted">
               {message.author_role === "staff" ? t("support.staff") : t("support.you")} ·{" "}

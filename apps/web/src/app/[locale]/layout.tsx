@@ -6,6 +6,7 @@ import { getServerConfig, isTestMode } from "@/lib/env";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
 import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 import "../globals.css";
+import "../editorial-theme.css";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -26,7 +27,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
+    { media: "(prefers-color-scheme: light)", color: "#f2f8fd" },
     { media: "(prefers-color-scheme: dark)", color: "#0b1220" },
   ],
 };
@@ -58,7 +59,7 @@ export default async function LocaleLayout({
         <RuntimeEnvironmentMarker />
         <ServiceWorkerRegistration />
         {testMode ? (
-          <div role="status" data-testid="test-mode-banner" className="bg-warm px-4 py-1 text-center text-xs text-bg">
+          <div role="status" data-testid="test-mode-banner" className="bg-[#073b62] px-4 py-1 text-center text-xs text-white">
             {t("env.testMode")}
           </div>
         ) : null}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { formatKst, formatMoney, type MessageKey } from "@luggage/i18n";
 import { HandoffCode } from "@/components/booking/handoff-code";
 import { OrderActions } from "@/components/booking/order-actions";
@@ -22,7 +23,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
   // 소유 세션이 있어야 한다. 주문 번호만으로는 열리지 않는다 (RLS).
   const order = UUID.test(id) && viewer.client && viewer.user ? await getOrderView(viewer.client, id) : null;
 
-  const panel = "rounded-[var(--radius-card)] border border-line bg-card p-4";
+  const panel = "customer-card p-5";
   // 예약증은 서버가 확정한 주문에만 보여 준다 (결제창 복귀만으로는 표시하지 않는다).
   const bags: VoucherBag[] =
     order?.reservationStatus === "confirmed" && viewer.client
@@ -44,10 +45,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
   }
   if (!order) {
     return (
-      <section className={panel} data-testid="order-not-found">
-        <h1 className="text-xl font-bold">{t("order.title")}</h1>
-        <p className="mt-2 text-muted">{t("order.notFound")}</p>
-      </section>
+      <div className="order-page customer-inner-page"><section className="order-page__empty customer-card" data-testid="order-not-found"><span className="landing-kicker">JEJU · YOUR JOURNEY</span><h1>{t("order.title")}</h1><p>{t("order.notFound")}</p><div className="empty-page-actions"><Link href={`/${locale}/account`}>{locale === "ko" ? "내 짐 확인" : locale === "zh-CN" ? "查看我的行李" : "My bags"} ↗</Link><Link href={`/${locale}/help`}>{t("nav.help")} ↗</Link></div></section></div>
     );
   }
 
@@ -56,18 +54,21 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
   const money = (amount: number) => formatMoney(amount, order.currency, locale);
 
   return (
-    <div className="flex flex-col gap-4" data-testid="order-page">
-      <section className="rounded-[var(--radius-card)] bg-sea px-4 py-5">
+    <div className="order-page customer-inner-page" data-testid="order-page">
+      <section className="order-page__summary customer-card overflow-hidden">
+        <div className="px-5 py-5">
+        <span className="landing-kicker">JEJU · BOOKING STATUS</span>
         <p className="text-sm text-muted">{t("order.code")}</p>
-        <p className="text-2xl font-bold tracking-wider" data-testid="order-code">
+        <p className="mt-1 text-2xl font-extrabold tracking-wide" data-testid="order-code">
           {order.publicCode}
         </p>
-        <p className="mt-2 font-semibold" data-testid="order-status" data-status={order.reservationStatus}>
+        <p className="mt-4 inline-flex rounded-full bg-sea px-3 py-1 text-sm font-bold text-primary" data-testid="order-status" data-status={order.reservationStatus}>
           {t(`order.status.${order.reservationStatus}` as MessageKey)}
         </p>
         <p className="text-sm text-muted" data-testid="payment-summary" data-summary={order.payment.summary}>
           {t(`payment.summary.${order.payment.summary}` as MessageKey)}
         </p>
+        </div>
       </section>
 
       {order.reservationStatus === "held" && order.holdExpiresAt ? (
@@ -98,8 +99,8 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
       ) : null}
 
       {bags.length > 0 ? (
-        <section className={`${panel} flex flex-col gap-2`} data-testid="delivery-status">
-          <h2 className="font-semibold">{t("delivery.title")}</h2>
+        <section className={`${panel} flex flex-col gap-3`} data-testid="delivery-status">
+          <h2 className="customer-section-heading">{t("delivery.title")}</h2>
           <p className="text-sm text-muted">
             {t("delivery.progress", {
               delivered: bags.filter((b) => b.status === "delivered").length,
@@ -110,7 +111,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
             {bags.map((bag) => {
               const last = lastEvents.get(bag.tagId);
               return (
-                <li key={bag.tagId} className="flex flex-col rounded-[var(--radius-button)] border border-line px-3 py-2" data-status={bag.status}>
+                <li key={bag.tagId} className="flex flex-col rounded-xl border border-line bg-bg px-4 py-3" data-status={bag.status}>
                   <span className="flex justify-between gap-2">
                     <span>{t("delivery.bagLine", { seq: bag.seq, size: t(`booking.bag.${bag.size}` as MessageKey) })}</span>
                     <span className="font-medium">{t(`bag.status.${bag.status}` as MessageKey)}</span>
@@ -127,6 +128,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
       {order.reservationStatus === "confirmed" && viewer.client ? (
         <VehicleLocation client={viewer.client} orderId={order.id} locale={locale} t={t} />
       ) : null}
+      {order.reservationStatus === "confirmed" ? <Link href={`/${locale}/account/track?order=${order.id}`} className="tracking-page__order-link">{locale === "ko" ? "지도에서 내 짐 위치 보기" : locale === "zh-CN" ? "在地图查看行李位置" : "Track my bags on map"} ↗</Link> : null}
       {order.reservationStatus === "confirmed" && bags.length > 0 ? (
         <HandoffCode locale={locale} orderId={order.id} ready={bags.some((b) => b.status === "ready_for_handoff")} />
       ) : null}
@@ -141,7 +143,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
         hasRefundRequest={Boolean(order.refund && order.refund.requestStatus !== "rejected")}
       />
 
-      <dl className={`${panel} grid grid-cols-1 gap-3 text-sm`}>
+      <dl className={`${panel} order-page__details grid grid-cols-1 gap-3 text-sm`}>
         <div>
           <dt className="text-muted">{t(order.routeType === "airport_to_hotel" ? "order.pickupAirport" : "order.pickup")}</dt>
           <dd className="font-medium">

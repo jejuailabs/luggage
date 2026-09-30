@@ -23,17 +23,24 @@ export default async function CustomerLayout({
   };
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col md:max-w-3xl">
-      <header className="sticky top-0 print:hidden z-10 flex items-center justify-between gap-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur">
-        <Link href={`/${locale}`} className="text-lg font-bold text-brand">
+    <div className="customer-shell mx-auto flex min-h-dvh w-full flex-col">
+      <header className="customer-header sticky top-0 z-20 flex items-center justify-between gap-2 px-4 py-3 backdrop-blur print:hidden md:px-8 xl:px-16">
+        <Link href={`/${locale}`} className="customer-header__brand text-[19px] font-extrabold text-brand">
           {t("brand.name")}
         </Link>
+        <nav aria-label={t("nav.primary")} className="hidden items-center gap-7 lg:flex">
+          <Link className="flex min-h-11 items-center text-sm font-semibold text-muted hover:text-primary" href={`/${locale}`}>{t("nav.home")}</Link>
+          <Link className="flex min-h-11 items-center text-sm font-semibold text-muted hover:text-primary" href={`/${locale}/luggage`}>{t("home.routes.title")}</Link>
+          <Link className="flex min-h-11 items-center text-sm font-semibold text-muted hover:text-primary" href={`/${locale}/hotels`}>{t("home.search.hotel")}</Link>
+          <Link className="flex min-h-11 items-center text-sm font-semibold text-muted hover:text-primary" href={`/${locale}/account`}>{t("nav.orders")}</Link>
+          <Link className="flex min-h-11 items-center text-sm font-semibold text-muted hover:text-primary" href={`/${locale}/help`}>{t("nav.help")}</Link>
+        </nav>
         <div className="flex items-center gap-2">
           <ThemeQuickToggle initial={themePreference} labels={themeLabels} syncToAccount={signedIn} />
           <LocaleSwitcher locale={locale} label={t("locale.label")} syncToAccount={signedIn} />
         </div>
       </header>
-      <main className="flex-1 px-4 pb-[calc(88px+env(safe-area-inset-bottom))] pt-4">{children}</main>
+      <main className="customer-main flex-1 px-4 pb-[calc(96px+env(safe-area-inset-bottom))] pt-5 md:px-8 md:pt-8">{children}</main>
       <BottomNav
         locale={locale}
         label={t("nav.primary")}

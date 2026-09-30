@@ -3,13 +3,27 @@ import { expect, test } from "@playwright/test";
 // PUBLIC_DATA_SOURCE=fixture 합성 카탈로그 기준 (apps/web/src/server/catalog-fixtures.ts).
 test("home shows route availability from the catalog", async ({ page }) => {
   await page.goto("/zh-CN");
-  const routes = page.getByTestId("route-list");
-  await expect(routes.locator('[data-route="hotel_to_airport"]')).toHaveAttribute("data-open", "true");
-  await expect(routes.locator('[data-route="airport_to_hotel"]')).toHaveAttribute("data-open", "true");
-  await expect(routes.locator('[data-route="hotel_to_hotel"]')).toHaveAttribute("data-open", "true");
+  const routes = page.locator(".editorial-route");
+  await expect(routes).toHaveCount(3);
+  for (const [index, route] of (await routes.all()).entries()) {
+    await expect(route).toHaveAttribute("href", `/zh-CN/hotels?route=${["hotel_to_airport", "airport_to_hotel", "hotel_to_hotel"][index]}`);
+  }
 });
 
-test("customer finds a hotel by Chinese alias and sees Korea-time front desk hours", async ({ page }) => {
+test("home stay search opens a filtered dropdown", async ({ page }) => {
+  await page.route("**/api/v1/tour-stays", (route) => route.fulfill({
+    contentType: "application/json",
+    body: JSON.stringify({ data: { stays: [{ id: "1896032", name: "가름게스트하우스", address: "제주특별자치도 서귀포시 법환하로9번길 10", image: null, latitude: 33.2, longitude: 126.5 }], count: 1 } }),
+  }));
+  await page.goto("/ko");
+  await expect(page.getByTestId("hotel-result")).toHaveCount(0);
+  await page.getByTestId("home-hotel-search").fill("가름");
+  await expect(page.getByTestId("hotel-result")).toHaveCount(1);
+  await expect(page.getByTestId("hotel-result").first()).toHaveText("가름게스트하우스");
+  await expect(page.getByTestId("hotel-result").first()).not.toContainText("법환하로9번길 10");
+});
+
+test("customer finds a hotel by Chinese name and continues to pickup or delivery booking", async ({ page }) => {
   await page.goto("/zh-CN");
   await page.getByTestId("home-hotel-search").fill("示例");
   await page.getByTestId("home-hotel-search").press("Enter");
@@ -17,10 +31,9 @@ test("customer finds a hotel by Chinese alias and sees Korea-time front desk hou
   await expect(page.getByTestId("hotel-result")).toHaveCount(2);
 
   await page.getByTestId("hotel-result").filter({ hasText: "济州市店" }).click();
-  await expect(page).toHaveURL(/\/zh-CN\/hotels\/sample-hotel-jeju-city$/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("示例酒店 济州市店");
-  await expect(page.getByText("예시 호텔 제주시점")).toBeVisible();
-  await expect(page.getByTestId("hotel-front-desk")).toHaveText("07:00–22:00（韩国时间）");
+  await expect(page).toHaveURL(/\/zh-CN\/luggage\/book\?hotel=sample-hotel-jeju-city$/);
+  await expect(page.getByTestId("route-choice-hotel_to_airport")).toBeVisible();
+  await expect(page.getByTestId("route-choice-airport_to_hotel")).toBeVisible();
 });
 
 test("hotel name falls back to the Korean original without a translation", async ({ page }) => {

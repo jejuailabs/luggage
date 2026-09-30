@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { ContentView } from "@/components/content-view";
 import { RouteList } from "@/components/route-list";
 import { PageView } from "@/components/page-view";
@@ -30,60 +31,73 @@ export default async function LuggagePage({ params }: { params: Promise<{ locale
   const bookingAllowed = notices.every((notice) => notice.status === "ok");
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="service-page customer-inner-page">
       <PageView locale={locale} />
-      <section className="rounded-[var(--radius-card)] bg-sea px-4 py-6">
-        <h1 className="text-[26px] font-bold leading-tight">{t("luggage.title")}</h1>
-        <p className="mt-2 text-muted">{t("luggage.intro")}</p>
+      <section className="photo-hero service-page__hero">
+        <Image
+          src="/images/editorial-airport.jpg"
+          alt=""
+          width={1800}
+          height={1200}
+          loading="eager"
+          sizes="(min-width: 768px) 50vw, 100vw"
+          className="photo-hero__image object-[65%_center]"
+        />
+        <div className="photo-hero__content">
+          <span className="photo-hero__eyebrow">JEJU · SERVICE GUIDE</span>
+          <h1>{t("luggage.title")}</h1>
+          <p>{t("luggage.intro")}</p>
+        </div>
       </section>
 
-      <section aria-labelledby="routes-title">
-        <h2 id="routes-title" className="mb-2 text-lg font-semibold">
-          {t("home.routes.title")}
-        </h2>
-        <RouteList t={t} open={openRouteTypes(catalog)} />
+      <section aria-labelledby="routes-title" className="service-page__routes">
+        <div className="landing-section__heading"><div><span className="landing-kicker">CHOOSE YOUR JOURNEY</span><h2 id="routes-title">{t("home.routes.title")}</h2></div></div>
+        <RouteList t={t} open={openRouteTypes(catalog)} locale={locale} />
       </section>
 
       {guides.length > 0 ? (
-        <section aria-labelledby="scenarios-title" className="flex flex-col gap-2">
-          <h2 id="scenarios-title" className="text-lg font-semibold">
-            {t("luggage.scenarios")}
-          </h2>
-          {guides.map((guide) =>
+        <section aria-labelledby="scenarios-title" className="service-page__scenarios">
+          <div className="landing-section__heading"><div><span className="landing-kicker">TRAVEL YOUR WAY</span><h2 id="scenarios-title">{t("luggage.scenarios")}</h2></div></div>
+          <div className="service-page__scenario-grid">{guides.map((guide, index) =>
             guide.result.status === "ok" ? (
               <Link
                 key={guide.slug}
                 href={`/${locale}/guide/${guide.slug}`}
                 data-testid="scenario-link"
-                className="flex min-h-12 items-center rounded-[var(--radius-card)] border border-line bg-card px-4 font-medium"
+                className="service-page__scenario-card"
               >
-                {guide.result.translation.title}
+                
+                <span>0{index + 1}</span><strong>{guide.result.translation.title}</strong><b aria-hidden="true">↗</b>
               </Link>
             ) : null,
-          )}
+          )}</div>
         </section>
       ) : null}
 
-      <section className="rounded-[var(--radius-card)] border border-line bg-card p-4">
+      <section className="service-page__how customer-card">
+        <div className="service-page__how-photo"><Image src="/images/editorial-luggage.jpg" alt="" width={1200} height={1600} sizes="(min-width: 768px) 40vw, 100vw" /></div>
+        <div className="service-page__how-text"><span className="landing-kicker">HOW IT WORKS</span>
         <ContentView result={howItWorks!} t={t} testId="content-how-it-works" />
+        </div>
       </section>
 
-      <section aria-labelledby="rules-title" className="flex flex-col gap-3">
-        <h2 id="rules-title" className="text-lg font-semibold">
-          {t("luggage.rules")}
-        </h2>
+      <section aria-labelledby="rules-title" className="service-page__rules">
+        <div className="landing-section__heading"><div><span className="landing-kicker">BEFORE YOU BOOK</span><h2 id="rules-title">{t("luggage.rules")}</h2></div></div>
+        <div className="service-page__rules-grid">
         {notices.map((notice, index) => (
-          <div key={REQUIRED_NOTICES[index]} className="rounded-[var(--radius-card)] border border-line bg-card p-4">
+          <div key={REQUIRED_NOTICES[index]} className="customer-card p-5">
+            <span className="landing-kicker">0{index + 1} / IMPORTANT</span>
             <ContentView result={notice} t={t} headingLevel={3} testId={`content-${REQUIRED_NOTICES[index]}`} />
           </div>
         ))}
+        </div>
       </section>
 
       {bookingAllowed ? (
         <Link
           href={`/${locale}/luggage/book`}
           data-testid="booking-cta"
-          className="flex min-h-12 items-center justify-center rounded-[var(--radius-button)] bg-primary px-4 font-semibold text-on-primary"
+          className="customer-action service-page__cta"
         >
           {t("home.search.submit")}
         </Link>

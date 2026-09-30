@@ -12,6 +12,7 @@ const bodySchema = z
     slug: z.string().regex(/^[a-z0-9][a-z0-9-]*$/).max(80),
     nameKo: z.string().trim().min(1).max(120),
     addressKo: z.string().trim().min(1).max(300),
+    partnerId: z.string().uuid().nullable().optional(),
     frontDeskOpensAt: time.optional(),
     frontDeskClosesAt: time.optional(),
     translations: z
@@ -48,7 +49,8 @@ export async function POST(request: Request) {
       zone_id: body.zoneId,
       slug: body.slug,
       name_ko: body.nameKo,
-      address_ko: body.addressKo,
+          address_ko: body.addressKo,
+          partner_id: body.partnerId ?? null,
       front_desk_opens_at: body.frontDeskOpensAt ?? null,
       front_desk_closes_at: body.frontDeskClosesAt ?? null,
     })

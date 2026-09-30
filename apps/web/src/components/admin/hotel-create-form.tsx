@@ -17,7 +17,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export function HotelCreateForm({ zones }: { zones: { id: string; name: string }[] }) {
+export function HotelCreateForm({ zones, partners = [] }: { zones: { id: string; name: string }[]; partners?: { id: string; name: string }[] }) {
   const router = useRouter();
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const [pending, setPending] = useState(false);
@@ -52,6 +52,7 @@ export function HotelCreateForm({ zones }: { zones: { id: string; name: string }
           slug: text("slug"),
           nameKo: text("nameKo"),
           addressKo: text("addressKo"),
+          partnerId: text("partnerId") || null,
           ...(opensAt && closesAt ? { frontDeskOpensAt: opensAt, frontDeskClosesAt: closesAt } : {}),
           translations,
         });
@@ -74,6 +75,9 @@ export function HotelCreateForm({ zones }: { zones: { id: string; name: string }
             </option>
           ))}
         </select>
+      </Field>
+      <Field label="제휴 고객사">
+        <select name="partnerId" className={inputClass}><option value="">미지정</option>{partners.map((partner) => <option key={partner.id} value={partner.id}>{partner.name}</option>)}</select>
       </Field>
       <Field label={L.slug}>
         <input name="slug" required pattern="[a-z0-9][a-z0-9\-]*" maxLength={80} className={inputClass} />

@@ -7,14 +7,15 @@ export const en: Messages = {
 
   "nav.home": "Home",
   "nav.book": "Book",
-  "nav.orders": "My bookings",
+  "nav.orders": "My bags",
+  "account.notice": "Open your booking link on the same device used to book. Contact support if you cannot find it.",
   "nav.help": "Support",
   "nav.primary": "Main navigation",
 
-  "home.headline": "Drop your bags, enjoy Jeju hands-free",
+  "home.headline": "Travel light. Explore Jeju.",
   "home.subheadline": "Get every bag back, exactly where we agreed.",
   "home.routes.title": "Delivery routes",
-  "home.search.title": "Check available times",
+  "home.search.title": "Find your bag handover stay",
   "home.search.hotel": "Hotel",
   "home.search.hotelPlaceholder": "Enter hotel name",
   "home.search.date": "Delivery date",
@@ -26,6 +27,8 @@ export const en: Messages = {
   "home.trust.perBag": "Every bag is tagged and checked at each handoff",
   "home.trust.noKoreanPhone": "Book without a Korean phone number",
   "home.trust.support": "Live status on your booking page if anything is delayed",
+  "home.offers.title": "Services for every journey",
+  "home.steps.title": "Travel lighter in three steps",
 
   "route.hotel_to_airport": "Hotel → Airport",
   "route.airport_to_hotel": "Airport → Hotel",
@@ -46,7 +49,7 @@ export const en: Messages = {
   "env.testMode": "Test mode · no real payments or notifications",
 
   "help.title": "Support & FAQ",
-  "help.body": "FAQ and inquiries are being prepared.",
+  "help.body": "Find an answer or send us a question. You can follow your request from My bags.",
 
   "staff.title": "Staff area",
   "staff.loginRequired": "Sign in with your staff account.",

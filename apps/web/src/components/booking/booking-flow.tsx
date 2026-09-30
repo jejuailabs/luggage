@@ -174,13 +174,13 @@ export function BookingFlow({
     router.push(`/${locale}/orders/${result.data.id}`);
   }
 
-  const card = "flex flex-col gap-3 rounded-[var(--radius-card)] border border-line bg-card p-4";
-  const input = "min-h-11 rounded-[var(--radius-button)] border border-line bg-bg px-3";
+  const card = "customer-card flex flex-col gap-4 p-5";
+  const input = "customer-input min-h-12 w-full px-3";
 
   return (
-    <div className="flex flex-col gap-4" data-testid="booking-flow">
+    <div className="flex flex-col gap-5" data-testid="booking-flow">
       <section className={card} aria-labelledby="step-slot">
-        <h2 id="step-slot" className="font-semibold">
+        <h2 id="step-slot" className="customer-section-heading">
           {t("booking.step.slot")}
         </h2>
         {routeType === "hotel_to_hotel" ? (
@@ -258,7 +258,7 @@ export function BookingFlow({
       </section>
 
       <section className={card} aria-labelledby="step-bags">
-        <h2 id="step-bags" className="font-semibold">
+        <h2 id="step-bags" className="customer-section-heading">
           {t("booking.step.bags")}
         </h2>
         {(["standard", "large"] as const).map((size) => {
@@ -302,7 +302,7 @@ export function BookingFlow({
 
       {needsFlight ? (
       <section className={card} aria-labelledby="step-flight">
-        <h2 id="step-flight" className="font-semibold">
+        <h2 id="step-flight" className="customer-section-heading">
           {t("booking.step.flight")}
         </h2>
         <label className="flex flex-col gap-1">
@@ -366,14 +366,14 @@ export function BookingFlow({
           disabled={!canQuote}
           onClick={requestQuote}
           data-testid="booking-get-quote"
-          className="min-h-12 rounded-[var(--radius-button)] bg-primary px-4 font-semibold text-on-primary disabled:opacity-50"
+          className="customer-action min-h-12 px-5 font-semibold disabled:opacity-50"
         >
           {busy ? t("booking.working") : t("booking.getQuote")}
         </button>
       ) : (
         <>
           <section className={card} aria-labelledby="step-quote" data-testid="booking-quote">
-            <h2 id="step-quote" className="font-semibold">
+            <h2 id="step-quote" className="customer-section-heading">
               {t("booking.step.quote")}
             </h2>
             <ul className="flex flex-col gap-1 text-sm">
@@ -455,7 +455,7 @@ export function BookingFlow({
               type="submit"
               disabled={busy || accepted.size < policies.length}
               data-testid="booking-submit"
-              className="min-h-12 rounded-[var(--radius-button)] bg-primary px-4 font-semibold text-on-primary disabled:opacity-50"
+              className="customer-action min-h-12 px-5 font-semibold disabled:opacity-50"
             >
               {busy ? t("booking.working") : t("booking.submit")}
             </button>

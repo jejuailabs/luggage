@@ -48,3 +48,15 @@ test.describe("location APIs are protected", () => {
     expect((await request.get("/api/v1/jobs/purge-locations")).status()).toBe(403);
   });
 });
+
+test("my bags map clearly labels the moving route as a demonstration", async ({ page }) => {
+  await page.goto("/ko/account/track");
+  const map = page.getByTestId("tracking-map");
+  await expect(map).toHaveAttribute("data-mode", "demo");
+  await expect(page.getByText("실제 주문·차량의 위치를 나타내지 않습니다.").first()).toBeVisible();
+  await expect(map.getByRole("slider")).toBeVisible();
+  await map.getByRole("button", { name: "일시 정지" }).click();
+  await expect(map.getByRole("button", { name: "재생" })).toBeVisible();
+  await map.getByRole("button", { name: "처음부터" }).click();
+  await expect(map.getByTestId("tracking-marker")).toBeVisible();
+});

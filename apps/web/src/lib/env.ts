@@ -22,6 +22,7 @@ const schema = z.object({
   WEB_PUSH_PRIVATE_KEY: blank(z.string().min(20).optional()),
   WEB_PUSH_SUBJECT: blank(z.string().regex(/^(mailto:|https:\/\/)/).optional()),
   TRACKING_WEBHOOK_SECRET: blank(z.string().min(16).optional()),
+  TOUR_API_SERVICE_KEY: blank(z.string().min(20).optional()),
 });
 
 export interface ServerConfig {
@@ -34,6 +35,7 @@ export interface ServerConfig {
   secrets: { supabaseServer: string | null; mockPayment: string | null; cron: string | null; trackingWebhook: string | null };
   /** 웹 푸시(VAPID). 세 값이 모두 있어야 켜진다. */
   webPush: { publicKey: string; privateKey: string; subject: string } | null;
+  tourApiServiceKey: string | null;
 }
 
 let cached: ServerConfig | undefined;
@@ -71,6 +73,7 @@ export function getServerConfig(): ServerConfig {
       env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY && env.WEB_PUSH_PRIVATE_KEY && env.WEB_PUSH_SUBJECT
         ? { publicKey: env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY, privateKey: env.WEB_PUSH_PRIVATE_KEY, subject: env.WEB_PUSH_SUBJECT }
         : null,
+    tourApiServiceKey: env.TOUR_API_SERVICE_KEY ?? null,
   };
   return cached;
 }

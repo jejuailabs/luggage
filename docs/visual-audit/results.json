@@ -1,0 +1,34 @@
+[
+  {
+    "viewport": "mobile",
+    "theme": "dark",
+    "name": "account",
+    "route": "/ko/account",
+    "status": 200,
+    "scrollWidth": 390,
+    "clientWidth": 390,
+    "headings": [
+      "내 여정, 내 짐"
+    ],
+    "actions": [
+      "제주 커넥트",
+      "홈",
+      "배송 노선",
+      "숙소",
+      "내 짐",
+      "고객지원",
+      "☾다크",
+      "GPS 추적 해보기 ↗",
+      "회원가입 ↗",
+      "로그인",
+      "예약하기 ↗",
+      "고객지원 ↗",
+      "홈",
+      "예약",
+      "내 짐",
+      "고객지원"
+    ],
+    "brokenImages": [],
+    "overflow": false
+  }
+]

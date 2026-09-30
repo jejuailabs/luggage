@@ -7,14 +7,15 @@ export const ko: Messages = {
 
   "nav.home": "홈",
   "nav.book": "예약",
-  "nav.orders": "내 예약",
+  "nav.orders": "내 짐",
+  "account.notice": "예약을 완료한 기기에서 주문 링크를 열어주세요. 주문을 찾을 수 없다면 고객지원으로 문의하세요.",
   "nav.help": "고객지원",
   "nav.primary": "주 메뉴",
 
-  "home.headline": "짐은 맡기고, 제주는 가볍게",
+  "home.headline": "짐 없이, 제주를 더 멀리",
   "home.subheadline": "약속한 곳에서 내 짐을 하나하나 정확히 돌려받으세요.",
   "home.routes.title": "배송 노선",
-  "home.search.title": "이용 가능 시간 조회",
+  "home.search.title": "짐을 맡기거나 받을 숙소 찾기",
   "home.search.hotel": "숙소",
   "home.search.hotelPlaceholder": "숙소 이름 입력",
   "home.search.date": "배송 날짜",
@@ -26,6 +27,8 @@ export const ko: Messages = {
   "home.trust.perBag": "짐마다 태그를 붙이고 인계 때 하나씩 확인",
   "home.trust.noKoreanPhone": "한국 전화번호 없이 예약 가능",
   "home.trust.support": "지연·문제 발생 시 주문 화면에서 처리 상황 안내",
+  "home.offers.title": "여정에 맞는 서비스",
+  "home.steps.title": "간단한 세 단계로 가볍게",
 
   "route.hotel_to_airport": "숙소 → 공항",
   "route.airport_to_hotel": "공항 → 숙소",
@@ -46,7 +49,7 @@ export const ko: Messages = {
   "env.testMode": "테스트 모드 · 실제 결제·알림이 발생하지 않습니다",
 
   "help.title": "고객지원·자주 묻는 질문",
-  "help.body": "자주 묻는 질문과 문의 접수를 준비하고 있습니다.",
+  "help.body": "궁금한 내용을 확인하거나 문의를 남겨 주세요. 접수한 문의는 내 짐 화면에서 다시 확인할 수 있습니다.",
 
   "staff.title": "업무 화면",
   "staff.loginRequired": "업무 계정으로 로그인하세요.",

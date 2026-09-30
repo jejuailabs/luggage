@@ -17,28 +17,32 @@ export default async function HelpPage({ params }: { params: Promise<{ locale: s
   const faqs = await listContent("faq", locale);
 
   return (
-    <div className="flex flex-col gap-4">
-      <section className="rounded-[var(--radius-card)] border border-line bg-card p-4">
-        <h1 className="text-xl font-bold">{t("help.title")}</h1>
-        <p className="mt-2 text-muted">{t("help.body")}</p>
+    <div className="help-page customer-inner-page">
+      <section className="photo-hero help-page__hero">
+        <div className="photo-hero__content">
+          <span className="photo-hero__eyebrow">JEJU · HELP</span>
+          <h1>{t("help.title")}</h1>
+          <p>{t("help.body")}</p>
+        </div>
       </section>
-      <section aria-labelledby="faq-title" className="flex flex-col gap-3">
-        <h2 id="faq-title" className="text-lg font-semibold">
-          {t("faq.title")}
-        </h2>
+      <section aria-labelledby="faq-title" className="help-page__faq">
+        <div className="landing-section__heading"><div><span className="landing-kicker">ANSWERS FOR YOUR JOURNEY</span><h2 id="faq-title">{t("faq.title")}</h2></div></div>
+        <div className="help-page__faq-grid">
         {faqs === null ? (
           <p className="text-muted">{t("content.unavailable")}</p>
         ) : faqs.length === 0 ? (
           <p className="text-muted">{t("content.empty")}</p>
         ) : (
           faqs.map((faq) => (
-            <div key={faq.slug} className="rounded-[var(--radius-card)] border border-line bg-card p-4" data-testid="faq-item">
+            <div key={faq.slug} className="customer-card help-page__faq-card" data-testid="faq-item">
+              <span aria-hidden="true" className="help-page__faq-icon">?</span>
               <ContentView result={faq.result} t={t} headingLevel={3} />
             </div>
           ))
         )}
+        </div>
       </section>
-      <SupportForm locale={locale} />
+      <div className="help-page__support"><SupportForm locale={locale} /></div>
     </div>
   );
 }

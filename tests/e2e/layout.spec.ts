@@ -11,7 +11,7 @@ for (const path of ["/zh-CN", "/ko", "/en", "/zh-CN/help", "/zh-CN/luggage", "/z
 
 test("primary touch targets are at least 44px tall", async ({ page }) => {
   await page.goto("/zh-CN");
-  const targets = page.locator("header button, header select, nav a");
+  const targets = page.locator("header button:visible, header select:visible, nav a:visible");
   const count = await targets.count();
   expect(count).toBeGreaterThan(0);
   for (let i = 0; i < count; i++) {

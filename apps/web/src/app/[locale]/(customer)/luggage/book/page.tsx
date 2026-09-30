@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { ROUTE_TYPES, type RouteType } from "@luggage/domain";
 import { BookingFlow } from "@/components/booking/booking-flow";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
@@ -31,19 +32,16 @@ export default async function BookPage({ params, searchParams }: Props) {
   const hotelRecord = catalog?.hotels.find((h) => h.slug === hotelSlug);
   const hotel = catalog && hotelRecord ? toPublicHotel(hotelRecord, catalog, locale) : null;
 
-  const panel = "rounded-[var(--radius-card)] border border-line bg-card p-4";
+  const panel = "customer-card p-5";
   if (!catalog || !hotelRecord || !hotel) {
     return (
-      <section className={`${panel} flex flex-col gap-3`}>
-        <h1 className="text-xl font-bold">{t("booking.title")}</h1>
-        <p className="text-muted">{t("booking.hotelMissing")}</p>
-        <Link
-          href={`/${locale}/hotels`}
-          className="flex min-h-12 items-center justify-center rounded-[var(--radius-button)] bg-primary px-4 font-semibold text-on-primary"
-        >
-          {t("booking.chooseHotel")}
-        </Link>
-      </section>
+      <div className="booking-page">
+        <header className="booking-visual-header"><Image src="/images/editorial-airport.jpg" alt="" width={1800} height={1200} sizes="(min-width: 768px) 760px, 100vw" /><div><span className="landing-kicker">JEJU · YOUR JOURNEY</span><h1>{t("booking.title")}</h1></div></header>
+        <section className={`${panel} booking-empty-state flex flex-col gap-3`}>
+          <p className="text-muted">{t("booking.hotelMissing")}</p>
+          <Link href={`/${locale}/hotels`} className="customer-action flex min-h-12 items-center justify-center px-5 font-semibold">{t("booking.chooseHotel")} <span aria-hidden="true" className="ml-2">→</span></Link>
+        </section>
+      </div>
     );
   }
 
@@ -60,25 +58,22 @@ export default async function BookPage({ params, searchParams }: Props) {
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      <header className="rounded-[var(--radius-card)] bg-sea px-4 py-5">
-        <h1 className="text-xl font-bold">{t("booking.title")}</h1>
-        <p className="text-sm text-muted">{hotel.name}</p>
-      </header>
+    <div className="booking-page mx-auto flex max-w-[760px] flex-col gap-5 pb-5">
+      <header className="booking-visual-header"><Image src="/images/editorial-airport.jpg" alt="" width={1800} height={1200} sizes="(min-width: 768px) 760px, 100vw" /><div><span className="landing-kicker">JEJU · RESERVATION</span><h1>{t("booking.title")}</h1><p>{hotel.name}</p></div></header>
 
       {choices.length === 0 ? (
         <p className={`${panel} text-sm`} data-testid="booking-no-routes">
           {t("booking.noRoutes")}
         </p>
       ) : (
-        <nav aria-label={t("booking.chooseRoute")} className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <nav aria-label={t("booking.chooseRoute")} className="booking-route-choices grid grid-cols-3 gap-2">
           {choices.map((c) => (
             <Link
               key={c.routeType}
               href={`/${locale}/luggage/book?hotel=${encodeURIComponent(hotel.slug)}&route=${c.routeType}`}
               aria-current={c.routeType === choice?.routeType ? "page" : undefined}
               data-testid={`route-choice-${c.routeType}`}
-              className="flex min-h-12 items-center justify-center rounded-[var(--radius-button)] border border-line bg-card px-3 text-sm font-medium aria-[current=page]:border-primary aria-[current=page]:bg-sea"
+              className="customer-card flex min-h-16 items-center justify-center px-2 text-center text-xs font-semibold leading-snug aria-[current=page]:border-primary aria-[current=page]:bg-sea aria-[current=page]:text-primary sm:text-sm"
             >
               {t(`route.${c.routeType as RouteType}`)}
             </Link>

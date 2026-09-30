@@ -10,14 +10,15 @@ export const zhCN = {
 
   "nav.home": "首页",
   "nav.book": "预约",
-  "nav.orders": "我的订单",
+  "nav.orders": "我的行李",
+  "account.notice": "请在完成预约的同一设备上打开订单链接。无法找到订单时，请联系客户支持。",
   "nav.help": "客服",
   "nav.primary": "主导航",
 
-  "home.headline": "行李交给我们，轻松畅游济州",
+  "home.headline": "轻装出发，畅游济州",
   "home.subheadline": "在约定的地点，取回属于您的每一件行李。",
   "home.routes.title": "配送路线",
-  "home.search.title": "查询可预约时间",
+  "home.search.title": "搜索行李交接住宿",
   "home.search.hotel": "入住酒店",
   "home.search.hotelPlaceholder": "输入酒店名称",
   "home.search.date": "寄送日期",
@@ -29,6 +30,8 @@ export const zhCN = {
   "home.trust.perBag": "每件行李单独贴码，交接逐件确认",
   "home.trust.noKoreanPhone": "无需韩国手机号即可预约",
   "home.trust.support": "延误或异常时，订单页面实时说明处理进度",
+  "home.offers.title": "为每段行程准备的服务",
+  "home.steps.title": "简单三步，轻松出发",
 
   "route.hotel_to_airport": "酒店 → 机场",
   "route.airport_to_hotel": "机场 → 酒店",
@@ -49,7 +52,7 @@ export const zhCN = {
   "env.testMode": "测试模式 · 不会产生真实付款或通知",
 
   "help.title": "客服与常见问题",
-  "help.body": "常见问题和在线咨询正在准备中。",
+  "help.body": "查看常见问题，或发送咨询。提交后可在“我的行李”中查看进度。",
 
   "staff.title": "工作人员入口",
   "staff.loginRequired": "请使用工作账号登录。",
