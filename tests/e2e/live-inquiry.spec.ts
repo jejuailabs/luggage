@@ -12,7 +12,7 @@ test("tourism stay quote request reaches the customer's inquiry page", async ({ 
   const delivery = new Date(Date.now() + (7 * 24 + 12) * 60 * 60_000).toISOString().slice(0, 16);
   await form.locator('input[name="pickupAt"]').fill(pickup);
   await form.locator('input[name="deliveryAt"]').fill(delivery);
-  await form.getByRole("button", { name: "M · 일반 캐리어 +" }).click();
+  await form.getByRole("button", { name: "보통 짐 +" }).click();
   await form.locator('input[name="contact"]').fill("test@example.invalid");
   await form.locator('textarea[name="notes"]').fill("자동 검증용 합성 문의입니다.");
   await page.locator(".stay-search__summary").getByRole("button", { name: /견적 요청 보내기/ }).click();
@@ -29,7 +29,7 @@ test("stay-to-stay quote request saves a separate destination and both times", a
   const delivery = new Date(Date.now() + (8 * 24 + 13) * 60 * 60_000).toISOString().slice(0, 16);
   await form.locator('input[name="pickupAt"]').fill(pickup);
   await form.locator('input[name="deliveryAt"]').fill(delivery);
-  await form.getByRole("button", { name: "M · 일반 캐리어 +" }).click();
+  await form.getByRole("button", { name: "보통 짐 +" }).click();
   await form.locator('input[name="contact"]').fill("test@example.invalid");
   await form.locator('textarea[name="notes"]').fill("숙소 간 이동 자동 검증용 합성 문의입니다.");
   await page.locator(".stay-search__summary").getByRole("button", { name: /견적 요청 보내기/ }).click();

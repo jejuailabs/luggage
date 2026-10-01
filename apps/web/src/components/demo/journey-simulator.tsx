@@ -6,6 +6,7 @@ import QRCode from "qrcode";
 import type { Locale } from "@luggage/i18n";
 import { RealMap } from "@/components/account/real-map";
 import { DEMO_COPY, type RouteType } from "./demo-copy";
+import type { BasePrices } from "@/server/public-info";
 
 // 시뮬레이션 전용. 서버·DB·결제·알림을 호출하지 않으며 상태는 이 브라우저에만 남는다.
 const STORAGE_KEY = "jc-demo-journey-v1";
@@ -80,7 +81,7 @@ function initial(route: RouteType, hotel: string, destHotel: string): State {
   };
 }
 
-export function JourneySimulator({ locale, hotels, stays = [], initialRoute, initialHotel, initialRole = "customer", embedded = false }: { locale: Locale; hotels: { slug: string; name: string }[]; stays?: { id: string; name: string }[]; initialRoute: RouteType; initialHotel?: string; initialRole?: Role; embedded?: boolean }) {
+export function JourneySimulator({ locale, hotels, stays = [], initialRoute, initialHotel, initialRole = "customer", embedded = false, prices }: { prices?: BasePrices; locale: Locale; hotels: { slug: string; name: string }[]; stays?: { id: string; name: string }[]; initialRoute: RouteType; initialHotel?: string; initialRole?: Role; embedded?: boolean }) {
   const t = DEMO_COPY[locale];
   const registered = useMemo(() => (hotels.length ? hotels : [{ slug: "sample-a", name: `${t.sampleHotel} A` }, { slug: "sample-b", name: `${t.sampleHotel} B` }]), [hotels, t.sampleHotel]);
   const hotelList = useMemo(() => [...registered, ...stays.filter((stay) => !registered.some((hotel) => hotel.name === stay.name)).map((stay) => ({ slug: `stay-${stay.id}`, name: stay.name }))], [registered, stays]);
@@ -139,7 +140,9 @@ export function JourneySimulator({ locale, hotels, stays = [], initialRoute, ini
   const destination = state.route === "hotel_to_airport" ? t.airport : state.route === "hotel_to_hotel" ? hotelName(state.destHotel) : hotelName(state.hotel);
   const [pickupWindow, deliveryWindow] = SLOTS[state.route][state.slot] ?? SLOTS[state.route][0]!;
   const bagCount = state.standard + state.large;
-  const subtotal = state.standard * PRICE.standard + state.large * PRICE.large;
+  // DB 기본 요금이 있으면 같은 금액을 쓰고, 없으면 개발 기본값을 쓴다.
+  const unit = { standard: prices?.[state.route]?.standard ?? PRICE.standard, large: prices?.[state.route]?.large ?? PRICE.large };
+  const subtotal = state.standard * unit.standard + state.large * unit.large;
   // 서버 규칙과 같게: 정률 할인, 최대 5,000원, 할인 후 최소 결제 1,000원.
   const discount = state.coupon ? Math.min(Math.floor(subtotal * (COUPONS[state.coupon] ?? 0) / 100), 5000, Math.max(subtotal - 1000, 0)) : 0;
   const total = subtotal - discount;
@@ -337,8 +340,8 @@ export function JourneySimulator({ locale, hotels, stays = [], initialRoute, ini
           </div>
           <h2>{t.quote}</h2>
           <dl className="sim-price">
-            {state.standard ? <div><dt>{t.standard} × {state.standard}</dt><dd>{money(state.standard * PRICE.standard)}</dd></div> : null}
-            {state.large ? <div><dt>{t.large} × {state.large}</dt><dd>{money(state.large * PRICE.large)}</dd></div> : null}
+            {state.standard ? <div><dt>{t.standard} × {state.standard}</dt><dd>{money(state.standard * unit.standard)}</dd></div> : null}
+            {state.large ? <div><dt>{t.large} × {state.large}</dt><dd>{money(state.large * unit.large)}</dd></div> : null}
             <div><dt>{t.subtotal}</dt><dd>{money(subtotal)}</dd></div>
             {discount ? <div className="is-discount"><dt>{t.discount} ({state.coupon})</dt><dd>−{money(discount)}</dd></div> : null}
             <div className="is-total"><dt>{t.total}</dt><dd>{money(total)}</dd></div>

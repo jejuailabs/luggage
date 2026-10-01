@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ROUTE_TYPES, type RouteType } from "@luggage/domain";
 import { BookingFlow } from "@/components/booking/booking-flow";
 import { PfHero } from "@/components/pf-hero";
+import { RoutePrices } from "@/components/route-prices";
+import { loadBasePrices } from "@/server/public-info";
 import { JourneySimulator } from "@/components/demo/journey-simulator";
 import { DemoEntry } from "@/components/demo/demo-entry";
 import { StaySearch } from "@/components/stay-search";
@@ -28,7 +30,7 @@ export default async function BookPage({ params, searchParams }: Props) {
   const query = await searchParams;
   const hotelSlug = first(query.hotel);
   const requestedRoute = first(query.route);
-  const catalog = await loadPublicCatalog();
+  const [catalog, prices] = await Promise.all([loadPublicCatalog(), loadBasePrices()]);
   const hotelRecord = catalog?.hotels.find((h) => h.slug === hotelSlug);
   const hotel = catalog && hotelRecord ? toPublicHotel(hotelRecord, catalog, locale) : null;
   const choices = catalog && hotelRecord ? routeChoicesForHotel(catalog, hotelRecord) : [];
@@ -51,6 +53,7 @@ export default async function BookPage({ params, searchParams }: Props) {
   return (
     <div className="reservation-page">
       <PfHero chip={copy.chip} title={t("booking.title")} subtitle={copy.intro} tone="sun" emoji="🧳" />
+      <RoutePrices locale={locale} prices={prices} current={choice?.routeType ?? requestedRoute} />
       <ol className="reservation-progress" aria-label={t("booking.title")}>
         {copy.steps.map((step, index) => <li key={step} className={index === 0 ? "is-current" : ""} aria-current={index === 0 ? "step" : undefined}><span>0{index + 1}</span><strong>{step}</strong></li>)}
       </ol>
@@ -62,7 +65,7 @@ export default async function BookPage({ params, searchParams }: Props) {
         <BookingFlow key={choice.routeType} locale={locale} hotel={{ slug: hotel.slug, name: hotel.name }} routeType={choice.routeType} destinations={choice.destinations.map((d) => { const view = toPublicHotel(d, catalog, locale); return { slug: view.slug, name: view.name }; })} policies={policies} />
       </div> : <div className="reservation-page__inquiry">
         {hotel ? <p className="reservation-page__notice" data-testid="booking-blocked">🧪 {copy.simulated}</p> : null}
-        {hotel ? <JourneySimulator embedded locale={locale} hotels={hotels.map((h) => ({ slug: h.slug, name: h.name }))} stays={(stays ?? []).map((stay) => ({ id: stay.id, name: stay.name }))} initialRoute={(ROUTE_TYPES as readonly string[]).includes(requestedRoute ?? "") ? requestedRoute as RouteType : "hotel_to_airport"} initialHotel={hotel.slug} /> : null}
+        {hotel ? <JourneySimulator embedded prices={prices} locale={locale} hotels={hotels.map((h) => ({ slug: h.slug, name: h.name }))} stays={(stays ?? []).map((stay) => ({ id: stay.id, name: stay.name }))} initialRoute={(ROUTE_TYPES as readonly string[]).includes(requestedRoute ?? "") ? requestedRoute as RouteType : "hotel_to_airport"} initialHotel={hotel.slug} /> : null}
         {hotel ? <h2 className="reservation-page__inquiry-title">✉️ {copy.inquiry}</h2> : null}
         <StaySearch locale={locale} hotels={hotels} initialStays={stays} initialQuery={first(query.q) ?? (hotel?.name ?? "")} initialStayId={first(query.stay)} initialHotelSlug={hotel?.slug} initialRoute={requestedRoute} />
         {hotel ? null : <DemoEntry locale={locale} kind="general" route={requestedRoute} />}

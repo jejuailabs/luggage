@@ -3,7 +3,8 @@
   "configurations": [
     {
       "name": "web-dev",
-      "url": "http://localhost:3000",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "./apps/web", "dev"],
       "port": 3000
     }
   ]

@@ -55,8 +55,8 @@ test("an unlisted stay can still be used for a quote request", async ({ page }) 
   await expect(page.locator(".stay-search__inquiry input[name=contact]")).toBeVisible();
   await page.locator('.stay-search__route-switch input[value="hotel_to_hotel"]').check();
   await expect(page.getByLabel("도착 숙소")).toBeVisible();
-  await page.getByRole("button", { name: "L · 큰 짐 +" }).click();
-  await expect(page.getByTestId("inquiry-bag-l")).toHaveText("1");
+  await page.getByRole("button", { name: "대형 짐 +" }).click();
+  await expect(page.getByTestId("inquiry-bag-large")).toHaveText("1");
   await expect(page.locator(".stay-search__summary")).toContainText("2");
 });
 

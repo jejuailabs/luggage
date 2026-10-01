@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { PfHero } from "@/components/pf-hero";
-import { PreviewJourney } from "@/components/demo/preview-journey";
+import { MotionPreview } from "@/components/demo/motion-preview";
 import { ContentView } from "@/components/content-view";
 import { PageView } from "@/components/page-view";
 import { getRequestContext, resolveLocale } from "@/lib/request-context";
@@ -32,9 +32,9 @@ export default async function LuggagePage({ params }: { params: Promise<{ locale
   const howSteps = howLines.map((line) => line.replace(/^(?:\[예시\]|【示例】|\[Sample\])\s*/i, "").match(/^(\d{1,2})[.)]\s*(.+)$/));
   const structuredHow = howSteps.length >= 2 && howSteps.every((step) => step !== null);
   const howCopy = {
-    ko: { label: "예약부터 수령까지", steps: "단계별 이용 안내", sample: "이용 예시", step: "단계", cta: "짐 배송 예약하기", chip: "👀 이용 미리보기", previewTitle: "짐배송, 미리 따라가 보기", previewIntro: "상황을 고르면 예시 값이 채워져 있어요. 다음 버튼만 눌러 예약부터 짐 찾기까지 확인해 보세요." },
-    "zh-CN": { label: "从预约到领取", steps: "服务流程", sample: "服务示例", step: "步骤", cta: "预约行李配送", chip: "👀 服务预览", previewTitle: "先跟着体验一遍行李配送", previewIntro: "选择场景后已填好示例信息，只需点击下一步，即可看到从预约到取回行李的全过程。" },
-    en: { label: "From booking to collection", steps: "How it works", sample: "Example journey", step: "Step", cta: "Book luggage delivery", chip: "👀 Preview", previewTitle: "Walk through a delivery", previewIntro: "Pick a situation — sample details are already filled in. Just tap Next to see everything from booking to collecting your bags." },
+    ko: { label: "예약부터 수령까지", steps: "단계별 이용 안내", sample: "이용 예시", step: "단계", cta: "짐 배송 예약하기", chip: "👀 이용 미리보기", previewTitle: "짐배송, 미리 따라가 보기", previewIntro: "상황을 고르고 다음 버튼을 누르면 예약부터 짐 찾기까지 실제 화면처럼 보여 드려요." },
+    "zh-CN": { label: "从预约到领取", steps: "服务流程", sample: "服务示例", step: "步骤", cta: "预约行李配送", chip: "👀 服务预览", previewTitle: "先跟着体验一遍行李配送", previewIntro: "选择场景后点击下一步，像真实画面一样为您演示从预约到取回行李的全过程。" },
+    en: { label: "From booking to collection", steps: "How it works", sample: "Example journey", step: "Step", cta: "Book luggage delivery", chip: "👀 Preview", previewTitle: "Walk through a delivery", previewIntro: "Pick a situation and tap Next to watch everything from booking to collecting your bags, just like the real app." },
   }[locale];
   const isSample = howItWorks.status === "ok" && /^(?:\[예시\]|【示例】|\[Sample\])/i.test(howItWorks.translation.body);
 
@@ -42,7 +42,7 @@ export default async function LuggagePage({ params }: { params: Promise<{ locale
     <div className="service-page customer-inner-page">
       <PageView locale={locale} />
       <PfHero chip={howCopy.chip} title={howCopy.previewTitle} subtitle={howCopy.previewIntro} tone="sky" emoji="👀" />
-      <PreviewJourney locale={locale} />
+      <MotionPreview locale={locale} />
 
 
       {guides.length > 0 ? (

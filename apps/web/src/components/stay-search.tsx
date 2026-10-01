@@ -8,7 +8,7 @@ import type { TourStay } from "@/server/tour-stays";
 
 type Choice = { kind: "hotel"; id: string; name: string; address: string; slug: string } | { kind: "tour"; id: string; name: string; address: string } | { kind: "manual"; id: string; name: string };
 const ROUTES = ["hotel_to_airport", "airport_to_hotel", "hotel_to_hotel"] as const;
-type InquiryBags = { s: number; m: number; l: number };
+type InquiryBags = { standard: number; large: number };
 
 const copy = {
   ko: {
@@ -18,6 +18,7 @@ const copy = {
     count: (n: number) => n === 0 ? "숙소가 없습니다" : `${n}곳 검색 가능`,
     noResults: "일치하는 숙소가 없습니다. 다른 이름으로 검색해 주세요.",
     manual: "이 이름으로 견적 요청",
+    partner: "제휴 · 바로 예약",
     requestTitle: "이 숙소에서 짐 배송 견적 요청",
     requestIntro: "숙소 앞 수거·전달 등 원하는 방법을 남겨 주세요. 가능 여부와 요금을 확인해 답변합니다.",
     originStay: "출발 숙소",
@@ -27,8 +28,8 @@ const copy = {
     selectOtherStay: "이 숙소로 지정",
     serviceRoute: "배송 경로",
     bagSection: "보내는 짐",
-    bagGuide: "크기별 수량을 선택해 주세요. 정확한 규격과 요금은 상담 후 안내합니다.",
-    bagNames: ["S · 작은 짐", "M · 일반 캐리어", "L · 큰 짐"],
+    bagGuide: "보통 짐은 세 변 합 158cm·23kg 이하, 대형 짐은 203cm·32kg 이하예요. 요금은 확인 후 안내해요.",
+    bagNames: ["보통 짐", "대형 짐"],
     summary: "요청 내용",
     summaryPrice: "요금은 확인 후 안내",
     summaryHint: "희망 일정입니다. 접수 후 가능 시간과 요금을 확인해 답변합니다.",
@@ -59,6 +60,7 @@ const copy = {
     count: (n: number) => `可搜索 ${n} 家住宿`,
     noResults: "没有匹配的住宿，请尝试其他名称。",
     manual: "用此名称咨询报价",
+    partner: "合作 · 可直接预约",
     requestTitle: "咨询此住宿的行李配送价格",
     requestIntro: "可选择在住宿门前交接。请留下您的需求，我们会确认服务和价格后回复。",
     originStay: "出发住宿",
@@ -68,8 +70,8 @@ const copy = {
     selectOtherStay: "选择此住宿",
     serviceRoute: "配送路线",
     bagSection: "行李数量",
-    bagGuide: "请选择各尺寸数量。具体规格和价格将在确认后告知。",
-    bagNames: ["S · 小件", "M · 普通行李箱", "L · 大件"],
+    bagGuide: "普通行李长宽高之和 158cm、23kg 以内，大件行李 203cm、32kg 以内。价格将在确认后告知。",
+    bagNames: ["普通行李", "大件行李"],
     summary: "需求概要",
     summaryPrice: "确认后告知价格",
     summaryHint: "提交的是期望时间；我们会确认可用时间和价格后回复。",
@@ -100,6 +102,7 @@ const copy = {
     count: (n: number) => `${n} stays searchable`,
     noResults: "No matching stays. Try another name.",
     manual: "Request a quote for this name",
+    partner: "Partner · book instantly",
     requestTitle: "Request a luggage delivery quote for this stay",
     requestIntro: "Tell us how you would like to hand over your bags, including pickup outside the stay. We will confirm availability and price.",
     originStay: "Pickup stay",
@@ -109,8 +112,8 @@ const copy = {
     selectOtherStay: "Use this stay",
     serviceRoute: "Delivery route",
     bagSection: "Your bags",
-    bagGuide: "Choose a count for each size. We will confirm dimensions and price before booking.",
-    bagNames: ["S · Small bag", "M · Standard suitcase", "L · Large bag"],
+    bagGuide: "Standard bags up to 158 cm (L+W+H) and 23 kg, large bags up to 203 cm and 32 kg. We confirm the price after review.",
+    bagNames: ["Standard bag", "Large bag"],
     summary: "Request summary",
     summaryPrice: "Price confirmed after review",
     summaryHint: "These are preferred times. We will confirm availability and price before booking.",
@@ -160,7 +163,7 @@ export function StaySearch({ locale, hotels, initialStays, initialQuery = "", in
     return hotel ? { kind: "hotel", id: hotel.slug, slug: hotel.slug, name: hotel.name, address: hotel.addressKo } : null;
   });
   const [routeType, setRouteType] = useState(ROUTES.includes(initialRoute as (typeof ROUTES)[number]) ? initialRoute! : "hotel_to_airport");
-  const [bagCounts, setBagCounts] = useState<InquiryBags>({ s: 0, m: 1, l: 0 });
+  const [bagCounts, setBagCounts] = useState<InquiryBags>({ standard: 1, large: 0 });
   const [pickupAt, setPickupAt] = useState("");
   const [deliveryAt, setDeliveryAt] = useState("");
   const [destinationText, setDestinationText] = useState("");
@@ -196,7 +199,7 @@ export function StaySearch({ locale, hotels, initialStays, initialQuery = "", in
   const destinationMatches = useMemo(() => destinationText.trim()
     ? choices.filter((choice) => normalize(choice.name).includes(normalize(destinationText.trim())) && normalize(choice.name) !== normalize(selected?.name ?? "")).slice(0, 8)
     : [], [choices, destinationText, selected]);
-  const totalBags = bagCounts.s + bagCounts.m + bagCounts.l;
+  const totalBags = bagCounts.standard + bagCounts.large;
   const place = (at: "pickup" | "delivery") => {
     if (at === "pickup") return routeType === "airport_to_hotel" ? (locale === "ko" ? "제주공항" : locale === "zh-CN" ? "济州机场" : "Jeju Airport") : selected?.name ?? t.notSet;
     return routeType === "hotel_to_airport" ? (locale === "ko" ? "제주공항" : locale === "zh-CN" ? "济州机场" : "Jeju Airport") : routeType === "airport_to_hotel" ? selected?.name ?? t.notSet : destinationText.trim() || t.notSet;
@@ -262,7 +265,7 @@ export function StaySearch({ locale, hotels, initialStays, initialQuery = "", in
         body: JSON.stringify({
           locale,
           subject: `[견적 요청] ${selected.name}${destination ? ` → ${destination.name}` : ""}`,
-          body: `경로: ${route}\n출발 숙소: ${route === "airport_to_hotel" ? "제주공항" : selected.name}\n출발 숙소 식별값: ${route === "airport_to_hotel" ? "airport" : selected.id}\n도착 숙소: ${route === "hotel_to_airport" ? "제주공항" : route === "airport_to_hotel" ? selected.name : destination?.name}\n도착 숙소 식별값: ${route === "hotel_to_airport" ? "airport" : route === "airport_to_hotel" ? selected.id : destination?.id}\n짐 수거 희망 일시 (KST): ${pickupAt}\n짐 전달 희망 일시 (KST): ${deliveryAt}\n인계: ${handoff}\n짐: S ${bagCounts.s} / M ${bagCounts.m} / L ${bagCounts.l} (총 ${totalBags}개)\n연락: ${contact}\n요청: ${notes}`,
+          body: `경로: ${route}\n출발 숙소: ${route === "airport_to_hotel" ? "제주공항" : selected.name}\n출발 숙소 식별값: ${route === "airport_to_hotel" ? "airport" : selected.id}\n도착 숙소: ${route === "hotel_to_airport" ? "제주공항" : route === "airport_to_hotel" ? selected.name : destination?.name}\n도착 숙소 식별값: ${route === "hotel_to_airport" ? "airport" : route === "airport_to_hotel" ? selected.id : destination?.id}\n짐 수거 희망 일시 (KST): ${pickupAt}\n짐 전달 희망 일시 (KST): ${deliveryAt}\n인계: ${handoff}\n짐: 보통 ${bagCounts.standard} / 대형 ${bagCounts.large} (총 ${totalBags}개)\n연락: ${contact}\n요청: ${notes}`,
           clientMessageId: messageId,
         }),
       });
@@ -319,7 +322,7 @@ export function StaySearch({ locale, hotels, initialStays, initialQuery = "", in
           onMouseEnter={() => setActive(index)}
           onClick={() => choose(choice)}
           data-testid="hotel-result"
-        ><strong>{choice.name}</strong>{choice.kind === "manual" ? <small>{t.manual}</small> : null}</button>) : <p>{t.noResults}</p>}
+        ><strong>{choice.name}</strong>{choice.kind === "manual" ? <small>{t.manual}</small> : choice.kind === "hotel" ? <small className="stay-search__partner">✓ {t.partner}</small> : null}</button>) : <p>{t.noResults}</p>}
       </div> : null}
       {!stays && initialStays === null ? <p className="stay-search__note">{t.unavailable}</p> : null}
       {!compact && selected ? <section className="stay-search__inquiry" aria-labelledby="stay-quote-title">
@@ -345,7 +348,7 @@ export function StaySearch({ locale, hotels, initialStays, initialQuery = "", in
           <label>{t.pickupAt}<input name="pickupAt" type="datetime-local" value={pickupAt} onChange={(event) => setPickupAt(event.target.value)} required /></label>
           <label>{t.deliveryAt}<input name="deliveryAt" type="datetime-local" value={deliveryAt} onChange={(event) => setDeliveryAt(event.target.value)} required /></label>
           <fieldset className="stay-search__bag-sizes stay-search__wide"><legend>{t.bagSection}</legend><p>{t.bagGuide}</p>
-            {(["s", "m", "l"] as const).map((size, index) => <div key={size} className="stay-search__bag-row"><strong>{t.bagNames[index]}</strong><div className="stay-search__bag-controls"><button type="button" aria-label={`${t.bagNames[index]} −`} disabled={bagCounts[size] === 0} onClick={() => setBagCounts((current) => ({ ...current, [size]: current[size] - 1 }))}>−</button><output data-testid={`inquiry-bag-${size}`}>{bagCounts[size]}</output><button type="button" aria-label={`${t.bagNames[index]} +`} disabled={totalBags >= 8} onClick={() => setBagCounts((current) => ({ ...current, [size]: current[size] + 1 }))}>+</button></div></div>)}
+            {(["standard", "large"] as const).map((size, index) => <div key={size} className="stay-search__bag-row"><strong>{t.bagNames[index]}</strong><div className="stay-search__bag-controls"><button type="button" aria-label={`${t.bagNames[index]} −`} disabled={bagCounts[size] === 0} onClick={() => setBagCounts((current) => ({ ...current, [size]: current[size] - 1 }))}>−</button><output data-testid={`inquiry-bag-${size}`}>{bagCounts[size]}</output><button type="button" aria-label={`${t.bagNames[index]} +`} disabled={totalBags >= 8} onClick={() => setBagCounts((current) => ({ ...current, [size]: current[size] + 1 }))}>+</button></div></div>)}
           </fieldset>
           <label>{t.contact}<input name="contact" type="text" maxLength={160} required /></label>
           <label className="stay-search__wide">{t.notes}<textarea name="notes" rows={3} maxLength={1000} /></label>

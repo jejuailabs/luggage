@@ -237,3 +237,42 @@
 .booking-coupon__field input { min-height: 44px; padding: 0 12px; letter-spacing: .06em; }
 .booking-coupon .pf-btn { min-height: 44px; }
 .booking-coupon__remove { min-height: 44px; padding: 0 8px; color: var(--color-primary); font-size: 13px; font-weight: 800; }
+
+/* ── 노선별 기본 요금 · 공항 인계 장소 · 제휴 표시 (2026-10-01) ── */
+.pf-route__price { display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border-radius: 14px; background: rgb(255 255 255 / 72%); color: var(--pf-ink); font-size: 13px; }
+:root[data-theme="dark"] .pf-route__price { background: rgb(0 0 0 / 22%); }
+.pf-route__price small { color: var(--pf-muted); font-size: 11px; font-weight: 800; }
+.pf-route__price b { font-size: 15px; font-weight: 900; }
+.pf-price-note { margin: -6px 0 0; color: var(--pf-muted); font-size: 13px; line-height: 1.5; }
+.airport-card { display: grid; overflow: hidden; }
+.airport-card__map { position: relative; height: 240px; overflow: hidden; }
+.airport-card__map .tracking-map__canvas { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); }
+.airport-card__body { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px 20px; }
+.airport-card__body h2 { margin: 0; font-size: 20px; font-weight: 900; }
+.airport-card__body dl { display: grid; gap: 10px; margin: 0; }
+.airport-card__body dl > div { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: start; padding: 10px 12px; border-radius: 14px; background: var(--pf-bg); }
+.airport-card__body dt { color: var(--pf-muted); font-size: 12px; font-weight: 800; }
+.airport-card__body dd { display: flex; flex-direction: column; gap: 2px; margin: 0; }
+.airport-card__body dd strong { font-size: 16px; font-weight: 900; }
+.airport-card__body dd span { color: var(--pf-muted); font-size: 13px; }
+.airport-card__pending, .airport-card__note { margin: 0; color: var(--pf-muted); font-size: 13px; line-height: 1.55; }
+.airport-card__pending { padding: 12px 14px; border-radius: 14px; background: var(--pf-sky-soft); color: var(--pf-ink); font-weight: 700; }
+@media (min-width: 820px) {
+  .airport-card { grid-template-columns: 1.1fr 1fr; }
+  .airport-card__map { height: auto; min-height: 280px; }
+  .airport-card__body { justify-content: center; padding: 28px 32px; }
+}
+.route-prices { display: flex; flex-direction: column; gap: 10px; margin: 0 0 20px; padding: 16px 18px; border-radius: 22px; background: var(--pf-card); box-shadow: var(--pf-shadow); color: var(--pf-ink); }
+.route-prices__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px; }
+.route-prices__head h2 { margin: 0; font-size: 17px; font-weight: 900; }
+.route-prices__head small { color: var(--pf-muted); font-size: 12px; font-weight: 800; }
+.route-prices ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.route-prices li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; padding: 10px 14px; border: 2px solid transparent; border-radius: 16px; background: var(--pf-bg); font-size: 13px; }
+.route-prices li strong { flex: 1 1 100%; font-size: 14px; font-weight: 900; }
+.route-prices li b { font-weight: 900; }
+.route-prices li[aria-current="true"] { border-color: var(--pf-coral-btn); background: var(--pf-coral-soft); }
+@media (min-width: 760px) {
+  .route-prices ul { grid-template-columns: repeat(3, 1fr); }
+}
+.stay-search__partner { display: inline-flex; margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: var(--pf-mint-soft, #d9f5ec); color: #0a6450; font-size: 11px; font-weight: 900; white-space: nowrap; }
+:root[data-theme="dark"] .stay-search__partner { color: var(--pf-mint, #5fdcb9); }

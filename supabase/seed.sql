@@ -102,3 +102,17 @@ where p.name = '예시 제휴사'
 insert into public.coupons (code, kind, value, max_discount_minor, per_user_limit, note)
 values ('WELCOME10', 'percent', 10, 5000, 1, '개발용 합성 쿠폰')
 on conflict (code) do nothing;
+
+-- 합성 개발 데이터: 공항 짐 인계 장소 예시 (실제 장소가 아니다. 운영자가 /admin/handoffs에서 실제 장소로 교체한다).
+insert into public.handoff_locations (code, type, zone_id, name_ko, floor, landmark_ko, latitude, longitude, opening_hours, status)
+select 'sample-airport-counter', 'airport_counter', z.id, '예시 짐 카운터', '1층 도착장', '3번 출구 앞', 33.5066, 126.4929, '08:00–21:00', 'active'
+from public.service_zones z
+where z.code = 'jeju-airport'
+  and not exists (select 1 from public.handoff_locations h where h.code = 'sample-airport-counter');
+
+insert into public.handoff_location_translations (location_id, locale, name, directions)
+select h.id, v.locale, v.name, v.directions
+from public.handoff_locations h
+cross join (values ('zh-CN', '示例行李柜台', '1 楼到达大厅 3 号出口前'), ('en', 'Sample bag counter', 'Arrivals hall 1F, in front of Exit 3')) as v(locale, name, directions)
+where h.code = 'sample-airport-counter'
+on conflict (location_id, locale) do nothing;

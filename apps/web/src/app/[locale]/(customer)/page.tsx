@@ -9,6 +9,8 @@ import { localizedAlternates } from "@/lib/seo";
 import { loadPublicCatalog, openRouteTypes } from "@/server/catalog";
 import { searchHotels } from "@/server/catalog";
 import { DemoEntry } from "@/components/demo/demo-entry";
+import { AirportPointCard } from "@/components/airport-point-card";
+import { loadAirportPoint, loadBasePrices } from "@/server/public-info";
 import { StaySearch } from "@/components/stay-search";
 import { cookies } from "next/headers";
 import { HERO_EXPERIMENT_COOKIE, parseHeroExperiment } from "@/server/experiment";
@@ -31,6 +33,7 @@ const COPY = {
     photoMeta: "숙소·공항 사이 짐배송",
     searchHint: "숙소 이름을 입력하면 바로 예약하거나 견적을 받을 수 있어요",
     routeCta: "이 노선으로 예약",
+    perBag: "짐 1개 기준", standard: "보통", large: "대형", priceNote: "기본 요금은 부가세 포함 금액이에요. 날짜와 짐 수량을 넣으면 결제 전에 최종 금액을 보여 드려요.",
     quote: "견적 문의 가능",
     journeyTitle: "내 짐의 하루",
     journeyHint: "짐마다 태그와 사진으로 기록해요",
@@ -56,6 +59,7 @@ const COPY = {
     photoMeta: "住宿与机场之间的行李配送",
     searchHint: "输入住宿名称即可预约或获取报价",
     routeCta: "预约此路线",
+    perBag: "每件价格", standard: "普通", large: "大件", priceNote: "基本价格已含增值税。填写日期和行李数量后，付款前会显示最终金额。",
     quote: "可咨询报价",
     journeyTitle: "行李的一天",
     journeyHint: "每件行李都有标签和照片记录",
@@ -81,6 +85,7 @@ const COPY = {
     photoMeta: "Bag delivery between stays and airport",
     searchHint: "Type your stay to book now or ask for a quote",
     routeCta: "Book this route",
+    perBag: "Per bag", standard: "Standard", large: "Large", priceNote: "Base prices include VAT. Enter your date and bags to see the final total before you pay.",
     quote: "Quote inquiry",
     journeyTitle: "A day in your bag's life",
     journeyHint: "Every bag is tagged and photographed",
@@ -108,7 +113,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const locale = await resolveLocale(params);
   const { t, themePreference } = await getRequestContext(locale);
   const signedIn = Boolean((await getViewer()).user);
-  const catalog = await loadPublicCatalog();
+  const [catalog, prices, airportPoint] = await Promise.all([loadPublicCatalog(), loadBasePrices(), loadAirportPoint(locale)]);
+  const won = (value: number) => new Intl.NumberFormat(locale, { style: "currency", currency: "KRW" }).format(value);
   const open = openRouteTypes(catalog);
   const hotels = catalog ? searchHotels(catalog, "", locale, 1000) : [];
   const heroVariant = parseHeroExperiment((await cookies()).get(HERO_EXPERIMENT_COOKIE)?.value)?.variant ?? "A";
@@ -160,11 +166,21 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <span className="pf-route__icons" aria-hidden="true"><span>{route.from}</span><i /><span>{route.to}</span></span>
               <strong>{t(`route.${route.type}`)}</strong>
               <span className={`pf-chip ${open.has(route.type) ? "pf-chip--open" : ""}`}>{open.has(route.type) ? t("route.status.open") : c.quote}</span>
+              {prices[route.type]?.standard ? (
+                <span className="pf-route__price">
+                  <small>{c.perBag}</small>
+                  <span>{c.standard} <b>{won(prices[route.type]!.standard!)}</b></span>
+                  {prices[route.type]?.large ? <span>{c.large} <b>{won(prices[route.type]!.large!)}</b></span> : null}
+                </span>
+              ) : null}
               <span className="pf-route__cta">{c.routeCta} →</span>
             </Link>
           ))}
         </div>
       </section>
+      <p className="pf-price-note">💡 {c.priceNote}</p>
+
+      <AirportPointCard locale={locale} point={airportPoint} />
 
       <div className="pf-duo">
         <section className="pf-card pf-journey" aria-labelledby="journey-title">

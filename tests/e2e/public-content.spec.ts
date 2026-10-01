@@ -2,12 +2,13 @@ import { expect, test } from "@playwright/test";
 
 // PUBLIC_DATA_SOURCE=fixture 합성 콘텐츠 기준 (apps/web/src/server/content-fixtures.ts).
 test.describe("luggage service page", () => {
-  test("shows the published usage guide as four readable steps", async ({ page }) => {
+  test("shows the published usage guide as five readable steps", async ({ page }) => {
     await page.goto("/ko/luggage");
     const guide = page.getByTestId("content-how-it-works");
-    await expect(guide.locator(".service-page__how-steps li")).toHaveCount(4);
-    await expect(guide.locator(".service-page__how-steps li").first()).toContainText("온라인 예약·결제");
-    await expect(guide).toContainText("이용 예시");
+    await expect(guide.locator(".service-page__how-steps li")).toHaveCount(5);
+    await expect(guide.locator(".service-page__how-steps li").first()).toContainText("온라인으로 예약·결제");
+    // 운영 문구 v1은 예시 표시가 없다.
+    await expect(guide).not.toContainText("이용 예시");
   });
 
   test("blocks booking when a critical notice lacks an approved Chinese version", async ({ page }) => {
@@ -68,7 +69,7 @@ test.describe("guides and legal pages", () => {
 
   test("lists FAQ entries on the help page", async ({ page }) => {
     await page.goto("/zh-CN/help");
-    await expect(page.getByTestId("faq-item")).toHaveCount(1);
+    await expect(page.getByTestId("faq-item")).toHaveCount(13);
     await expect(page.getByText("没有韩国手机号可以预约吗？")).toBeVisible();
   });
 });
